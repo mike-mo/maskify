@@ -33,7 +33,12 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       if (matches) {
         matches.forEach(match => {
           const fakeAddress = getFakeEmail(match);
-          element.textContent = element.textContent.replace(match, fakeAddress);
+          //element.textContent = element.textContent.replace(match, fakeAddress);
+          $("body").each(function () {
+            var content = $(this).html();
+            var newContent = content.replace(match, fakeAddress);
+            $(this).html(newContent);
+          });
         });
       }
     });
