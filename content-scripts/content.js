@@ -22,22 +22,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     return word;
   }
 
-
-  // function replaceWord() {
-  //   // Find all occurrences of "no" in the body and replace them with "yes"
-  //   $("body").each(function () {
-  //     var content = $(this).html();
-  //     // Replace "no" (case insensitive) with yes
-  //     var newContent = content.replace(/NO/gi, "YES");
-  //     $(this).html(newContent);
-  //   });
-  // }
-  // replaceWord();
-
   function getFakeEmail(baseEmail) {
     const domain = 'example.com'; // Choose your fake domain
     if (!fakeEmails[baseEmail]) {
-      const randomPart = generateRandomWord(Math.floor(4 + Math.random() * 4)); // Generate a random string
+      const randomPart = generateRandomWord(Math.floor(3 + Math.random() * 8)); // Generate a random string
       fakeEmails[baseEmail] = `${randomPart}*@${domain}`;
     }
     return fakeEmails[baseEmail];
@@ -62,18 +50,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       }
     });
 
-    //  $("body").each(function () {
-    //   // Write the current object out to the console
-    //   //console.log($(this));
-    //   const matches = $(this).textContent.match(emailRegex);
-    //   if (matches) {
-    //     matches.forEach(match => {
-    //       const fakeAddress = generateFakeEmail(match);
-    //       element.textContent = element.textContent.replace(match, fakeAddress);
-    //     });
-    //   }
-    //   $(this).html(newContent);
-    // });
+
   }
 
   replaceEmailAddresses();
