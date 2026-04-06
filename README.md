@@ -44,6 +44,31 @@ maskify/
 3. Each unique email address is mapped to a generated fake address (e.g., `tohasi*@example.com`) using pronounceable random strings.
 4. The page's HTML is updated in-place with the fake addresses.
 
+## Store Description
+
+**Maskify — Instantly Hide Email Addresses on Any Web Page**
+
+Presenting a live demo? Sharing your screen? Browsing a dashboard full of customer data? Maskify keeps real email addresses out of sight with a single click.
+
+Maskify scans the current page for email addresses and replaces every one of them with a realistic-looking fake address (using the safe `example.com` domain). The same real address always maps to the same fake address within a session, so the page remains consistent and readable — without exposing anyone's personal information.
+
+**Key Features**
+
+- 🔒 **One-click privacy** — Click the Maskify button and every email address on the page is instantly replaced.
+- 🎭 **Realistic replacements** — Fake addresses look natural, using pronounceable random strings so they blend in seamlessly.
+- 🔁 **Consistent mapping** — The same real email always produces the same fake email during a session, keeping the page easy to follow.
+- 🌐 **Works on any website** — Use Maskify on dashboards, admin panels, CRMs, inboxes, or any other page that displays email addresses.
+- 🛡️ **Completely local** — Maskify runs entirely in your browser. No data is collected, stored, or sent anywhere.
+
+**Perfect for:**
+
+- Live demos and presentations
+- Screen sharing and video recordings
+- Screenshots for documentation or bug reports
+- Any time you need to hide real email addresses quickly
+
+Protect the privacy of your users, customers, and colleagues — install Maskify today.
+
 ## Testing
 
 Open `testpage.html` in Chrome (via `file://` or a local server) and click the Maskify button to see email addresses get replaced.
