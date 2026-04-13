@@ -1,48 +1,31 @@
 # Maskify
 
-A Chrome extension that protects user privacy by replacing real email addresses on web pages with randomly generated fake ones.
+A Chrome and Edge extension that protects user privacy by replacing real email addresses on web pages with randomly generated fake ones.
 
 ## What It Does
 
-When you click the **Maskify** button in the extension popup, Maskify scans the current page for email addresses and replaces each one with a realistic-looking fake address using the `example.com` domain. The same real address is always replaced with the same fake address within a session, so the page stays consistent.
+When you click the Maskify button, the extension scans the current page and replaces every email address it finds with a realistic-looking fake address using the `example.com` domain. The same real address always maps to the same fake within a session, so the page stays consistent and readable. A brief confirmation toast appears in the top-right corner showing how many addresses were masked.
+
+Maskify catches emails in visible text, `mailto:` links, and input field values — including prefilled forms and placeholder text.
 
 ## Installation
 
 1. Clone or download this repository.
-2. Open Chrome and navigate to `chrome://extensions`.
-3. Enable **Developer mode** (toggle in the top-right corner).
+2. Open Chrome or Edge and navigate to the extensions page (`chrome://extensions` or `edge://extensions`).
+3. Enable **Developer mode**.
 4. Click **Load unpacked** and select the root folder of this repository.
-5. The Maskify icon will appear in your browser toolbar.
 
 ## Usage
 
-1. Navigate to any web page that displays email addresses.
-2. Click the **Maskify** extension icon in the toolbar.
-3. Click the **Maskify** button in the popup.
-4. All visible email addresses on the page will be replaced with fake ones.
-
-## Project Structure
-
-```
-maskify/
-├── manifest.json            # Chrome extension manifest (Manifest V3)
-├── content-scripts/
-│   └── content.js           # Content script that finds and replaces emails
-├── popup/
-│   ├── popup.html           # Extension popup UI
-│   └── popup.js             # Popup logic — sends message to content script
-├── lib/
-│   └── jquery.min.js        # jQuery (used for DOM manipulation)
-├── icons/                   # Extension icons in various sizes
-└── testpage.html            # Sample page for testing the extension
-```
+Navigate to any page with email addresses, click the Maskify icon in the toolbar, then click **Mask Emails**. A confirmation toast will appear in the top-right corner of the page showing how many addresses were replaced.
 
 ## How It Works
 
-1. The user clicks the Maskify button in the popup, which sends a message to the active tab's content script.
-2. The content script scans the page for text matching an email address pattern.
-3. Each unique email address is mapped to a generated fake address (e.g., `tohasi*@example.com`) using pronounceable random strings.
-4. The page's HTML is updated in-place with the fake addresses.
+Clicking the button sends a message from the popup to the content script running in the active tab. The content script runs three passes: a TreeWalker over all text nodes, a pass over anchor `href` attributes (to catch `mailto:` links whose display text isn't an email address), and a pass over input field values and placeholders. Each unique email is mapped to a generated fake address like `tohasi*@example.com` using a pronounceable random string — the `*` makes fakes visually distinct from real addresses. The mapping resets each time you click the button.
+
+## Testing
+
+Open `testpage.html` in the browser after loading the extension. It covers plain text, mailto links with and without visible email text, consistency across repeated occurrences, email format variations, table data, non-email `@` symbols, and input fields.
 
 ## Store Description
 
@@ -54,25 +37,18 @@ Maskify scans the current page for email addresses and replaces every one of the
 
 **Key Features**
 
-- 🔒 **One-click privacy** — Click the Maskify button and every email address on the page is instantly replaced.
-- 🎭 **Realistic replacements** — Fake addresses look natural, using pronounceable random strings so they blend in seamlessly.
-- 🔁 **Consistent mapping** — The same real email always produces the same fake email during a session, keeping the page easy to follow.
-- 🌐 **Works on any website** — Use Maskify on dashboards, admin panels, CRMs, inboxes, or any other page that displays email addresses.
-- 🛡️ **Completely local** — Maskify runs entirely in your browser. No data is collected, stored, or sent anywhere.
+- One-click privacy — click the Maskify button and every email address on the page is instantly replaced
+- Realistic replacements — fake addresses use pronounceable random strings so they blend in naturally
+- Consistent mapping — the same real email always produces the same fake during a session
+- Works on any website — dashboards, admin panels, CRMs, inboxes, forms, and more
+- Completely local — runs entirely in your browser with no data collected, stored, or transmitted
 
-**Perfect for:**
+**Perfect for** live demos, screen sharing, video recordings, screenshots for documentation, and any time you need to quickly obscure real email addresses.
 
-- Live demos and presentations
-- Screen sharing and video recordings
-- Screenshots for documentation or bug reports
-- Any time you need to hide real email addresses quickly
+## Privacy
 
-Protect the privacy of your users, customers, and colleagues — install Maskify today.
-
-## Testing
-
-Open `testpage.html` in Chrome (via `file://` or a local server) and click the Maskify button to see email addresses get replaced.
+See [privacy.html](privacy.html) for the full privacy policy. The short version: everything runs locally in your browser, nothing leaves your machine.
 
 ## License
 
-This project does not currently specify a license.
+Free for personal, non-commercial use with attribution. Commercial use requires a written agreement — see [LICENSE](LICENSE) for details.

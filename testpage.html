@@ -1,13 +1,118 @@
+<!DOCTYPE html>
 <html>
 <head>
-  <title>Home</title>
+  <title>Maskify Test Page</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    h2 { margin-top: 2rem; border-bottom: 1px solid #ccc; padding-bottom: 0.25rem; }
+    .scenario { background: #f5f5f5; border-left: 4px solid #888; padding: 0.75rem 1rem; margin: 0.75rem 0; }
+    .label { font-size: 0.75rem; font-weight: bold; color: #555; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .expected { font-size: 0.8rem; color: #444; margin-top: 0.5rem; font-style: italic; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { border: 1px solid #ccc; padding: 0.4rem 0.75rem; text-align: left; }
+    th { background: #eee; }
+  </style>
 </head>
-
 <body>
-  <h1>No</h1>
-  <p>This is a list of email addresses of different animals</p>
-  <li><a href="email.php?animal=cat@home.com">cat@home.com</a></li>
-  <li><a href="email.php?animal=dog@home.com">dog@home.com</a></li>
-  <li><a href="email.php?animal=pig@farm.com">pig@farm.com</a></li>
-  <li><a href="email.php?animal=cat@home.com">cat@home.com</a></li>
+
+  <h1>Maskify Test Page</h1>
+  <p>Click the Maskify button in the extension popup, then verify each scenario below matches its expected result.</p>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>1. Plain Text (no link)</h2>
+
+  <div class="scenario">
+    <div class="label">Single email in a sentence</div>
+    <p>For questions, contact support@acme.com directly.</p>
+    <div class="expected">Expected: email replaced with a fake @example.com address</div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Multiple different emails in one paragraph</div>
+    <p>Reach Alice at alice@company.com or Bob at bob@company.com, or copy both via team@company.com.</p>
+    <div class="expected">Expected: three different fake addresses — all distinct from one another</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>2. Mailto Links</h2>
+
+  <div class="scenario">
+    <div class="label">Standard mailto href — display text matches href</div>
+    <p><a href="mailto:info@example.org">info@example.org</a></p>
+    <div class="expected">Expected: both the visible text and the href= value are replaced with the same fake address</div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Mailto href with a different display label</div>
+    <p><a href="mailto:billing@acme.com">Contact Billing</a></p>
+    <div class="expected">Expected: href= value is replaced; visible text "Contact Billing" is unchanged</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>3. Consistency — Same Email, Multiple Locations</h2>
+
+  <div class="scenario">
+    <div class="label">Same address repeated in different contexts</div>
+    <p>Primary contact: repeat@test.com</p>
+    <p>Send invoice to: <a href="mailto:repeat@test.com">repeat@test.com</a></p>
+    <p>CC list includes repeat@test.com as well.</p>
+    <div class="expected">Expected: all three occurrences show the <em>same</em> fake address (consistent mapping)</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>4. Email Format Variations</h2>
+
+  <div class="scenario">
+    <div class="label">Plus-addressing / subaddressing</div>
+    <p>user.name+filter@newsletter.io</p>
+    <div class="expected">Expected: entire address including + tag replaced</div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Subdomain sender</div>
+    <p>alerts@mail.notifications.bigcorp.com</p>
+    <div class="expected">Expected: replaced normally</div>
+  </div>
+
+  <div class="scenario">
+    <div class="label">Dots in local part</div>
+    <p>first.last.middle@domain.co.uk</p>
+    <div class="expected">Expected: replaced normally</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>5. Tabular Data</h2>
+
+  <div class="scenario">
+    <div class="label">Emails inside a table</div>
+    <table>
+      <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td>Carol</td><td>carol@hr.example.org</td><td>Manager</td></tr>
+        <tr><td>Dave</td><td>dave.smith@ops.example.org</td><td>Engineer</td></tr>
+        <tr><td>Eve</td><td>carol@hr.example.org</td><td>Analyst</td></tr>
+      </tbody>
+    </table>
+    <div class="expected">Expected: Carol and Eve share the same fake address (same real email); Dave gets a different fake address</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>6. Non-Email @ Symbols (Should Not Change)</h2>
+
+  <div class="scenario">
+    <div class="label">Social media handles and code snippets</div>
+    <p>Follow us <strong>@maskify</strong> on Twitter. In bash: <code>echo $USER@$(hostname)</code></p>
+    <div class="expected">Expected: neither @maskify nor the shell snippet is treated as an email address</div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>7. Email in an Input Field</h2>
+
+  <div class="scenario">
+    <div class="label">Input with email as placeholder and value</div>
+    <p><input type="text" value="prefilled@domain.com" placeholder="your@email.com" style="width:250px;padding:4px;"></p>
+    <div class="expected">Expected: both the value= and placeholder= attributes are replaced</div>
+  </div>
+
+</body>
 </html>

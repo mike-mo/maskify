@@ -1,0 +1,29 @@
+name: Publish to Edge Add-ons
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build extension zip
+        run: |
+          zip -r extension.zip \
+            manifest.json \
+            popup/ \
+            content-scripts/ \
+            lib/ \
+            icons/maskify16x16.png \
+            icons/maskify32x32.png \
+            icons/maskify48x48.png \
+            icons/maskify128x128.png
+
+      - name: Publish to Edge Add-ons Store
+        uses: PlasmoHQ/bpp@v3
+        with:
+          artifact: extension.zip
+          keys: ${{ secrets.BPP_KEYS }}
