@@ -37,11 +37,11 @@ Maskify scans the current page for email addresses and replaces every one of the
 
 **Key Features**
 
-- One-click privacy — click the Maskify button and every email address on the page is instantly replaced
-- Realistic replacements — fake addresses use pronounceable random strings so they blend in naturally
-- Consistent mapping — the same real email always produces the same fake during a session
-- Works on any website — dashboards, admin panels, CRMs, inboxes, forms, and more
-- Completely local — runs entirely in your browser with no data collected, stored, or transmitted
+- 🔒 One-click privacy — click the Maskify button and every email address on the page is instantly replaced
+- 🎭 Realistic replacements — fake addresses use pronounceable random strings so they blend in naturally
+- 🔁 Consistent mapping — the same real email always produces the same fake during a session
+- 🌐 Works on any website — dashboards, admin panels, CRMs, inboxes, forms, and more
+- 🛡️ Completely local — runs entirely in your browser with no data collected, stored, or transmitted
 
 **Perfect for** live demos, screen sharing, video recordings, screenshots for documentation, and any time you need to quickly obscure real email addresses.
 
