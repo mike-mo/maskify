@@ -14,10 +14,10 @@ document.addEventListener('DOMContentLoaded', function () {
     previewAddress.textContent = `${localPart}${marker}@${domain}`;
   }
 
-  [domainInput, addNumberInput, addLastInitialInput, showAsteriskInput].forEach(el => {
-    el.addEventListener('input', updatePreview);
-    el.addEventListener('change', updatePreview);
-  });
+  domainInput.addEventListener('input', updatePreview);
+  addNumberInput.addEventListener('change', updatePreview);
+  addLastInitialInput.addEventListener('change', updatePreview);
+  showAsteriskInput.addEventListener('change', updatePreview);
 
   chrome.storage.sync.get({ domain: '', addNumber: true, addLastInitial: false, showAsterisk: true }, function (data) {
     domainInput.value = data.domain;

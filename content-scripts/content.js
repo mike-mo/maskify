@@ -11,10 +11,28 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   'use strict';
   const fakeEmails = {};
 
+  function getSafeDomain(value) {
+    const fallback = 'example.com';
+    if (typeof value !== 'string') return fallback;
+
+    const normalized = value.trim().toLowerCase();
+    if (!normalized || normalized.length > 253) return fallback;
+    if (!/^[a-z0-9.-]+$/.test(normalized)) return fallback;
+
+    const labels = normalized.split('.');
+    if (labels.length < 2) return fallback;
+    if (labels.some(label => !label || label.length > 63 || label.startsWith('-') || label.endsWith('-'))) {
+      return fallback;
+    }
+
+    return normalized;
+  }
+
+  const domain = getSafeDomain(request.domain);
+
   function getFakeEmail(baseEmail) {
     if (!fakeEmails[baseEmail]) {
       const name = MASKIFY_NAMES[Math.floor(Math.random() * MASKIFY_NAMES.length)];
-      const domain = request.domain || 'example.com';
       const marker = request.showAsterisk !== false ? '***' : '';
 
       let localPart = name;
