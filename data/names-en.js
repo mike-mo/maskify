@@ -1,6 +1,7 @@
 // Locale: en
-// To localize: create a parallel file (e.g. names-fr.js) with names appropriate
-// for the target locale, and update the manifest to load it instead.
+// To localize: create a parallel file (e.g. names-fr.js) defining MASKIFY_NAMES_FR,
+// add it to the manifest's content_scripts js array, and register it in the
+// MASKIFY_NAMES_BY_LOCALE map in content-scripts/content.js.
 const MASKIFY_NAMES_EN = [
   'aaron', 'abby', 'adam', 'alice', 'bella', 'ben', 'blake', 'brooke',
   'caleb', 'carol', 'chris', 'claire', 'david', 'dean', 'diana', 'ella',

@@ -25,9 +25,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         localPart += Math.floor(Math.random() * 99) + 1;
       }
 
-      const base = `${localPart}@${domain}`;
-      replacements.add(base);
-      fakeEmails[baseEmail] = `${localPart}${marker}@${domain}`;
+      const emitted = `${localPart}${marker}@${domain}`;
+      if (!marker) replacements.add(emitted);
+      fakeEmails[baseEmail] = emitted;
     }
     return fakeEmails[baseEmail];
   }
