@@ -48,6 +48,7 @@
     }
 
     .field-label {
+      display: block;
       font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.3px;
@@ -69,6 +70,11 @@
 
     .domain-input:focus {
       border-color: #0078d4;
+    }
+
+    .domain-input.invalid,
+    .domain-input.invalid:focus {
+      border-color: #d93025;
     }
 
     .checkbox-label {
@@ -156,6 +162,7 @@
     </div>
     <button id="sendmessageid">Mask Emails</button>
   </div>
+  <script src="../data/domain-utils.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

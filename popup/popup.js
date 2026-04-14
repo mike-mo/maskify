@@ -6,7 +6,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const previewAddress = document.getElementById('previewAddress');
 
   function updatePreview() {
-    const domain = domainInput.value.trim() || 'example.com';
+    const raw = domainInput.value.trim();
+    const invalid = !!raw && !isValidDomain(raw);
+    domainInput.classList.toggle('invalid', invalid);
+    const domain = raw && !invalid ? raw : 'example.com';
     const marker = showAsteriskInput.checked ? '***' : '';
     let localPart = 'alice';
     if (addLastInitialInput.checked) localPart += '_r';
