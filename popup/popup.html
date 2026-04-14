@@ -43,6 +43,41 @@
       margin-bottom: 12px;
     }
 
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    .domain-input {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      color: #1a1a1a;
+      outline: none;
+    }
+
+    .domain-input:focus {
+      border-color: #0078d4;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+    }
+
     button {
       width: 100%;
       padding: 8px 16px;
@@ -59,6 +94,31 @@
 
     button:hover  { background: #106ebe; }
     button:active { background: #005a9e; }
+
+    .preview {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 7px 10px;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    .preview-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: #888;
+      flex-shrink: 0;
+    }
+
+    .preview code {
+      font-size: 12px;
+      color: #0078d4;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -67,7 +127,33 @@
     <h1>Maskify</h1>
   </div>
   <div class="body">
-    <p class="description">Replace all email addresses on this page with randomly generated fake ones.</p>
+    <p class="description">Replace all email addresses on this page with masked addresses.</p>
+    <div class="field">
+      <div class="field-label">Domain</div>
+      <input type="text" id="domainInput" class="domain-input" placeholder="example.com" />
+    </div>
+    <div class="field">
+      <label class="checkbox-label">
+        <input type="checkbox" id="addNumber" />
+        <span>Add number (e.g. alice<strong>7</strong>)</span>
+      </label>
+    </div>
+    <div class="field">
+      <label class="checkbox-label">
+        <input type="checkbox" id="addLastInitial" />
+        <span>Add last initial (e.g. alice<strong>_r</strong>)</span>
+      </label>
+    </div>
+    <div class="field">
+      <label class="checkbox-label">
+        <input type="checkbox" id="showAsterisk" />
+        <span>Mark replacements with ***</span>
+      </label>
+    </div>
+    <div class="preview">
+      <span class="preview-label">Preview</span>
+      <code id="previewAddress"></code>
+    </div>
     <button id="sendmessageid">Mask Emails</button>
   </div>
   <script src="popup.js"></script>

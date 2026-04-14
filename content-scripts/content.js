@@ -1,34 +1,43 @@
+const MASKIFY_NAMES_BY_LOCALE = {
+  en: MASKIFY_NAMES_EN,
+  es: MASKIFY_NAMES_ES,
+};
+const _lang = (navigator.language || 'en').split('-')[0].toLowerCase();
+const MASKIFY_NAMES = MASKIFY_NAMES_BY_LOCALE[_lang] || MASKIFY_NAMES_EN;
+
+const replacements = new Set();
+
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
   'use strict';
   const fakeEmails = {};
 
-  function generateRandomWord(length) {
-    const vowels = 'aeiou';
-    // declare a string of consonants where each is repeated proportionally to its frequency in English
-    const consonants = 'bbcccdddfffgghhhjjkklllmmmnnnppqrrrrsssssttttttvvwwxyyz';
-    let word = '';
-
-    for (let i = 0; i < length; i++) {
-      if (i % 2 === 0) {
-        word += consonants.charAt(Math.floor(Math.random() * consonants.length));
-      } else {
-        word += vowels.charAt(Math.floor(Math.random() * vowels.length));
-      }
-    }
-    return word;
-  }
-
   function getFakeEmail(baseEmail) {
     if (!fakeEmails[baseEmail]) {
-      const randomPart = generateRandomWord(Math.floor(3 + Math.random() * 8));
-      fakeEmails[baseEmail] = `${randomPart}*@example.com`;
+      const name = MASKIFY_NAMES[Math.floor(Math.random() * MASKIFY_NAMES.length)];
+      const domain = request.domain || 'example.com';
+      const marker = request.showAsterisk !== false ? '***' : '';
+
+      let localPart = name;
+      if (request.addLastInitial) {
+        localPart += '_' + String.fromCharCode(97 + Math.floor(Math.random() * 26));
+      }
+      if (request.addNumber !== false) {
+        localPart += Math.floor(Math.random() * 99) + 1;
+      }
+
+      const base = `${localPart}@${domain}`;
+      replacements.add(base);
+      fakeEmails[baseEmail] = `${localPart}${marker}@${domain}`;
     }
     return fakeEmails[baseEmail];
   }
 
   function replaceEmailAddresses() {
     const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-    const replace = str => str.replace(emailRegex, match => getFakeEmail(match));
+    const replace = str => str.replace(emailRegex, match => {
+      if (replacements.has(match)) return match;
+      return getFakeEmail(match);
+    });
 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
     let node;

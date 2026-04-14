@@ -24,13 +24,13 @@
   <div class="scenario">
     <div class="label">Single email in a sentence</div>
     <p>For questions, contact support@acme.com directly.</p>
-    <div class="expected">Expected: email replaced with a fake @example.com address</div>
+    <div class="expected">Expected: email replaced with a masked address like <code>alice23***@example.com</code></div>
   </div>
 
   <div class="scenario">
     <div class="label">Multiple different emails in one paragraph</div>
     <p>Reach Alice at alice@company.com or Bob at bob@company.com, or copy both via team@company.com.</p>
-    <div class="expected">Expected: three different fake addresses — all distinct from one another</div>
+    <div class="expected">Expected: three different masked addresses — all distinct from one another</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
@@ -39,7 +39,7 @@
   <div class="scenario">
     <div class="label">Standard mailto href — display text matches href</div>
     <p><a href="mailto:info@example.org">info@example.org</a></p>
-    <div class="expected">Expected: both the visible text and the href= value are replaced with the same fake address</div>
+    <div class="expected">Expected: both the visible text and the href= value are replaced with the same masked address</div>
   </div>
 
   <div class="scenario">
@@ -49,55 +49,34 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>3. Consistency — Same Email, Multiple Locations</h2>
+  <h2>3. Email Format Variations</h2>
 
   <div class="scenario">
-    <div class="label">Same address repeated in different contexts</div>
-    <p>Primary contact: repeat@test.com</p>
-    <p>Send invoice to: <a href="mailto:repeat@test.com">repeat@test.com</a></p>
-    <p>CC list includes repeat@test.com as well.</p>
-    <div class="expected">Expected: all three occurrences show the <em>same</em> fake address (consistent mapping)</div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════ -->
-  <h2>4. Email Format Variations</h2>
-
-  <div class="scenario">
-    <div class="label">Plus-addressing / subaddressing</div>
+    <div class="label">Plus-addressing, subdomain sender, dots in local part</div>
     <p>user.name+filter@newsletter.io</p>
-    <div class="expected">Expected: entire address including + tag replaced</div>
-  </div>
-
-  <div class="scenario">
-    <div class="label">Subdomain sender</div>
     <p>alerts@mail.notifications.bigcorp.com</p>
-    <div class="expected">Expected: replaced normally</div>
-  </div>
-
-  <div class="scenario">
-    <div class="label">Dots in local part</div>
     <p>first.last.middle@domain.co.uk</p>
-    <div class="expected">Expected: replaced normally</div>
+    <div class="expected">Expected: all three replaced normally</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>5. Tabular Data</h2>
+  <h2>4. Tabular Data and Consistent Mapping</h2>
 
   <div class="scenario">
-    <div class="label">Emails inside a table</div>
+    <div class="label">Emails inside a table — including a person listed twice</div>
     <table>
-      <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+      <thead><tr><th>Name</th><th>Email</th><th>Department</th></tr></thead>
       <tbody>
-        <tr><td>Carol</td><td>carol@hr.example.org</td><td>Manager</td></tr>
-        <tr><td>Dave</td><td>dave.smith@ops.example.org</td><td>Engineer</td></tr>
-        <tr><td>Eve</td><td>carol@hr.example.org</td><td>Analyst</td></tr>
+        <tr><td>Carol</td><td>carol@hr.example.org</td><td>HR</td></tr>
+        <tr><td>Dave</td><td>dave.smith@ops.example.org</td><td>Engineering</td></tr>
+        <tr><td>Carol</td><td>carol@hr.example.org</td><td>IT Liaison</td></tr>
       </tbody>
     </table>
-    <div class="expected">Expected: Carol and Eve share the same fake address (same real email); Dave gets a different fake address</div>
+    <div class="expected">Expected: both Carol rows show the same masked address; Dave gets a different one</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>6. Non-Email @ Symbols (Should Not Change)</h2>
+  <h2>5. Non-Email @ Symbols (Should Not Change)</h2>
 
   <div class="scenario">
     <div class="label">Social media handles and code snippets</div>
@@ -106,13 +85,45 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>7. Email in an Input Field</h2>
+  <h2>6. Email in an Input Field</h2>
 
   <div class="scenario">
     <div class="label">Input with email as placeholder and value</div>
     <p><input type="text" value="prefilled@domain.com" placeholder="your@email.com" style="width:250px;padding:4px;"></p>
     <div class="expected">Expected: both the value= and placeholder= attributes are replaced</div>
   </div>
+
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>7. Email in a Textarea</h2>
+
+  <div class="scenario">
+    <div class="label">Textarea with prefilled email content</div>
+    <p><textarea style="width:100%;height:80px;padding:4px;font-family:sans-serif;">Hi team,
+
+Please CC billing@acme.com and forward all receipts to receipts@finance.acme.com.
+
+Thanks</textarea></p>
+    <div class="expected">Expected: both email addresses in the textarea body are replaced</div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>8. Email in a Select Dropdown</h2>
+
+  <div class="scenario">
+    <div class="label">Select with email addresses as option values and labels</div>
+    <p>
+      <select id="emailSelect" style="width:250px;padding:4px;" oninput="document.getElementById('selectValue').textContent = this.value">
+        <option value="alice@team.com">alice@team.com</option>
+        <option value="bob@team.com">bob@team.com</option>
+        <option value="carol@team.com">carol@team.com</option>
+      </select>
+      <span style="margin-left:12px;color:#555;font-size:0.9rem;">value: <code id="selectValue">alice@team.com</code></span>
+    </p>
+    <div class="expected">Expected: visible option labels are replaced with masked addresses; the value= attribute is not replaced — confirm by selecting an option and checking the value shown to the right of the dropdown</div>
+  </div>
+
 
 </body>
 </html>
