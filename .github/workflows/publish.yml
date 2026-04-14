@@ -22,8 +22,20 @@ jobs:
             icons/maskify48x48.png \
             icons/maskify128x128.png
 
+      - name: Check BPP_KEYS secret
+        id: check_secret
+        run: |
+          if [ -n "$BPP_KEYS" ]; then
+            echo "available=true" >> $GITHUB_OUTPUT
+          else
+            echo "available=false" >> $GITHUB_OUTPUT
+            echo "BPP_KEYS secret not set — skipping Edge publish"
+          fi
+        env:
+          BPP_KEYS: ${{ secrets.BPP_KEYS }}
+
       - name: Publish to Edge Add-ons Store
-        if: ${{ secrets.BPP_KEYS != '' }}
+        if: steps.check_secret.outputs.available == 'true'
         uses: PlasmoHQ/bpp@v3
         with:
           artifact: extension.zip
