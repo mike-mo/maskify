@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const raw = domainInput.value.trim();
     const invalid = !!raw && !isValidDomain(raw);
     domainInput.classList.toggle('invalid', invalid);
-    const domain = raw && !invalid ? raw : 'example.com';
+    const domain = raw && !invalid ? raw.toLowerCase() : 'example.com';
     const marker = showAsteriskInput.checked ? '***' : '';
     let localPart = 'alice';
     if (addLastInitialInput.checked) localPart += '_r';
@@ -34,12 +34,13 @@ document.addEventListener('DOMContentLoaded', function () {
   if (sendMessageId) {
     sendMessageId.onclick = function () {
       const raw = domainInput.value.trim();
-      const domain = raw && isValidDomain(raw) ? raw.toLowerCase() : 'example.com';
+      const storedDomain = raw && isValidDomain(raw) ? raw.toLowerCase() : '';
+      const domain = storedDomain || 'example.com';
       const addNumber = addNumberInput.checked;
       const addLastInitial = addLastInitialInput.checked;
       const showAsterisk = showAsteriskInput.checked;
 
-      chrome.storage.sync.set({ domain, addNumber, addLastInitial, showAsterisk });
+      chrome.storage.sync.set({ domain: storedDomain, addNumber, addLastInitial, showAsterisk });
 
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, { domain, addNumber, addLastInitial, showAsterisk }, function () {
