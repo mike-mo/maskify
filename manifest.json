@@ -1,6 +1,6 @@
 {
     "name": "Maskify",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "manifest_version": 3,
     "description": "An extension that helps you protect user privacy by replacing email addresses with fake ones.",
     "permissions": ["tabs", "storage"],
