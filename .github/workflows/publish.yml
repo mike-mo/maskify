@@ -16,13 +16,14 @@ jobs:
             manifest.json \
             popup/ \
             content-scripts/ \
-            lib/ \
+            data/ \
             icons/maskify16x16.png \
             icons/maskify32x32.png \
             icons/maskify48x48.png \
             icons/maskify128x128.png
 
       - name: Publish to Edge Add-ons Store
+        if: ${{ secrets.BPP_KEYS != '' }}
         uses: PlasmoHQ/bpp@v3
         with:
           artifact: extension.zip
