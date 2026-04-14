@@ -33,12 +33,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const sendMessageId = document.getElementById('sendmessageid');
   if (sendMessageId) {
     sendMessageId.onclick = function () {
-      const domain = domainInput.value.trim() || 'example.com';
+      const raw = domainInput.value.trim();
+      const domain = raw && isValidDomain(raw) ? raw.toLowerCase() : 'example.com';
       const addNumber = addNumberInput.checked;
       const addLastInitial = addLastInitialInput.checked;
       const showAsterisk = showAsteriskInput.checked;
 
-      chrome.storage.sync.set({ domain: domainInput.value.trim(), addNumber, addLastInitial, showAsterisk });
+      chrome.storage.sync.set({ domain, addNumber, addLastInitial, showAsterisk });
 
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, { domain, addNumber, addLastInitial, showAsterisk }, function () {
