@@ -27,14 +27,24 @@
     <div class="expected">Expected: email replaced with a masked address like <code>alice23***@example.com</code></div>
   </div>
 
+  <!-- ═══════════════════════════════════════════════ -->
+  <h2>2. Tabular Data and Consistent Mapping</h2>
+
   <div class="scenario">
-    <div class="label">Multiple different emails in one paragraph</div>
-    <p>Reach Alice at alice@company.com or Bob at bob@company.com, or copy both via team@company.com.</p>
-    <div class="expected">Expected: three different masked addresses — all distinct from one another</div>
+    <div class="label">Emails inside a table — including a person listed twice</div>
+    <table>
+      <thead><tr><th>Department</th><th>Name</th><th>Email</th></tr></thead>
+      <tbody>
+        <tr><td>HR</td><td>Carol</td><td>carol@acme.com</td></tr>
+        <tr><td>Engineering</td><td>Dave</td><td>dave.smith@acme.com</td></tr>
+        <tr><td>IT Liaison</td><td>Carol</td><td>carol@acme.com</td></tr>
+      </tbody>
+    </table>
+    <div class="expected">Expected: both Carol rows show the same masked address; Dave gets a different one</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>2. Mailto Links</h2>
+  <h2>3. Mailto Links</h2>
 
   <div class="scenario">
     <div class="label">Standard mailto href — display text matches href</div>
@@ -49,7 +59,7 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>3. Email Format Variations</h2>
+  <h2>4. Email Format Variations</h2>
 
   <div class="scenario">
     <div class="label">Plus-addressing, subdomain sender, dots in local part</div>
@@ -57,22 +67,6 @@
     <p>alerts@mail.notifications.bigcorp.com</p>
     <p>first.last.middle@domain.co.uk</p>
     <div class="expected">Expected: all three replaced normally</div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════ -->
-  <h2>4. Tabular Data and Consistent Mapping</h2>
-
-  <div class="scenario">
-    <div class="label">Emails inside a table — including a person listed twice</div>
-    <table>
-      <thead><tr><th>Name</th><th>Email</th><th>Department</th></tr></thead>
-      <tbody>
-        <tr><td>Carol</td><td>carol@hr.example.org</td><td>HR</td></tr>
-        <tr><td>Dave</td><td>dave.smith@ops.example.org</td><td>Engineering</td></tr>
-        <tr><td>Carol</td><td>carol@hr.example.org</td><td>IT Liaison</td></tr>
-      </tbody>
-    </table>
-    <div class="expected">Expected: both Carol rows show the same masked address; Dave gets a different one</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
@@ -125,5 +119,111 @@ Thanks</textarea></p>
   </div>
 
 
+
+  <script>
+  (function () {
+    const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+
+    const badge = document.createElement('div');
+    Object.assign(badge.style, {
+      position: 'fixed', top: '24px', right: '24px',
+      zIndex: '2147483646', padding: '10px 24px',
+      borderRadius: '6px', fontSize: '26px', fontWeight: '800',
+      fontFamily: 'system-ui, sans-serif', pointerEvents: 'none',
+      letterSpacing: '2px', textTransform: 'uppercase',
+      transform: 'rotate(-12deg)',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+      display: 'none',
+    });
+    document.body.appendChild(badge);
+
+    function setBadge(state) {
+      badge.style.display = '';
+      if (state === 'before') {
+        Object.assign(badge.style, { background: '#fff3cd', color: '#7a5c00', border: '3px solid #f0b429' });
+        badge.textContent = 'Before';
+      } else {
+        Object.assign(badge.style, { background: '#d4edda', color: '#1a6e36', border: '3px solid #28a745' });
+        badge.textContent = 'After ✓';
+      }
+    }
+
+    function wrapNode(node) {
+      const text = node.textContent;
+      const re = new RegExp(EMAIL_RE.source, 'g');
+      if (!re.test(text)) return;
+      re.lastIndex = 0;
+      const parent = node.parentNode;
+      if (!parent || parent.classList.contains('maskify-hl')) return;
+      const frag = document.createDocumentFragment();
+      let last = 0, m;
+      while ((m = re.exec(text)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        const span = document.createElement('span');
+        span.className = 'maskify-hl maskify-before';
+        span.style.cssText = 'background:#fff3cd;border-radius:3px;padding:0 2px;outline:1px solid #f0b429;';
+        span.textContent = m[0];
+        frag.appendChild(span);
+        last = m.index + m[0].length;
+      }
+      if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+      parent.replaceChild(frag, node);
+    }
+
+    function scanAndHighlight() {
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      const nodes = [];
+      let n;
+      while ((n = walker.nextNode())) {
+        if (n.parentElement && !n.parentElement.closest('.maskify-hl') && EMAIL_RE.test(n.textContent)) {
+          nodes.push(n);
+          EMAIL_RE.lastIndex = 0;
+        }
+      }
+      nodes.forEach(wrapNode);
+    }
+
+    function transitionToAfter() {
+      document.querySelectorAll('.maskify-hl.maskify-before').forEach(span => {
+        span.classList.replace('maskify-before', 'maskify-after');
+        span.style.cssText = 'background:#d4edda;border-radius:3px;padding:0 2px;outline:1px solid #28a745;';
+      });
+      setBadge('after');
+    }
+
+    let maskifyHasRun = false;
+
+    const toastObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node.id === 'maskify-toast') {
+            maskifyHasRun = true;
+            if (badge.style.display !== 'none') {
+              toastObserver.disconnect();
+              transitionToAfter();
+            }
+            return;
+          }
+        }
+      }
+    });
+    toastObserver.observe(document.body, { childList: true });
+
+    document.addEventListener('keydown', function handler(e) {
+      if (e.key !== 'b' && e.key !== 'B') return;
+      const tag = document.activeElement && document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      document.removeEventListener('keydown', handler);
+
+      if (maskifyHasRun) {
+        setBadge('after');
+        toastObserver.disconnect();
+      } else {
+        setBadge('before');
+        scanAndHighlight();
+      }
+    });
+  })();
+  </script>
 </body>
 </html>
