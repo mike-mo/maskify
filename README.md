@@ -2,6 +2,8 @@
 
 A Chrome and Edge extension that protects user privacy by replacing real email addresses on web pages with randomly generated replacements.
 
+If Maskify has been useful to you, [buy me a coffee ☕](https://donate.stripe.com/3cIeVd8iSbCo2VGeKxenS01) — it helps keep the project going.
+
 ## What It Does
 
 When you click the Maskify button, the extension scans the current page and replaces every email address it finds with a realistic-looking replacement like `alice7***@example.com`. The same real address always maps to the same masked address within a session, so the page stays consistent and readable. A brief confirmation toast appears in the top-right corner showing how many addresses were masked.
