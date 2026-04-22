@@ -4,7 +4,15 @@ const MASKIFY_NAMES_BY_LOCALE = {
   en: MASKIFY_NAMES_EN,
   es: MASKIFY_NAMES_ES,
 };
-const _lang = (navigator.language || 'en').split('-')[0].toLowerCase();
+const _uiLanguage = (
+  (typeof chrome !== 'undefined' &&
+    chrome.i18n &&
+    typeof chrome.i18n.getUILanguage === 'function' &&
+    chrome.i18n.getUILanguage()) ||
+  navigator.language ||
+  'en'
+);
+const _lang = _uiLanguage.split('-')[0].toLowerCase();
 const MASKIFY_NAMES = MASKIFY_NAMES_BY_LOCALE[_lang] || MASKIFY_NAMES_EN;
 
 const replacements = new Set();
