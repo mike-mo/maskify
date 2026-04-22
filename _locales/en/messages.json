@@ -1,0 +1,17 @@
+{
+  "appName":              { "message": "Maskify" },
+  "appDescription":       { "message": "An extension that helps you protect user privacy by replacing email addresses with fake ones." },
+  "popupTitle":           { "message": "Maskify" },
+  "popupDescription":     { "message": "Replace all email addresses on this page with masked addresses." },
+  "labelDomain":          { "message": "Domain" },
+  "labelAddNumber":       { "message": "Add number (e.g. alice<strong>7</strong>)" },
+  "labelAddLastInitial":  { "message": "Add last initial (e.g. alice<strong>_r</strong>)" },
+  "labelShowAsterisk":    { "message": "Mark replacements with ***" },
+  "labelPreview":         { "message": "Preview" },
+  "buttonMask":           { "message": "Mask Emails" },
+  "toastTitle":           { "message": "Maskify" },
+  "toastNoEmails":        { "message": "No emails found" },
+  "toastSingular":        { "message": "$1 email masked" },
+  "toastPlural":          { "message": "$1 emails masked" },
+  "donateLink":           { "message": "Buy me a coffee ☕" }
+}
