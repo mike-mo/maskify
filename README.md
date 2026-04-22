@@ -46,6 +46,8 @@ Open `testpage.html` in the browser after loading the extension. It covers plain
 
 ## Store Description
 
+Full store assets (listings in English and Spanish, search terms, certification notes) are in [store-assets.md](store-assets.md).
+
 **Maskify: Instantly Hide Email Addresses on Any Web Page**
 
 Presenting a live demo? Sharing your screen on a call? Browsing a dashboard full of customer data? Maskify keeps real email addresses out of sight with a single click.
