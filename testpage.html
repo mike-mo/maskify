@@ -73,9 +73,9 @@
   <h2 data-i18n="h2_5">5. Non-Email @ Symbols (Should Not Change)</h2>
 
   <div class="scenario">
-    <div class="label" data-i18n="label5">Social media handles and code snippets</div>
-    <p data-i18n-html="scenario5Text">Follow us <strong>@maskify</strong> on Twitter. In bash: <code>echo $USER@$(hostname)</code></p>
-    <div class="expected" data-i18n="expected5">Expected: neither @maskify nor the shell snippet is treated as an email address</div>
+    <div class="label" data-i18n="label5">@ mentions and code snippets</div>
+    <p data-i18n-html="scenario5Text">Mention the <strong>@support</strong> account in the team chat to trigger a notification. In bash: <code>echo $USER@$(hostname)</code></p>
+    <div class="expected" data-i18n="expected5">Expected: neither @support nor the shell snippet is treated as an email address</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
@@ -143,9 +143,9 @@ Thanks</textarea></p>
         label4:        'Plus-addressing, subdomain sender, dots in local part',
         expected4:     'Expected: all three replaced normally',
         h2_5:          '5. Non-Email @ Symbols (Should Not Change)',
-        label5:        'Social media handles and code snippets',
-        scenario5Text: 'Follow us <strong>@maskify</strong> on Twitter. In bash: <code>echo $USER@$(hostname)</code>',
-        expected5:     'Expected: neither @maskify nor the shell snippet is treated as an email address',
+        label5:        '@ mentions and code snippets',
+        scenario5Text: 'Mention the <strong>@support</strong> account in the team chat to trigger a notification. In bash: <code>echo $USER@$(hostname)</code>',
+        expected5:     'Expected: neither @support nor the shell snippet is treated as an email address',
         h2_6:          '6. Email in an Input Field',
         label6:        'Input with email as placeholder and value',
         expected6:     'Expected: both the value= and placeholder= attributes are replaced',
@@ -184,9 +184,9 @@ Thanks</textarea></p>
         label4:        'Direcciones con +, subdominios y puntos en la parte local',
         expected4:     'Esperado: los tres se reemplazan normalmente',
         h2_5:          '5. Símbolos @ que no son correos (no deben cambiar)',
-        label5:        'Nombres de usuario en redes sociales y fragmentos de código',
-        scenario5Text: 'Síguenos como <strong>@maskify</strong> en Twitter. En bash: <code>echo $USER@$(hostname)</code>',
-        expected5:     'Esperado: ni @maskify ni el fragmento de shell se tratan como una dirección de correo',
+        label5:        'Menciones @ y fragmentos de código',
+        scenario5Text: 'Menciona la cuenta <strong>@support</strong> en el chat del equipo para activar una notificación. En bash: <code>echo $USER@$(hostname)</code>',
+        expected5:     'Esperado: ni @support ni el fragmento de shell se tratan como una dirección de correo',
         h2_6:          '6. Correo en un campo de texto',
         label6:        'Campo con correo como marcador y valor',
         expected6:     'Esperado: tanto el atributo value= como placeholder= son reemplazados',
