@@ -48,7 +48,7 @@ Open `testpage.html` in the browser after loading the extension. It covers plain
 
 **Maskify: Instantly Hide Email Addresses on Any Web Page**
 
-Presenting a live demo? Sharing your screen? Browsing a dashboard full of customer data? Maskify keeps real email addresses out of sight with a single click.
+Presenting a live demo? Sharing your screen on a call? Browsing a dashboard full of customer data? Maskify keeps real email addresses out of sight with a single click.
 
 Maskify scans the current page for email addresses and replaces every one with a realistic-looking masked address. The same real address always maps to the same masked address within a session, so the page stays consistent and readable without exposing anyone's personal information.
 
@@ -59,6 +59,7 @@ Maskify scans the current page for email addresses and replaces every one with a
 - 🌍 Custom domain: use any domain you like for replacements, or stick with the `example.com` default
 - ⚙️ Configurable format: control whether replacements include a number, a last initial, and a `***` marker
 - 🛡️ Completely local: runs entirely in your browser with no data collected, stored, or transmitted
+- 🗣️ Multilingual: interface available in English and Spanish, automatically matched to your browser language
 
 **Perfect for** live demos, screen sharing, video recordings, screenshots for documentation, and any time you need to quickly obscure real email addresses.
 
