@@ -13,5 +13,6 @@
   "toastNoEmails":        { "message": "No se encontraron correos" },
   "toastSingular":        { "message": "$1 correo enmascarado" },
   "toastPlural":          { "message": "$1 correos enmascarados" },
-  "donateLink":           { "message": "Cómprame un café ☕" }
+  "donateLink":           { "message": "Cómprame un café ☕" },
+  "previewName":          { "message": "alicia" }
 }

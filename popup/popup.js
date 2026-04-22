@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     domainInput.classList.toggle('invalid', invalid);
     const domain = raw && !invalid ? raw.toLowerCase() : 'example.com';
     const marker = showAsteriskInput.checked ? '***' : '';
-    let localPart = 'alice';
+    let localPart = chrome.i18n.getMessage('previewName');
     if (addLastInitialInput.checked) localPart += '_r';
     if (addNumberInput.checked) localPart += '7';
     previewAddress.textContent = `${localPart}${marker}@${domain}`;
