@@ -20,9 +20,9 @@ jobs:
           fi
           echo "Version check passed: $MANIFEST_VERSION"
 
-      - name: Build extension zip
+      - name: Build maskify.zip
         run: |
-          zip -r extension.zip \
+          zip -r maskify.zip \
             manifest.json \
             _locales/ \
             popup/ \
@@ -32,6 +32,11 @@ jobs:
             icons/maskify32x32.png \
             icons/maskify48x48.png \
             icons/maskify128x128.png
+
+      - name: Attach maskify.zip to release
+        run: gh release upload ${{ github.ref_name }} maskify.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Check BPP_KEYS secret
         id: check_secret
@@ -49,5 +54,5 @@ jobs:
         if: steps.check_secret.outputs.available == 'true'
         uses: PlasmoHQ/bpp@v3
         with:
-          artifact: extension.zip
+          artifact: maskify.zip
           keys: ${{ secrets.BPP_KEYS }}
