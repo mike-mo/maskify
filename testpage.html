@@ -15,110 +15,214 @@
 </head>
 <body>
 
-  <h1>Maskify Test Page</h1>
-  <p>Click the Maskify button in the extension popup, then verify each scenario below matches its expected result.</p>
+  <h1 data-i18n="h1">Maskify Test Page</h1>
+  <p data-i18n="intro">Click the Maskify button in the extension popup, then verify each scenario below matches its expected result.</p>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>1. Plain Text (no link)</h2>
+  <h2 data-i18n="h2_1">1. Plain Text (no link)</h2>
 
   <div class="scenario">
-    <div class="label">Single email in a sentence</div>
-    <p>For questions, contact support@acme.com directly.</p>
-    <div class="expected">Expected: email replaced with a masked address like <code>alice23***@example.com</code></div>
+    <div class="label" data-i18n="label1">Single email in a sentence</div>
+    <p data-i18n="scenario1Text">For questions, contact support@acme.com directly.</p>
+    <div class="expected" data-i18n-html="expected1">Expected: email replaced with a masked address like <code>alice23***@example.com</code></div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>2. Tabular Data and Consistent Mapping</h2>
+  <h2 data-i18n="h2_2">2. Tabular Data and Consistent Mapping</h2>
 
   <div class="scenario">
-    <div class="label">Emails inside a table — including a person listed twice</div>
+    <div class="label" data-i18n="label2">Emails inside a table — including a person listed twice</div>
     <table>
-      <thead><tr><th>Department</th><th>Name</th><th>Email</th></tr></thead>
+      <thead><tr><th data-i18n="thDepartment">Department</th><th data-i18n="thName">Name</th><th data-i18n="thEmail">Email</th></tr></thead>
       <tbody>
         <tr><td>HR</td><td>Carol</td><td>carol@acme.com</td></tr>
         <tr><td>Engineering</td><td>Dave</td><td>dave.smith@acme.com</td></tr>
         <tr><td>IT Liaison</td><td>Carol</td><td>carol@acme.com</td></tr>
       </tbody>
     </table>
-    <div class="expected">Expected: both Carol rows show the same masked address; Dave gets a different one</div>
+    <div class="expected" data-i18n="expected2">Expected: both Carol rows show the same masked address; Dave gets a different one</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>3. Mailto Links</h2>
+  <h2 data-i18n="h2_3">3. Mailto Links</h2>
 
   <div class="scenario">
-    <div class="label">Standard mailto href — display text matches href</div>
+    <div class="label" data-i18n="label3a">Standard mailto href — display text matches href</div>
     <p><a href="mailto:info@example.org">info@example.org</a></p>
-    <div class="expected">Expected: both the visible text and the href= value are replaced with the same masked address</div>
+    <div class="expected" data-i18n="expected3a">Expected: both the visible text and the href= value are replaced with the same masked address</div>
   </div>
 
   <div class="scenario">
-    <div class="label">Mailto href with a different display label</div>
-    <p><a href="mailto:billing@acme.com">Contact Billing</a></p>
-    <div class="expected">Expected: href= value is replaced; visible text "Contact Billing" is unchanged</div>
+    <div class="label" data-i18n="label3b">Mailto href with a different display label</div>
+    <p><a href="mailto:billing@acme.com" data-i18n="contactBilling">Contact Billing</a></p>
+    <div class="expected" data-i18n="expected3b">Expected: href= value is replaced; visible text "Contact Billing" is unchanged</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>4. Email Format Variations</h2>
+  <h2 data-i18n="h2_4">4. Email Format Variations</h2>
 
   <div class="scenario">
-    <div class="label">Plus-addressing, subdomain sender, dots in local part</div>
+    <div class="label" data-i18n="label4">Plus-addressing, subdomain sender, dots in local part</div>
     <p>user.name+filter@newsletter.io</p>
     <p>alerts@mail.notifications.bigcorp.com</p>
     <p>first.last.middle@domain.co.uk</p>
-    <div class="expected">Expected: all three replaced normally</div>
+    <div class="expected" data-i18n="expected4">Expected: all three replaced normally</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>5. Non-Email @ Symbols (Should Not Change)</h2>
+  <h2 data-i18n="h2_5">5. Non-Email @ Symbols (Should Not Change)</h2>
 
   <div class="scenario">
-    <div class="label">Social media handles and code snippets</div>
-    <p>Follow us <strong>@maskify</strong> on Twitter. In bash: <code>echo $USER@$(hostname)</code></p>
-    <div class="expected">Expected: neither @maskify nor the shell snippet is treated as an email address</div>
+    <div class="label" data-i18n="label5">Social media handles and code snippets</div>
+    <p data-i18n-html="scenario5Text">Follow us <strong>@maskify</strong> on Twitter. In bash: <code>echo $USER@$(hostname)</code></p>
+    <div class="expected" data-i18n="expected5">Expected: neither @maskify nor the shell snippet is treated as an email address</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>6. Email in an Input Field</h2>
+  <h2 data-i18n="h2_6">6. Email in an Input Field</h2>
 
   <div class="scenario">
-    <div class="label">Input with email as placeholder and value</div>
+    <div class="label" data-i18n="label6">Input with email as placeholder and value</div>
     <p><input type="text" value="prefilled@domain.com" placeholder="your@email.com" style="width:250px;padding:4px;"></p>
-    <div class="expected">Expected: both the value= and placeholder= attributes are replaced</div>
+    <div class="expected" data-i18n="expected6">Expected: both the value= and placeholder= attributes are replaced</div>
   </div>
 
-
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>7. Email in a Textarea</h2>
+  <h2 data-i18n="h2_7">7. Email in a Textarea</h2>
 
   <div class="scenario">
-    <div class="label">Textarea with prefilled email content</div>
-    <p><textarea style="width:100%;height:80px;padding:4px;font-family:sans-serif;">Hi team,
+    <div class="label" data-i18n="label7">Textarea with prefilled email content</div>
+    <p><textarea data-i18n="textareaContent" style="width:100%;height:80px;padding:4px;font-family:sans-serif;">Hi team,
 
 Please CC billing@acme.com and forward all receipts to receipts@finance.acme.com.
 
 Thanks</textarea></p>
-    <div class="expected">Expected: both email addresses in the textarea body are replaced</div>
+    <div class="expected" data-i18n="expected7">Expected: both email addresses in the textarea body are replaced</div>
   </div>
 
-
   <!-- ═══════════════════════════════════════════════ -->
-  <h2>8. Email in a Select Dropdown</h2>
+  <h2 data-i18n="h2_8">8. Email in a Select Dropdown</h2>
 
   <div class="scenario">
-    <div class="label">Select with email addresses as option values and labels</div>
+    <div class="label" data-i18n="label8">Select with email addresses as option values and labels</div>
     <p>
       <select id="emailSelect" style="width:250px;padding:4px;" oninput="document.getElementById('selectValue').textContent = this.value">
         <option value="alice@team.com">alice@team.com</option>
         <option value="bob@team.com">bob@team.com</option>
         <option value="carol@team.com">carol@team.com</option>
       </select>
-      <span style="margin-left:12px;color:#555;font-size:0.9rem;">value: <code id="selectValue">alice@team.com</code></span>
+      <span style="margin-left:12px;color:#555;font-size:0.9rem;"><span data-i18n="valueLabel">value:</span> <code id="selectValue">alice@team.com</code></span>
     </p>
-    <div class="expected">Expected: visible option labels are replaced with masked addresses; the value= attribute is not replaced — confirm by selecting an option and checking the value shown to the right of the dropdown</div>
+    <div class="expected" data-i18n="expected8">Expected: visible option labels are replaced with masked addresses; the value= attribute is not replaced — confirm by selecting an option and checking the value shown to the right of the dropdown</div>
   </div>
 
+  <script>
+  const TESTPAGE_T = (function () {
+    const T = {
+      en: {
+        pageTitle:     'Maskify Test Page',
+        h1:            'Maskify Test Page',
+        intro:         'Click the Maskify button in the extension popup, then verify each scenario below matches its expected result.',
+        h2_1:          '1. Plain Text (no link)',
+        label1:        'Single email in a sentence',
+        scenario1Text: 'For questions, contact support@acme.com directly.',
+        expected1:     'Expected: email replaced with a masked address like <code>alice23***@example.com</code>',
+        h2_2:          '2. Tabular Data and Consistent Mapping',
+        label2:        'Emails inside a table — including a person listed twice',
+        thDepartment:  'Department',
+        thName:        'Name',
+        thEmail:       'Email',
+        expected2:     'Expected: both Carol rows show the same masked address; Dave gets a different one',
+        h2_3:          '3. Mailto Links',
+        label3a:       'Standard mailto href — display text matches href',
+        expected3a:    'Expected: both the visible text and the href= value are replaced with the same masked address',
+        label3b:       'Mailto href with a different display label',
+        contactBilling:'Contact Billing',
+        expected3b:    'Expected: href= value is replaced; visible text "Contact Billing" is unchanged',
+        h2_4:          '4. Email Format Variations',
+        label4:        'Plus-addressing, subdomain sender, dots in local part',
+        expected4:     'Expected: all three replaced normally',
+        h2_5:          '5. Non-Email @ Symbols (Should Not Change)',
+        label5:        'Social media handles and code snippets',
+        scenario5Text: 'Follow us <strong>@maskify</strong> on Twitter. In bash: <code>echo $USER@$(hostname)</code>',
+        expected5:     'Expected: neither @maskify nor the shell snippet is treated as an email address',
+        h2_6:          '6. Email in an Input Field',
+        label6:        'Input with email as placeholder and value',
+        expected6:     'Expected: both the value= and placeholder= attributes are replaced',
+        h2_7:          '7. Email in a Textarea',
+        label7:        'Textarea with prefilled email content',
+        textareaContent: 'Hi team,\n\nPlease CC billing@acme.com and forward all receipts to receipts@finance.acme.com.\n\nThanks',
+        expected7:     'Expected: both email addresses in the textarea body are replaced',
+        h2_8:          '8. Email in a Select Dropdown',
+        label8:        'Select with email addresses as option values and labels',
+        valueLabel:    'value:',
+        expected8:     'Expected: visible option labels are replaced with masked addresses; the value= attribute is not replaced — confirm by selecting an option and checking the value shown to the right of the dropdown',
+        badgeBefore:   'Before',
+        badgeAfter:    'After ✓',
+      },
+      es: {
+        pageTitle:     'Página de prueba de Maskify',
+        h1:            'Página de prueba de Maskify',
+        intro:         'Haz clic en el botón de Maskify en el popup de la extensión y comprueba que cada escenario coincide con el resultado esperado.',
+        h2_1:          '1. Texto sin formato (sin enlace)',
+        label1:        'Un correo en una oración',
+        scenario1Text: 'Para consultas, contacta a support@acme.com directamente.',
+        expected1:     'Esperado: correo reemplazado con una dirección enmascarada como <code>alicia23***@example.com</code>',
+        h2_2:          '2. Datos tabulares y mapeo consistente',
+        label2:        'Correos en una tabla, incluyendo una persona listada dos veces',
+        thDepartment:  'Departamento',
+        thName:        'Nombre',
+        thEmail:       'Correo',
+        expected2:     'Esperado: ambas filas de Carol muestran la misma dirección enmascarada; Dave recibe una diferente',
+        h2_3:          '3. Enlaces mailto',
+        label3a:       'Enlace mailto estándar: el texto visible coincide con el href',
+        expected3a:    'Esperado: tanto el texto visible como el valor href= son reemplazados con la misma dirección enmascarada',
+        label3b:       'Enlace mailto con etiqueta visible diferente',
+        contactBilling:'Contactar Facturación',
+        expected3b:    'Esperado: el valor href= es reemplazado; el texto visible "Contactar Facturación" no cambia',
+        h2_4:          '4. Variaciones de formato de correo',
+        label4:        'Direcciones con +, subdominios y puntos en la parte local',
+        expected4:     'Esperado: los tres se reemplazan normalmente',
+        h2_5:          '5. Símbolos @ que no son correos (no deben cambiar)',
+        label5:        'Nombres de usuario en redes sociales y fragmentos de código',
+        scenario5Text: 'Síguenos como <strong>@maskify</strong> en Twitter. En bash: <code>echo $USER@$(hostname)</code>',
+        expected5:     'Esperado: ni @maskify ni el fragmento de shell se tratan como una dirección de correo',
+        h2_6:          '6. Correo en un campo de texto',
+        label6:        'Campo con correo como marcador y valor',
+        expected6:     'Esperado: tanto el atributo value= como placeholder= son reemplazados',
+        h2_7:          '7. Correo en un área de texto',
+        label7:        'Área de texto con correos predefinidos',
+        textareaContent: 'Hola equipo,\n\nPor favor copia billing@acme.com y reenvía todos los recibos a receipts@finance.acme.com.\n\nGracias',
+        expected7:     'Esperado: ambas direcciones de correo en el cuerpo del área de texto son reemplazadas',
+        h2_8:          '8. Correo en un menú desplegable',
+        label8:        'Menú desplegable con correos como valores y etiquetas',
+        valueLabel:    'valor:',
+        expected8:     'Esperado: las etiquetas visibles de las opciones son reemplazadas con direcciones enmascaradas; el atributo value= no se reemplaza — confirma seleccionando una opción y verificando el valor mostrado a la derecha del menú',
+        badgeBefore:   'Antes',
+        badgeAfter:    'Después ✓',
+      },
+    };
 
+    const paramLang = new URLSearchParams(window.location.search).get('lang');
+    const lang = (paramLang || navigator.language || 'en').split('-')[0].toLowerCase();
+    const t = T[lang] || T.en;
+
+    document.documentElement.lang = lang;
+    document.title = t.pageTitle;
+
+    document.querySelectorAll('[data-i18n]:not(textarea)').forEach(el => {
+      el.textContent = t[el.dataset.i18n] || el.textContent;
+    });
+    document.querySelectorAll('textarea[data-i18n]').forEach(el => {
+      el.value = t[el.dataset.i18n] || el.value;
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+      el.innerHTML = t[el.dataset.i18nHtml] || el.innerHTML;
+    });
+
+    return t;
+  })();
+  </script>
 
   <script>
   (function () {
@@ -141,10 +245,10 @@ Thanks</textarea></p>
       badge.style.display = '';
       if (state === 'before') {
         Object.assign(badge.style, { background: '#fff3cd', color: '#7a5c00', border: '3px solid #f0b429' });
-        badge.textContent = 'Before';
+        badge.textContent = TESTPAGE_T.badgeBefore;
       } else {
         Object.assign(badge.style, { background: '#d4edda', color: '#1a6e36', border: '3px solid #28a745' });
-        badge.textContent = 'After ✓';
+        badge.textContent = TESTPAGE_T.badgeAfter;
       }
     }
 
@@ -192,13 +296,22 @@ Thanks</textarea></p>
     }
 
     let maskifyHasRun = false;
+    let overlayActive = false;
+
+    function clearOverlay() {
+      badge.style.display = 'none';
+      document.querySelectorAll('.maskify-hl').forEach(span => {
+        span.replaceWith(document.createTextNode(span.textContent));
+      });
+      overlayActive = false;
+    }
 
     const toastObserver = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (const node of mutation.addedNodes) {
           if (node.id === 'maskify-toast') {
             maskifyHasRun = true;
-            if (badge.style.display !== 'none') {
+            if (overlayActive) {
               toastObserver.disconnect();
               transitionToAfter();
             }
@@ -209,18 +322,22 @@ Thanks</textarea></p>
     });
     toastObserver.observe(document.body, { childList: true });
 
-    document.addEventListener('keydown', function handler(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key !== 'b' && e.key !== 'B') return;
       const tag = document.activeElement && document.activeElement.tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      document.removeEventListener('keydown', handler);
 
-      if (maskifyHasRun) {
-        setBadge('after');
-        toastObserver.disconnect();
+      if (overlayActive) {
+        clearOverlay();
       } else {
-        setBadge('before');
-        scanAndHighlight();
+        overlayActive = true;
+        if (maskifyHasRun) {
+          setBadge('after');
+          toastObserver.disconnect();
+        } else {
+          setBadge('before');
+          scanAndHighlight();
+        }
       }
     });
   })();
