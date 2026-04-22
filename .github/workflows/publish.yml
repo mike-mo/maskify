@@ -24,6 +24,7 @@ jobs:
         run: |
           zip -r extension.zip \
             manifest.json \
+            _locales/ \
             popup/ \
             content-scripts/ \
             data/ \
