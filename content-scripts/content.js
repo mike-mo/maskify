@@ -69,6 +69,11 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       if (input.value) input.value = replace(input.value);
       if (input.placeholder) input.placeholder = replace(input.placeholder);
     });
+
+    document.querySelectorAll('textarea').forEach(textarea => {
+      if (textarea.value) textarea.value = replace(textarea.value);
+      if (textarea.placeholder) textarea.placeholder = replace(textarea.placeholder);
+    });
   }
 
   function showToast(count) {
