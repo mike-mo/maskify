@@ -101,6 +101,17 @@
     button:hover  { background: #106ebe; }
     button:active { background: #005a9e; }
 
+    .donate-link {
+      display: block;
+      margin-top: 10px;
+      text-align: center;
+      font-size: 11px;
+      color: #595959;
+      text-decoration: none;
+    }
+
+    .donate-link:hover { color: #333; }
+
     .preview {
       display: flex;
       align-items: center;
@@ -130,37 +141,38 @@
 <body>
   <div class="header">
     <img src="../icons/maskify32x32.png" alt="" />
-    <h1>Maskify</h1>
+    <h1 id="popupTitle">Maskify</h1>
   </div>
   <div class="body">
-    <p class="description">Replace all email addresses on this page with masked addresses.</p>
+    <p id="popupDescription" class="description">Replace all email addresses on this page with masked addresses.</p>
     <div class="field">
-      <label class="field-label" for="domainInput">Domain</label>
+      <label id="labelDomain" class="field-label" for="domainInput">Domain</label>
       <input type="text" id="domainInput" class="domain-input" placeholder="example.com" />
     </div>
     <div class="field">
       <label class="checkbox-label">
         <input type="checkbox" id="addNumber" />
-        <span>Add number (e.g. alice<strong>7</strong>)</span>
+        <span id="labelAddNumber">Add number (e.g. alice<strong>7</strong>)</span>
       </label>
     </div>
     <div class="field">
       <label class="checkbox-label">
         <input type="checkbox" id="addLastInitial" />
-        <span>Add last initial (e.g. alice<strong>_r</strong>)</span>
+        <span id="labelAddLastInitial">Add last initial (e.g. alice<strong>_r</strong>)</span>
       </label>
     </div>
     <div class="field">
       <label class="checkbox-label">
         <input type="checkbox" id="showAsterisk" />
-        <span>Mark replacements with ***</span>
+        <span id="labelShowAsterisk">Mark replacements with ***</span>
       </label>
     </div>
     <div class="preview">
-      <span class="preview-label">Preview</span>
+      <span id="labelPreview" class="preview-label">Preview</span>
       <code id="previewAddress"></code>
     </div>
     <button id="sendmessageid">Mask Emails</button>
+    <a id="donateLink" class="donate-link" href="https://donate.stripe.com/3cIeVd8iSbCo2VGeKxenS01" target="_blank" rel="noopener noreferrer">Buy me a coffee ☕</a>
   </div>
   <script src="../data/domain-utils.js"></script>
   <script src="popup.js"></script>

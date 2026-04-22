@@ -4,7 +4,15 @@ const MASKIFY_NAMES_BY_LOCALE = {
   en: MASKIFY_NAMES_EN,
   es: MASKIFY_NAMES_ES,
 };
-const _lang = (navigator.language || 'en').split('-')[0].toLowerCase();
+const _uiLanguage = (
+  (typeof chrome !== 'undefined' &&
+    chrome.i18n &&
+    typeof chrome.i18n.getUILanguage === 'function' &&
+    chrome.i18n.getUILanguage()) ||
+  navigator.language ||
+  'en'
+);
+const _lang = _uiLanguage.split('-')[0].toLowerCase();
 const MASKIFY_NAMES = MASKIFY_NAMES_BY_LOCALE[_lang] || MASKIFY_NAMES_EN;
 
 const replacements = new Set();
@@ -77,7 +85,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     const textBlock = document.createElement('div');
 
     const title = document.createElement('div');
-    title.textContent = 'Maskify';
+    title.textContent = chrome.i18n.getMessage('toastTitle');
     Object.assign(title.style, {
       fontSize: '10px',
       fontWeight: '600',
@@ -89,9 +97,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     });
 
     const label = document.createElement('div');
-    label.textContent = count === 0
-      ? 'No emails found'
-      : `${count} email${count === 1 ? '' : 's'} masked`;
+    if (count === 0) {
+      label.textContent = chrome.i18n.getMessage('toastNoEmails');
+    } else {
+      label.textContent = chrome.i18n.getMessage(
+        count === 1 ? 'toastSingular' : 'toastPlural',
+        [String(count)]
+      );
+    }
 
     textBlock.appendChild(title);
     textBlock.appendChild(label);

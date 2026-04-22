@@ -1,0 +1,18 @@
+{
+  "appName":              { "message": "Maskify" },
+  "appDescription":       { "message": "Una extensión que te ayuda a proteger la privacidad del usuario reemplazando direcciones de correo electrónico con direcciones falsas." },
+  "popupTitle":           { "message": "Maskify" },
+  "popupDescription":     { "message": "Reemplaza todas las direcciones de correo electrónico en esta página con direcciones enmascaradas." },
+  "labelDomain":          { "message": "Dominio" },
+  "labelAddNumber":       { "message": "Agregar número (ej. alicia<strong>7</strong>)" },
+  "labelAddLastInitial":  { "message": "Agregar inicial del apellido (ej. alicia<strong>_r</strong>)" },
+  "labelShowAsterisk":    { "message": "Marcar reemplazos con ***" },
+  "labelPreview":         { "message": "Vista previa" },
+  "buttonMask":           { "message": "Enmascarar correos" },
+  "toastTitle":           { "message": "Maskify" },
+  "toastNoEmails":        { "message": "No se encontraron correos" },
+  "toastSingular":        { "message": "$1 correo enmascarado" },
+  "toastPlural":          { "message": "$1 correos enmascarados" },
+  "donateLink":           { "message": "Cómprame un café ☕" },
+  "previewName":          { "message": "alicia" }
+}

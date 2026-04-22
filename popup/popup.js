@@ -1,4 +1,14 @@
 document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('popupTitle').textContent        = chrome.i18n.getMessage('popupTitle');
+  document.getElementById('popupDescription').textContent  = chrome.i18n.getMessage('popupDescription');
+  document.getElementById('labelDomain').textContent       = chrome.i18n.getMessage('labelDomain');
+  document.getElementById('labelAddNumber').innerHTML      = chrome.i18n.getMessage('labelAddNumber');
+  document.getElementById('labelAddLastInitial').innerHTML = chrome.i18n.getMessage('labelAddLastInitial');
+  document.getElementById('labelShowAsterisk').textContent = chrome.i18n.getMessage('labelShowAsterisk');
+  document.getElementById('labelPreview').textContent      = chrome.i18n.getMessage('labelPreview');
+  document.getElementById('sendmessageid').textContent     = chrome.i18n.getMessage('buttonMask');
+  document.getElementById('donateLink').textContent        = chrome.i18n.getMessage('donateLink');
+
   const domainInput = document.getElementById('domainInput');
   const addNumberInput = document.getElementById('addNumber');
   const addLastInitialInput = document.getElementById('addLastInitial');
@@ -11,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     domainInput.classList.toggle('invalid', invalid);
     const domain = raw && !invalid ? raw.toLowerCase() : 'example.com';
     const marker = showAsteriskInput.checked ? '***' : '';
-    let localPart = 'alice';
+    let localPart = chrome.i18n.getMessage('previewName');
     if (addLastInitialInput.checked) localPart += '_r';
     if (addNumberInput.checked) localPart += '7';
     previewAddress.textContent = `${localPart}${marker}@${domain}`;
