@@ -32,8 +32,11 @@ jobs:
             echo "value=$latest" >> $GITHUB_OUTPUT
           fi
 
-      - name: Checkout release tag
-        run: git fetch --tags --depth=1 && git checkout ${{ steps.tag.outputs.value }}
+      - name: Validate and checkout release tag
+        run: |
+          TAG="${{ steps.tag.outputs.value }}"
+          if [ -z "$TAG" ]; then echo "No release tag found. Create a release first or pass a tag via inputs.tag." && exit 1; fi
+          git fetch --tags --depth=1 && git checkout "$TAG"
 
       - uses: actions/setup-node@v4
         with:
@@ -49,6 +52,8 @@ jobs:
 
       - name: Generate screenshots
         working-directory: scripts
+        env:
+          TESTPAGE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/testpage.html
         run: xvfb-run --auto-servernum node screenshot.js
 
       - name: Package and upload
@@ -56,7 +61,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ steps.tag.outputs.value }}"
-          if [ -z "$TAG" ]; then echo "No release tag found. Create a release first or pass a tag via inputs.tag." && exit 1; fi
           REPO="${{ github.repository }}"
           BASE_URL="https://github.com/${REPO}/releases/download/${TAG}"
 

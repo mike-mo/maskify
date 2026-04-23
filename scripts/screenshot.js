@@ -60,7 +60,7 @@ async function capturePopup(context, extensionId) {
   await page.setViewportSize({ width: 400, height: 2000 });
   await page.goto(`chrome-extension://${extensionId}/popup/popup.html`);
   await page.waitForLoadState('domcontentloaded');
-  await page.waitForTimeout(400);
+  await page.waitForSelector('#sendmessageid');
   await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
   const box = await page.locator('body').boundingBox();
   if (!box || !box.width) throw new Error('Could not measure popup dimensions — did the popup load?');
@@ -88,7 +88,7 @@ async function capturePopup(context, extensionId) {
   return scaled;
 }
 
-const TESTPAGE_URL = 'https://mike-mo.github.io/maskify/testpage.html';
+const TESTPAGE_URL = process.env.TESTPAGE_URL || 'https://mike-mo.github.io/maskify/testpage.html';
 
 async function captureTestpageBefore(context, lang) {
   const page = await context.newPage();
