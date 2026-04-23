@@ -9,7 +9,6 @@
  */
 
 const { chromium } = require('playwright');
-const { pathToFileURL } = require('url');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -19,12 +18,6 @@ const OUT = path.resolve(ROOT, 'screenshots');
 const LANGS = fs.readdirSync(path.join(ROOT, '_locales')).filter(f =>
   fs.statSync(path.join(ROOT, '_locales', f)).isDirectory()
 ).sort();
-
-const NAMES = {
-  en: ['alice', 'bob', 'carol', 'dave', 'emma', 'frank', 'grace', 'henry'],
-  es: ['alicia', 'carlos', 'maria', 'jose', 'elena', 'miguel', 'sofia', 'pablo'],
-};
-const FALLBACK_NAMES = NAMES.en;
 
 function b64(buf) { return buf.toString('base64'); }
 function normalizeChromiumLangTag(locale) {
@@ -95,11 +88,13 @@ async function capturePopup(context, extensionId) {
   return scaled;
 }
 
+const TESTPAGE_URL = 'https://mike-mo.github.io/maskify/testpage.html';
+
 async function captureTestpageBefore(context, lang) {
   const page = await context.newPage();
   await page.setViewportSize({ width: 638, height: 800 });
   const baseLang = lang.split(/[-_]/)[0].toLowerCase();
-  await page.goto(`${pathToFileURL(path.join(ROOT, 'testpage.html')).href}?lang=${baseLang}`);
+  await page.goto(`${TESTPAGE_URL}?lang=${baseLang}`);
   await page.waitForLoadState('domcontentloaded');
   await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
   await page.waitForTimeout(500);
@@ -109,41 +104,17 @@ async function captureTestpageBefore(context, lang) {
   return { page, buf };
 }
 
-async function captureTestpageAfter(page, lang) {
-  await page.evaluate((names) => {
-    const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-    const used = {};
-    let idx = 0;
-    function fake(real) {
-      if (!used[real]) used[real] = `${names[idx++ % names.length]}7***@example.com`;
-      return used[real];
-    }
-    function rep(str) { return str.replace(EMAIL_RE, m => fake(m)); }
-
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    let node;
-    while ((node = walker.nextNode())) {
-      if (EMAIL_RE.test(node.nodeValue)) { EMAIL_RE.lastIndex = 0; node.nodeValue = rep(node.nodeValue); }
-    }
-    document.querySelectorAll('a[href]').forEach(a => {
-      const href = a.getAttribute('href');
-      if (href) a.setAttribute('href', rep(href));
-    });
-    document.querySelectorAll('input').forEach(input => {
-      if (input.value) input.value = rep(input.value);
-      if (input.placeholder) input.placeholder = rep(input.placeholder);
-    });
-    document.querySelectorAll('textarea').forEach(ta => {
-      if (ta.value) ta.value = rep(ta.value);
-    });
-    const toast = document.createElement('div');
-    toast.id = 'maskify-toast';
-    toast.style.display = 'none';
-    document.body.appendChild(toast);
-  }, NAMES[lang.split(/[-_]/)[0].toLowerCase()] || NAMES[lang] || FALLBACK_NAMES);
-  await page.waitForTimeout(400);
-  const buf = await page.screenshot();
-  await page.close();
+async function captureTestpageAfter(context, extensionId, testPage) {
+  const popupPage = await context.newPage();
+  await popupPage.goto(`chrome-extension://${extensionId}/popup/popup.html`);
+  await popupPage.waitForLoadState('domcontentloaded');
+  await testPage.bringToFront();
+  await popupPage.locator('#sendmessageid').click();
+  await testPage.waitForSelector('.maskify-after');
+  await testPage.waitForSelector('#maskify-toast', { state: 'detached' });
+  const buf = await testPage.screenshot();
+  if (!popupPage.isClosed()) await popupPage.close();
+  await testPage.close();
   return buf;
 }
 
@@ -195,7 +166,7 @@ async function run() {
       fs.writeFileSync(path.join(langDir, 'popup.png'), popupBuf);
 
       const { page, buf: beforeBuf } = await captureTestpageBefore(context, lang);
-      const afterBuf = await captureTestpageAfter(page, lang);
+      const afterBuf = await captureTestpageAfter(context, extensionId, page);
       const combined = await compositeBeforeAfter(context, beforeBuf, afterBuf);
       fs.writeFileSync(path.join(langDir, 'testpage.png'), combined);
 
