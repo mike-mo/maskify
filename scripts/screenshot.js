@@ -32,8 +32,9 @@ function normalizeChromiumLangTag(locale) {
   return parts
     .map((part, index) => {
       if (index === 0) return part.toLowerCase();
-      if (part.length === 2 || part.length === 3) return part.toUpperCase();
-      return part;
+      if (/^[A-Za-z]{4}$/.test(part)) return `${part[0].toUpperCase()}${part.slice(1).toLowerCase()}`;
+      if (/^([A-Za-z]{2}|\d{3})$/.test(part)) return part.toUpperCase();
+      return part.toLowerCase();
     })
     .join('-');
 }
