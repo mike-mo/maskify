@@ -18,6 +18,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Resolve release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "value=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ inputs.tag }}" ]; then
+            echo "value=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            latest=$(gh release list --limit 1 --json tagName -q '.[0].tagName')
+            echo "value=$latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout release tag
+        run: git fetch --tags --depth=1 && git checkout ${{ steps.tag.outputs.value }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -33,20 +50,6 @@ jobs:
       - name: Generate screenshots
         working-directory: scripts
         run: xvfb-run --auto-servernum node screenshot.js
-
-      - name: Resolve release tag
-        id: tag
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if [ "${{ github.event_name }}" = "release" ]; then
-            echo "value=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
-          elif [ -n "${{ inputs.tag }}" ]; then
-            echo "value=${{ inputs.tag }}" >> $GITHUB_OUTPUT
-          else
-            latest=$(gh release list --limit 1 --json tagName -q '.[0].tagName')
-            echo "value=$latest" >> $GITHUB_OUTPUT
-          fi
 
       - name: Package and upload
         env:
