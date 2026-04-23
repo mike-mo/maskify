@@ -5,7 +5,7 @@
  *   testpage.png  — before/after side by side, exactly 1280x800
  *
  * Usage:
- *   cd scripts && npm install && npm run screenshot
+ *   cd scripts && npm ci && npm run screenshot
  */
 
 const { chromium } = require('playwright');
