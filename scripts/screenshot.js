@@ -19,7 +19,7 @@ const LANGS = fs.readdirSync(path.join(ROOT, '_locales')).filter(f =>
   fs.statSync(path.join(ROOT, '_locales', f)).isDirectory()
 ).sort();
 
-function b64(buf) { return buf.toString('base64'); }
+function pngDataUri(buf) { return `data:image/png;base64,${buf.toString('base64')}`; }
 function normalizeChromiumLangTag(locale) {
   const parts = locale.split(/[-_]/).filter(Boolean);
   if (!parts.length) return locale;
@@ -80,7 +80,7 @@ async function capturePopup(context, extensionId) {
     html, body { overflow: hidden; width: 600px; background: #fff; }
     img { width: 600px; height: auto; display: block; }
   </style></head><body>
-    <img src="data:image/png;base64,${b64(raw)}">
+    <img src="${pngDataUri(raw)}">
   </body></html>`);
   await compositor.waitForFunction(() => { const img = document.querySelector('img'); return img && img.complete && img.naturalWidth > 0; });
   const scaled = await compositor.screenshot();
@@ -131,9 +131,9 @@ async function compositeBeforeAfter(context, beforeBuf, afterBuf) {
     .sep  { flex: 0 0 ${SEP}px; background: #999; }
     img   { width: ${sideW}px; height: 800px; object-fit: cover; object-position: top left; display: block; }
   </style></head><body>
-    <div class="side"><img src="data:image/png;base64,${b64(beforeBuf)}"></div>
+    <div class="side"><img src="${pngDataUri(beforeBuf)}"></div>
     <div class="sep"></div>
-    <div class="side"><img src="data:image/png;base64,${b64(afterBuf)}"></div>
+    <div class="side"><img src="${pngDataUri(afterBuf)}"></div>
   </body></html>`);
   await page.waitForFunction(() => [...document.querySelectorAll('img')].every(img => img.complete && img.naturalWidth > 0));
   const buf = await page.screenshot({ clip: { x: 0, y: 0, width: 1280, height: 800 } });
@@ -162,10 +162,11 @@ async function run() {
     try {
       const extensionId = await findExtensionId(context);
 
-      const popupBuf = await capturePopup(context, extensionId);
+      const [popupBuf, { page, buf: beforeBuf }] = await Promise.all([
+        capturePopup(context, extensionId),
+        captureTestpageBefore(context, lang),
+      ]);
       fs.writeFileSync(path.join(langDir, 'popup.png'), popupBuf);
-
-      const { page, buf: beforeBuf } = await captureTestpageBefore(context, lang);
       const afterBuf = await captureTestpageAfter(context, extensionId, page);
       const combined = await compositeBeforeAfter(context, beforeBuf, afterBuf);
       fs.writeFileSync(path.join(langDir, 'testpage.png'), combined);
