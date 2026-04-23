@@ -1,6 +1,6 @@
 # Maskify
 
-[![Edge Add-ons](https://img.shields.io/microsoft-edge-addon/v/ahlpkipagblmbjceamojfdomdmcmcpgc?label=Edge+Add-ons&logo=microsoftedge)](https://microsoftedge.microsoft.com/addons/detail/ahlpkipagblmbjceamojfdomdmcmcpgc) [![GitHub release](https://img.shields.io/github/v/release/mike-mo/maskify?logo=github)](https://github.com/mike-mo/maskify/releases) [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mikemo)
+[![Edge Add-ons](https://img.shields.io/microsoft-edge-addon/v/ahlpkipagblmbjceamojfdomdmcmcpgc?label=Edge+Add-ons&logo=microsoftedge)](https://microsoftedge.microsoft.com/addons/detail/ahlpkipagblmbjceamojfdomdmcmcpgc) [![GitHub release](https://img.shields.io/github/v/release/mike-mo/maskify?logo=github)](https://github.com/mike-mo/maskify/releases) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?logo=googlechrome) [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mikemo)
 
 A Chrome and Edge extension that protects user privacy by replacing real email addresses on web pages with randomly generated replacements.
 
