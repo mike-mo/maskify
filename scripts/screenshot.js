@@ -45,24 +45,18 @@ async function findExtensionId(context) {
 
 async function capturePopup(context, extensionId) {
   const page = await context.newPage();
-  const cdp = await context.newCDPSession(page);
-  // 2x DPR: renders popup at double pixel density for a sharper scaled-down result
-  await cdp.send('Emulation.setDeviceMetricsOverride', {
-    width: 400, height: 2000, deviceScaleFactor: 2, mobile: false,
-  });
+  // Tall initial viewport prevents scrollbars from appearing during load/measurement
+  await page.setViewportSize({ width: 400, height: 2000 });
   await page.goto(`chrome-extension://${extensionId}/popup/popup.html`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(400);
   await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
-  const box = await page.locator('body').boundingBox(); // always CSS pixels
+  const box = await page.locator('body').boundingBox();
   const w = Math.round(box.width);
   const h = Math.round(box.height);
-  await cdp.send('Emulation.setDeviceMetricsOverride', {
-    width: w, height: h, deviceScaleFactor: 2, mobile: false,
-  });
+  await page.setViewportSize({ width: w, height: h });
   await page.waitForTimeout(100);
-  // clip in CSS pixels; Playwright scales by DPR → w*2 × h*2 physical pixels
-  const raw = await page.screenshot({ clip: { x: 0, y: 0, width: w, height: h } });
+  const raw = await page.screenshot();
   await page.close();
 
   // Scale up to ~600px wide via HTML compositor, preserving aspect ratio
