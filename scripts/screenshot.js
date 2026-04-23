@@ -26,6 +26,17 @@ const NAMES = {
 const FALLBACK_NAMES = NAMES.en;
 
 function b64(buf) { return buf.toString('base64'); }
+function normalizeChromiumLangTag(locale) {
+  const parts = locale.split(/[-_]/).filter(Boolean);
+  if (!parts.length) return locale;
+  return parts
+    .map((part, index) => {
+      if (index === 0) return part.toLowerCase();
+      if (part.length === 2 || part.length === 3) return part.toUpperCase();
+      return part;
+    })
+    .join('-');
+}
 
 async function findExtensionId(context) {
   const page = await context.newPage();
@@ -159,6 +170,7 @@ async function run() {
     console.log(`Capturing ${lang}...`);
     const langDir = path.join(OUT, lang);
     fs.mkdirSync(langDir, { recursive: true });
+    const chromiumLang = normalizeChromiumLangTag(lang);
 
     const userDataDir = path.join(os.tmpdir(), `maskify-${lang}-${Date.now()}`);
     const context = await chromium.launchPersistentContext(userDataDir, {
@@ -166,7 +178,7 @@ async function run() {
       args: [
         `--disable-extensions-except=${ROOT}`,
         `--load-extension=${ROOT}`,
-        `--lang=${lang}`,
+        `--lang=${chromiumLang}`,
       ],
       viewport: { width: 1280, height: 800 },
     });
