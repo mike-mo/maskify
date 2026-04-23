@@ -6,6 +6,6 @@
     "screenshot": "node screenshot.js"
   },
   "dependencies": {
-    "playwright": "^1.44.0"
+    "playwright": "^1.59.1"
   }
 }

@@ -96,7 +96,8 @@ async function capturePopup(context, extensionId) {
 async function captureTestpageBefore(context, lang) {
   const page = await context.newPage();
   await page.setViewportSize({ width: 638, height: 800 });
-  await page.goto(`${pathToFileURL(path.join(ROOT, 'testpage.html')).href}?lang=${lang}`);
+  const baseLang = lang.split(/[-_]/)[0].toLowerCase();
+  await page.goto(`${pathToFileURL(path.join(ROOT, 'testpage.html')).href}?lang=${baseLang}`);
   await page.waitForLoadState('domcontentloaded');
   await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
   await page.waitForTimeout(500);
