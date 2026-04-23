@@ -54,13 +54,10 @@ document.addEventListener('DOMContentLoaded', function () {
       const addLastInitial = addLastInitialInput.checked;
       const showAsterisk = showAsteriskInput.checked;
 
-      chrome.storage.sync.set({ domain: storedDomain, addNumber, addLastInitial, showAsterisk });
-
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, { domain, addNumber, addLastInitial, showAsterisk }, function () {
-          if (!chrome.runtime.lastError) {
-            chrome.storage.sync.set({ maskCount: maskCount + 1 });
-          }
+          const newCount = !chrome.runtime.lastError ? maskCount + 1 : maskCount;
+          chrome.storage.sync.set({ domain: storedDomain, addNumber, addLastInitial, showAsterisk, maskCount: newCount });
           window.close();
         });
       });
