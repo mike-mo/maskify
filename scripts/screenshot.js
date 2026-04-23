@@ -1,8 +1,8 @@
 /**
- * Generates store screenshots for Maskify in English and Spanish.
- * Outputs per language:
- *   popup-{lang}.png       — popup UI, ~600px wide, aspect ratio preserved
- *   testpage-{lang}.png    — before/after side by side, exactly 1280x800
+ * Generates store screenshots for Maskify for every locale in _locales/.
+ * Outputs per language under screenshots/<lang>/:
+ *   popup.png     — popup UI, ~600px wide, aspect ratio preserved
+ *   testpage.png  — before/after side by side, exactly 1280x800
  *
  * Usage:
  *   cd scripts && npm install && npm run screenshot
@@ -55,6 +55,7 @@ async function capturePopup(context, extensionId) {
   await page.waitForTimeout(400);
   await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
   const box = await page.locator('body').boundingBox();
+  if (!box || !box.width) throw new Error('Could not measure popup dimensions — did the popup load?');
   const w = Math.round(box.width);
   const h = Math.round(box.height);
   await page.setViewportSize({ width: w, height: h });
@@ -184,6 +185,7 @@ async function run() {
       console.log(`  ${lang}/popup.png, ${lang}/testpage.png`);
     } finally {
       await context.close();
+      fs.rmSync(userDataDir, { recursive: true, force: true });
     }
   }
 
