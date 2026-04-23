@@ -94,7 +94,9 @@ async function captureTestpageBefore(context, lang) {
   const page = await context.newPage();
   await page.setViewportSize({ width: 638, height: 800 });
   const baseLang = lang.split(/[-_]/)[0].toLowerCase();
-  await page.goto(`${TESTPAGE_URL}?lang=${baseLang}`);
+  const testpageUrl = new URL(TESTPAGE_URL);
+  testpageUrl.searchParams.set('lang', baseLang);
+  await page.goto(testpageUrl.href);
   await page.waitForLoadState('domcontentloaded');
   await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
   await page.waitForTimeout(500);
