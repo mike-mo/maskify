@@ -15,12 +15,15 @@ const os = require('os');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.resolve(ROOT, 'screenshots');
-const LANGS = ['en', 'es'];
+const LANGS = fs.readdirSync(path.join(ROOT, '_locales')).filter(f =>
+  fs.statSync(path.join(ROOT, '_locales', f)).isDirectory()
+);
 
 const NAMES = {
   en: ['alice', 'bob', 'carol', 'dave', 'emma', 'frank', 'grace', 'henry'],
   es: ['alicia', 'carlos', 'maria', 'jose', 'elena', 'miguel', 'sofia', 'pablo'],
 };
+const FALLBACK_NAMES = NAMES.en;
 
 function b64(buf) { return buf.toString('base64'); }
 
@@ -120,7 +123,7 @@ async function captureTestpageAfter(page, lang) {
     toast.id = 'maskify-toast';
     toast.style.display = 'none';
     document.body.appendChild(toast);
-  }, NAMES[lang]);
+  }, NAMES[lang] || FALLBACK_NAMES);
   await page.waitForTimeout(400);
   const buf = await page.screenshot();
   await page.close();
