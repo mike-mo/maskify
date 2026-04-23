@@ -1,0 +1,186 @@
+/**
+ * Generates store screenshots for Maskify for every locale in _locales/.
+ * Outputs per language under screenshots/<lang>/:
+ *   popup.png     — popup UI, ~600px wide, aspect ratio preserved
+ *   testpage.png  — before/after side by side, exactly 1280x800
+ *
+ * Usage:
+ *   cd scripts && npm ci && npm run screenshot
+ */
+
+const { chromium } = require('playwright');
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
+
+const ROOT = path.resolve(__dirname, '..');
+const OUT = path.resolve(ROOT, 'screenshots');
+const LANGS = fs.readdirSync(path.join(ROOT, '_locales')).filter(f =>
+  fs.statSync(path.join(ROOT, '_locales', f)).isDirectory()
+).sort();
+
+function pngDataUri(buf) { return `data:image/png;base64,${buf.toString('base64')}`; }
+function normalizeChromiumLangTag(locale) {
+  const parts = locale.split(/[-_]/).filter(Boolean);
+  if (!parts.length) return locale;
+  return parts
+    .map((part, index) => {
+      if (index === 0) return part.toLowerCase();
+      if (/^[A-Za-z]{4}$/.test(part)) return `${part[0].toUpperCase()}${part.slice(1).toLowerCase()}`;
+      if (/^([A-Za-z]{2}|\d{3})$/.test(part)) return part.toUpperCase();
+      return part.toLowerCase();
+    })
+    .join('-');
+}
+
+async function findExtensionId(context) {
+  const page = await context.newPage();
+  const client = await context.newCDPSession(page);
+  await client.send('Runtime.enable');
+  const extensionIdPromise = new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Could not detect extension ID — is the extension loaded?')), 5000);
+    client.on('Runtime.executionContextCreated', event => {
+      const origin = event.context.origin || '';
+      if (origin.startsWith('chrome-extension://')) {
+        clearTimeout(timer);
+        resolve(origin.replace('chrome-extension://', ''));
+      }
+    });
+  });
+  await page.goto('https://example.com');
+  await page.waitForLoadState('domcontentloaded');
+  const extensionId = await extensionIdPromise;
+  await page.close();
+  return extensionId;
+}
+
+async function capturePopup(context, extensionId) {
+  const page = await context.newPage();
+  // Tall initial viewport prevents scrollbars from appearing during load/measurement
+  await page.setViewportSize({ width: 400, height: 2000 });
+  await page.goto(`chrome-extension://${extensionId}/popup/popup.html`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForSelector('#sendmessageid');
+  await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
+  const box = await page.locator('body').boundingBox();
+  if (!box || !box.width) throw new Error('Could not measure popup dimensions — did the popup load?');
+  const w = Math.round(box.width);
+  const h = Math.round(box.height);
+  await page.setViewportSize({ width: w, height: h });
+  await page.waitForFunction(w => document.body.clientWidth === w, w);
+  const raw = await page.screenshot();
+  await page.close();
+
+  // Scale up to ~600px wide via HTML compositor, preserving aspect ratio
+  const compositor = await context.newPage();
+  const scaledHeight = Math.round(h * (600 / w));
+  await compositor.setViewportSize({ width: 600, height: scaledHeight });
+  await compositor.setContent(`<!DOCTYPE html><html><head><style>
+    * { margin: 0; padding: 0; }
+    html, body { overflow: hidden; width: 600px; background: #fff; }
+    img { width: 600px; height: auto; display: block; }
+  </style></head><body>
+    <img src="${pngDataUri(raw)}">
+  </body></html>`);
+  await compositor.waitForFunction(() => { const img = document.querySelector('img'); return img && img.complete && img.naturalWidth > 0; });
+  const scaled = await compositor.screenshot();
+  await compositor.close();
+  return scaled;
+}
+
+const TESTPAGE_URL = process.env.TESTPAGE_URL || 'https://mike-mo.github.io/maskify/testpage.html';
+
+async function captureTestpageBefore(context, lang) {
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 638, height: 800 });
+  const baseLang = lang.split(/[-_]/)[0].toLowerCase();
+  const testpageUrl = new URL(TESTPAGE_URL);
+  testpageUrl.searchParams.set('lang', baseLang);
+  await page.goto(testpageUrl.href);
+  await page.waitForLoadState('domcontentloaded');
+  await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
+  await page.waitForTimeout(500);
+  await page.keyboard.press('b');
+  await page.waitForSelector('.maskify-before');
+  const buf = await page.screenshot();
+  return { page, buf };
+}
+
+async function captureTestpageAfter(context, extensionId, testPage) {
+  const popupPage = await context.newPage();
+  await popupPage.goto(`chrome-extension://${extensionId}/popup/popup.html`);
+  await popupPage.waitForLoadState('domcontentloaded');
+  await testPage.bringToFront();
+  await popupPage.locator('#sendmessageid').click();
+  await testPage.waitForSelector('.maskify-after');
+  await testPage.waitForSelector('#maskify-toast', { state: 'detached' });
+  const buf = await testPage.screenshot();
+  if (!popupPage.isClosed()) await popupPage.close();
+  await testPage.close();
+  return buf;
+}
+
+async function compositeBeforeAfter(context, beforeBuf, afterBuf) {
+  const SEP = 4;
+  const sideW = (1280 - SEP) / 2; // 638
+
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.setContent(`<!DOCTYPE html><html><head><style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { width: 1280px; height: 800px; display: flex; overflow: hidden; background: #bbb; }
+    .side { flex: 0 0 ${sideW}px; height: 800px; overflow: hidden; }
+    .sep  { flex: 0 0 ${SEP}px; background: #999; }
+    img   { width: ${sideW}px; height: 800px; object-fit: cover; object-position: top left; display: block; }
+  </style></head><body>
+    <div class="side"><img src="${pngDataUri(beforeBuf)}"></div>
+    <div class="sep"></div>
+    <div class="side"><img src="${pngDataUri(afterBuf)}"></div>
+  </body></html>`);
+  await page.waitForFunction(() => [...document.querySelectorAll('img')].every(img => img.complete && img.naturalWidth > 0));
+  const buf = await page.screenshot({ clip: { x: 0, y: 0, width: 1280, height: 800 } });
+  await page.close();
+  return buf;
+}
+
+async function run() {
+  for (const lang of LANGS) {
+    console.log(`Capturing ${lang}...`);
+    const langDir = path.join(OUT, lang);
+    fs.mkdirSync(langDir, { recursive: true });
+    const chromiumLang = normalizeChromiumLangTag(lang);
+
+    const userDataDir = path.join(os.tmpdir(), `maskify-${lang}-${Date.now()}`);
+    const context = await chromium.launchPersistentContext(userDataDir, {
+      headless: false,
+      args: [
+        `--disable-extensions-except=${ROOT}`,
+        `--load-extension=${ROOT}`,
+        `--lang=${chromiumLang}`,
+      ],
+      viewport: { width: 1280, height: 800 },
+    });
+
+    try {
+      const extensionId = await findExtensionId(context);
+
+      const [popupBuf, { page, buf: beforeBuf }] = await Promise.all([
+        capturePopup(context, extensionId),
+        captureTestpageBefore(context, lang),
+      ]);
+      fs.writeFileSync(path.join(langDir, 'popup.png'), popupBuf);
+      const afterBuf = await captureTestpageAfter(context, extensionId, page);
+      const combined = await compositeBeforeAfter(context, beforeBuf, afterBuf);
+      fs.writeFileSync(path.join(langDir, 'testpage.png'), combined);
+
+      console.log(`  ${lang}/popup.png, ${lang}/testpage.png`);
+    } finally {
+      await context.close();
+      fs.rmSync(userDataDir, { recursive: true, force: true });
+    }
+  }
+
+  console.log(`\nAll screenshots saved to: ${OUT}`);
+}
+
+run().catch(err => { console.error(err); process.exit(1); });
