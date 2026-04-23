@@ -32,11 +32,15 @@ document.addEventListener('DOMContentLoaded', function () {
   addLastInitialInput.addEventListener('change', updatePreview);
   showAsteriskInput.addEventListener('change', updatePreview);
 
-  chrome.storage.sync.get({ domain: '', addNumber: true, addLastInitial: false, showAsterisk: true }, function (data) {
+  let maskCount = 0;
+
+  chrome.storage.sync.get({ domain: '', addNumber: true, addLastInitial: false, showAsterisk: true, maskCount: 0 }, function (data) {
     domainInput.value = data.domain;
     addNumberInput.checked = data.addNumber;
     addLastInitialInput.checked = data.addLastInitial;
     showAsteriskInput.checked = data.showAsterisk;
+    maskCount = data.maskCount;
+    if (maskCount >= 2) document.getElementById('donateLink').classList.add('visible');
     updatePreview();
   });
 
@@ -50,10 +54,10 @@ document.addEventListener('DOMContentLoaded', function () {
       const addLastInitial = addLastInitialInput.checked;
       const showAsterisk = showAsteriskInput.checked;
 
-      chrome.storage.sync.set({ domain: storedDomain, addNumber, addLastInitial, showAsterisk });
-
       chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         chrome.tabs.sendMessage(tabs[0].id, { domain, addNumber, addLastInitial, showAsterisk }, function () {
+          const newCount = !chrome.runtime.lastError ? maskCount + 1 : maskCount;
+          chrome.storage.sync.set({ domain: storedDomain, addNumber, addLastInitial, showAsterisk, maskCount: newCount });
           window.close();
         });
       });
