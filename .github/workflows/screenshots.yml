@@ -1,0 +1,77 @@
+name: Generate Store Screenshots
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to attach screenshots to (leave blank for latest)'
+        required: false
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: scripts
+        run: npm install
+
+      - name: Install Playwright browser
+        working-directory: scripts
+        run: npx playwright install chromium --with-deps
+
+      - name: Generate screenshots
+        working-directory: scripts
+        run: xvfb-run --auto-servernum node screenshot.js
+
+      - name: Resolve release tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "value=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+          elif [ -n "${{ inputs.tag }}" ]; then
+            echo "value=${{ inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            latest=$(gh release list --limit 1 --json tagName -q '.[0].tagName')
+            echo "value=$latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Package and upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.tag.outputs.value }}"
+          REPO="${{ github.repository }}"
+          BASE_URL="https://github.com/${REPO}/releases/download/${TAG}"
+
+          # Zip all language screenshots
+          zip -r screenshots.zip screenshots/
+
+          # Flat copies of English images for inline embedding (release assets are a flat list)
+          cp screenshots/en/popup.png en-popup.png
+          cp screenshots/en/testpage.png en-testpage.png
+
+          # Upload assets (--clobber replaces if workflow is re-run)
+          gh release upload "$TAG" screenshots.zip en-popup.png en-testpage.png --clobber
+
+          # Get current release body, strip any previous screenshots section, append new one
+          gh release view "$TAG" --json body -q .body \
+            | sed '/^## Screenshots$/,$d' \
+            > notes.md
+
+          printf '\n## Screenshots\n\n| Popup | Test Page |\n|-------|----------|\n| ![Popup](%s/en-popup.png) | ![Test Page](%s/en-testpage.png) |\n' \
+            "$BASE_URL" "$BASE_URL" >> notes.md
+
+          gh release edit "$TAG" --notes-file notes.md
