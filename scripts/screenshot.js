@@ -42,20 +42,22 @@ function normalizeChromiumLangTag(locale) {
 
 async function findExtensionId(context) {
   const page = await context.newPage();
-  let extensionId = null;
   const client = await context.newCDPSession(page);
   await client.send('Runtime.enable');
-  client.on('Runtime.executionContextCreated', event => {
-    const origin = event.context.origin || '';
-    if (!extensionId && origin.startsWith('chrome-extension://')) {
-      extensionId = origin.replace('chrome-extension://', '');
-    }
+  const extensionIdPromise = new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Could not detect extension ID — is the extension loaded?')), 5000);
+    client.on('Runtime.executionContextCreated', event => {
+      const origin = event.context.origin || '';
+      if (origin.startsWith('chrome-extension://')) {
+        clearTimeout(timer);
+        resolve(origin.replace('chrome-extension://', ''));
+      }
+    });
   });
   await page.goto('https://example.com');
   await page.waitForLoadState('domcontentloaded');
-  await page.waitForTimeout(1000);
+  const extensionId = await extensionIdPromise;
   await page.close();
-  if (!extensionId) throw new Error('Could not detect extension ID — is the extension loaded?');
   return extensionId;
 }
 
@@ -72,7 +74,7 @@ async function capturePopup(context, extensionId) {
   const w = Math.round(box.width);
   const h = Math.round(box.height);
   await page.setViewportSize({ width: w, height: h });
-  await page.waitForTimeout(100);
+  await page.waitForFunction(w => document.body.clientWidth === w, w);
   const raw = await page.screenshot();
   await page.close();
 
@@ -87,7 +89,7 @@ async function capturePopup(context, extensionId) {
   </style></head><body>
     <img src="data:image/png;base64,${b64(raw)}">
   </body></html>`);
-  await compositor.waitForTimeout(200);
+  await compositor.waitForFunction(() => { const img = document.querySelector('img'); return img && img.complete && img.naturalWidth > 0; });
   const scaled = await compositor.screenshot();
   await compositor.close();
   return scaled;
@@ -102,7 +104,7 @@ async function captureTestpageBefore(context, lang) {
   await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
   await page.waitForTimeout(500);
   await page.keyboard.press('b');
-  await page.waitForTimeout(300);
+  await page.waitForSelector('.maskify-before');
   const buf = await page.screenshot();
   return { page, buf };
 }
@@ -162,7 +164,7 @@ async function compositeBeforeAfter(context, beforeBuf, afterBuf) {
     <div class="sep"></div>
     <div class="side"><img src="data:image/png;base64,${b64(afterBuf)}"></div>
   </body></html>`);
-  await page.waitForTimeout(300);
+  await page.waitForFunction(() => [...document.querySelectorAll('img')].every(img => img.complete && img.naturalWidth > 0));
   const buf = await page.screenshot({ clip: { x: 0, y: 0, width: 1280, height: 800 } });
   await page.close();
   return buf;
