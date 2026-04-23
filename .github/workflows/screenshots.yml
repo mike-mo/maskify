@@ -53,16 +53,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${{ steps.tag.outputs.value }}"
+          if [ -z "$TAG" ]; then echo "No release tag found. Create a release first or pass a tag via inputs.tag." && exit 1; fi
           REPO="${{ github.repository }}"
           BASE_URL="https://github.com/${REPO}/releases/download/${TAG}"
 
           # Zip all language screenshots
           zip -r screenshots.zip screenshots/
 
-          # Flat copies of default-locale images for inline embedding (release assets are a flat list)
-          DEFAULT_LOCALE=$(node -e "console.log(require('./manifest.json').default_locale || 'en')")
-          cp "screenshots/${DEFAULT_LOCALE}/popup.png" en-popup.png
-          cp "screenshots/${DEFAULT_LOCALE}/testpage.png" en-testpage.png
+          # Flat copies of English images for inline embedding (release assets are a flat list)
+          cp screenshots/en/popup.png en-popup.png
+          cp screenshots/en/testpage.png en-testpage.png
 
           # Upload assets (--clobber replaces if workflow is re-run)
           gh release upload "$TAG" screenshots.zip en-popup.png en-testpage.png --clobber

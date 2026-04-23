@@ -18,7 +18,7 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.resolve(ROOT, 'screenshots');
 const LANGS = fs.readdirSync(path.join(ROOT, '_locales')).filter(f =>
   fs.statSync(path.join(ROOT, '_locales', f)).isDirectory()
-);
+).sort();
 
 const NAMES = {
   en: ['alice', 'bob', 'carol', 'dave', 'emma', 'frank', 'grace', 'henry'],
