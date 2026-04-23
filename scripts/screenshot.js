@@ -9,6 +9,7 @@
  */
 
 const { chromium } = require('playwright');
+const { pathToFileURL } = require('url');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -50,7 +51,7 @@ async function findExtensionId(context) {
       extensionId = origin.replace('chrome-extension://', '');
     }
   });
-  await page.goto(`file://${ROOT.replace(/\\/g, '/')}/testpage.html`);
+  await page.goto('https://example.com');
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(1000);
   await page.close();
@@ -95,7 +96,7 @@ async function capturePopup(context, extensionId) {
 async function captureTestpageBefore(context, lang) {
   const page = await context.newPage();
   await page.setViewportSize({ width: 638, height: 800 });
-  await page.goto(`file://${ROOT.replace(/\\/g, '/')}/testpage.html?lang=${lang}`);
+  await page.goto(`${pathToFileURL(path.join(ROOT, 'testpage.html')).href}?lang=${lang}`);
   await page.waitForLoadState('domcontentloaded');
   await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
   await page.waitForTimeout(500);
