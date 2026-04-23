@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: scripts
-        run: npm install
+        run: npm ci
 
       - name: Install Playwright browser
         working-directory: scripts
