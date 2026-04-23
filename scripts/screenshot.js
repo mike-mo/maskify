@@ -45,24 +45,27 @@ async function findExtensionId(context) {
 
 async function capturePopup(context, extensionId) {
   const page = await context.newPage();
-  await page.setViewportSize({ width: 320, height: 600 });
+  // Tall initial viewport prevents scrollbars from appearing during load/measurement
+  await page.setViewportSize({ width: 400, height: 2000 });
   await page.goto(`chrome-extension://${extensionId}/popup/popup.html`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(400);
-  const { w, h } = await page.evaluate(() => ({
-    w: document.body.scrollWidth,
-    h: document.body.scrollHeight,
-  }));
-  const raw = await page.screenshot({ clip: { x: 0, y: 0, width: w, height: h } });
+  await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
+  const box = await page.locator('body').boundingBox();
+  const w = Math.round(box.width);
+  const h = Math.round(box.height);
+  await page.setViewportSize({ width: w, height: h });
+  await page.waitForTimeout(100);
+  const raw = await page.screenshot();
   await page.close();
 
   // Scale up to ~600px wide via HTML compositor, preserving aspect ratio
   const compositor = await context.newPage();
   const scaledHeight = Math.round(h * (600 / w));
-  await compositor.setViewportSize({ width: 600, height: Math.min(scaledHeight, 800) });
+  await compositor.setViewportSize({ width: 600, height: scaledHeight });
   await compositor.setContent(`<!DOCTYPE html><html><head><style>
     * { margin: 0; padding: 0; }
-    body { width: 600px; background: #fff; }
+    html, body { overflow: hidden; width: 600px; background: #fff; }
     img { width: 600px; height: auto; display: block; }
   </style></head><body>
     <img src="data:image/png;base64,${b64(raw)}">
@@ -75,9 +78,10 @@ async function capturePopup(context, extensionId) {
 
 async function captureTestpageBefore(context, lang) {
   const page = await context.newPage();
-  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.setViewportSize({ width: 638, height: 800 });
   await page.goto(`file://${ROOT.replace(/\\/g, '/')}/testpage.html?lang=${lang}`);
   await page.waitForLoadState('domcontentloaded');
+  await page.addStyleTag({ content: '::-webkit-scrollbar { display: none !important; }' });
   await page.waitForTimeout(500);
   await page.keyboard.press('b');
   await page.waitForTimeout(300);
