@@ -151,10 +151,11 @@ async function compositeBeforeAfter(context, beforeBuf, afterBuf) {
 }
 
 async function run() {
-  fs.mkdirSync(OUT, { recursive: true });
-
   for (const lang of LANGS) {
     console.log(`Capturing ${lang}...`);
+    const langDir = path.join(OUT, lang);
+    fs.mkdirSync(langDir, { recursive: true });
+
     const userDataDir = path.join(os.tmpdir(), `maskify-${lang}-${Date.now()}`);
     const context = await chromium.launchPersistentContext(userDataDir, {
       headless: false,
@@ -170,14 +171,14 @@ async function run() {
       const extensionId = await findExtensionId(context);
 
       const popupBuf = await capturePopup(context, extensionId);
-      fs.writeFileSync(path.join(OUT, `popup-${lang}.png`), popupBuf);
+      fs.writeFileSync(path.join(langDir, 'popup.png'), popupBuf);
 
       const { page, buf: beforeBuf } = await captureTestpageBefore(context, lang);
       const afterBuf = await captureTestpageAfter(page, lang);
       const combined = await compositeBeforeAfter(context, beforeBuf, afterBuf);
-      fs.writeFileSync(path.join(OUT, `testpage-${lang}.png`), combined);
+      fs.writeFileSync(path.join(langDir, 'testpage.png'), combined);
 
-      console.log(`  popup-${lang}.png, testpage-${lang}.png`);
+      console.log(`  ${lang}/popup.png, ${lang}/testpage.png`);
     } finally {
       await context.close();
     }
