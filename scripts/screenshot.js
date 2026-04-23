@@ -1,6 +1,8 @@
 /**
- * Generates before/after screenshots of the Maskify test page in English and Spanish,
- * plus a popup screenshot. Output goes to screenshots/ in the repo root.
+ * Generates store screenshots for Maskify in English and Spanish.
+ * Outputs per language:
+ *   popup-{lang}.png       — popup UI, ~600px wide, aspect ratio preserved
+ *   testpage-{lang}.png    — before/after side by side, exactly 1280x800
  *
  * Usage:
  *   cd scripts && npm install && npm run screenshot
@@ -13,7 +15,6 @@ const os = require('os');
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.resolve(ROOT, 'screenshots');
-const VIEWPORT = { width: 1280, height: 800 };
 const LANGS = ['en', 'es'];
 
 const NAMES = {
@@ -21,81 +22,128 @@ const NAMES = {
   es: ['alicia', 'carlos', 'maria', 'jose', 'elena', 'miguel', 'sofia', 'pablo'],
 };
 
-async function capturePopup(context, extensionId, lang) {
+function b64(buf) { return buf.toString('base64'); }
+
+async function findExtensionId(context) {
+  const page = await context.newPage();
+  let extensionId = null;
+  const client = await context.newCDPSession(page);
+  await client.send('Runtime.enable');
+  client.on('Runtime.executionContextCreated', event => {
+    const origin = event.context.origin || '';
+    if (!extensionId && origin.startsWith('chrome-extension://')) {
+      extensionId = origin.replace('chrome-extension://', '');
+    }
+  });
+  await page.goto(`file://${ROOT.replace(/\\/g, '/')}/testpage.html`);
+  await page.waitForLoadState('domcontentloaded');
+  await page.waitForTimeout(1000);
+  await page.close();
+  if (!extensionId) throw new Error('Could not detect extension ID — is the extension loaded?');
+  return extensionId;
+}
+
+async function capturePopup(context, extensionId) {
   const page = await context.newPage();
   await page.setViewportSize({ width: 320, height: 600 });
   await page.goto(`chrome-extension://${extensionId}/popup/popup.html`);
   await page.waitForLoadState('domcontentloaded');
-  await page.waitForTimeout(300);
-  await page.screenshot({
-    path: path.join(OUT, `popup-${lang}.png`),
-    clip: { x: 0, y: 0, width: 280, height: 400 },
-  });
+  await page.waitForTimeout(400);
+  const { w, h } = await page.evaluate(() => ({
+    w: document.body.scrollWidth,
+    h: document.body.scrollHeight,
+  }));
+  const raw = await page.screenshot({ clip: { x: 0, y: 0, width: w, height: h } });
   await page.close();
+
+  // Scale up to ~600px wide via HTML compositor, preserving aspect ratio
+  const compositor = await context.newPage();
+  const scaledHeight = Math.round(h * (600 / w));
+  await compositor.setViewportSize({ width: 600, height: Math.min(scaledHeight, 800) });
+  await compositor.setContent(`<!DOCTYPE html><html><head><style>
+    * { margin: 0; padding: 0; }
+    body { width: 600px; background: #fff; }
+    img { width: 600px; height: auto; display: block; }
+  </style></head><body>
+    <img src="data:image/png;base64,${b64(raw)}">
+  </body></html>`);
+  await compositor.waitForTimeout(200);
+  const scaled = await compositor.screenshot();
+  await compositor.close();
+  return scaled;
 }
 
-async function captureTestpage(context, extensionId, lang) {
+async function captureTestpageBefore(context, lang) {
   const page = await context.newPage();
-  await page.setViewportSize(VIEWPORT);
-
-  const url = `file://${ROOT.replace(/\\/g, '/')}/testpage.html?lang=${lang}`;
-  await page.goto(url);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`file://${ROOT.replace(/\\/g, '/')}/testpage.html?lang=${lang}`);
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(500);
-
-  // Before: press B to activate overlay
   await page.keyboard.press('b');
   await page.waitForTimeout(300);
-  await page.screenshot({ path: path.join(OUT, `testpage-before-${lang}.png`) });
+  const buf = await page.screenshot();
+  return { page, buf };
+}
 
-  // After: replicate masking logic in-page, then fire the toast signal
+async function captureTestpageAfter(page, lang) {
   await page.evaluate((names) => {
     const EMAIL_RE = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
     const used = {};
     let idx = 0;
-
     function fake(real) {
       if (!used[real]) used[real] = `${names[idx++ % names.length]}7***@example.com`;
       return used[real];
     }
-
-    function replace(str) {
-      return str.replace(EMAIL_RE, match => fake(match));
-    }
+    function rep(str) { return str.replace(EMAIL_RE, m => fake(m)); }
 
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     let node;
     while ((node = walker.nextNode())) {
-      if (EMAIL_RE.test(node.nodeValue)) {
-        EMAIL_RE.lastIndex = 0;
-        node.nodeValue = replace(node.nodeValue);
-      }
+      if (EMAIL_RE.test(node.nodeValue)) { EMAIL_RE.lastIndex = 0; node.nodeValue = rep(node.nodeValue); }
     }
-
     document.querySelectorAll('a[href]').forEach(a => {
       const href = a.getAttribute('href');
-      if (href) a.setAttribute('href', replace(href));
+      if (href) a.setAttribute('href', rep(href));
     });
-
     document.querySelectorAll('input').forEach(input => {
-      if (input.value) input.value = replace(input.value);
-      if (input.placeholder) input.placeholder = replace(input.placeholder);
+      if (input.value) input.value = rep(input.value);
+      if (input.placeholder) input.placeholder = rep(input.placeholder);
     });
-
     document.querySelectorAll('textarea').forEach(ta => {
-      if (ta.value) ta.value = replace(ta.value);
+      if (ta.value) ta.value = rep(ta.value);
     });
-
-    // Fire the toast signal that triggers the overlay transition
     const toast = document.createElement('div');
     toast.id = 'maskify-toast';
     toast.style.display = 'none';
     document.body.appendChild(toast);
   }, NAMES[lang]);
-
   await page.waitForTimeout(400);
-  await page.screenshot({ path: path.join(OUT, `testpage-after-${lang}.png`) });
+  const buf = await page.screenshot();
   await page.close();
+  return buf;
+}
+
+async function compositeBeforeAfter(context, beforeBuf, afterBuf) {
+  const SEP = 4;
+  const sideW = (1280 - SEP) / 2; // 638
+
+  const page = await context.newPage();
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.setContent(`<!DOCTYPE html><html><head><style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { width: 1280px; height: 800px; display: flex; overflow: hidden; background: #bbb; }
+    .side { flex: 0 0 ${sideW}px; height: 800px; overflow: hidden; }
+    .sep  { flex: 0 0 ${SEP}px; background: #999; }
+    img   { width: ${sideW}px; height: 800px; object-fit: cover; object-position: top left; display: block; }
+  </style></head><body>
+    <div class="side"><img src="data:image/png;base64,${b64(beforeBuf)}"></div>
+    <div class="sep"></div>
+    <div class="side"><img src="data:image/png;base64,${b64(afterBuf)}"></div>
+  </body></html>`);
+  await page.waitForTimeout(300);
+  const buf = await page.screenshot({ clip: { x: 0, y: 0, width: 1280, height: 800 } });
+  await page.close();
+  return buf;
 }
 
 async function run() {
@@ -103,8 +151,7 @@ async function run() {
 
   for (const lang of LANGS) {
     console.log(`Capturing ${lang}...`);
-    const userDataDir = path.join(os.tmpdir(), `maskify-screenshots-${lang}-${Date.now()}`);
-
+    const userDataDir = path.join(os.tmpdir(), `maskify-${lang}-${Date.now()}`);
     const context = await chromium.launchPersistentContext(userDataDir, {
       headless: false,
       args: [
@@ -112,19 +159,21 @@ async function run() {
         `--load-extension=${ROOT}`,
         `--lang=${lang}`,
       ],
-      viewport: VIEWPORT,
+      viewport: { width: 1280, height: 800 },
     });
 
     try {
-      // Wait for the extension background service worker
-      let [worker] = context.serviceWorkers();
-      if (!worker) worker = await context.waitForEvent('serviceworker', { timeout: 10000 });
-      const extensionId = new URL(worker.url()).hostname;
+      const extensionId = await findExtensionId(context);
 
-      await capturePopup(context, extensionId, lang);
-      await captureTestpage(context, extensionId, lang);
+      const popupBuf = await capturePopup(context, extensionId);
+      fs.writeFileSync(path.join(OUT, `popup-${lang}.png`), popupBuf);
 
-      console.log(`  Done: popup-${lang}.png, testpage-before-${lang}.png, testpage-after-${lang}.png`);
+      const { page, buf: beforeBuf } = await captureTestpageBefore(context, lang);
+      const afterBuf = await captureTestpageAfter(page, lang);
+      const combined = await compositeBeforeAfter(context, beforeBuf, afterBuf);
+      fs.writeFileSync(path.join(OUT, `testpage-${lang}.png`), combined);
+
+      console.log(`  popup-${lang}.png, testpage-${lang}.png`);
     } finally {
       await context.close();
     }
