@@ -140,7 +140,7 @@ async function captureTestpageAfter(page, lang) {
     toast.id = 'maskify-toast';
     toast.style.display = 'none';
     document.body.appendChild(toast);
-  }, NAMES[lang] || FALLBACK_NAMES);
+  }, NAMES[lang.split(/[-_]/)[0].toLowerCase()] || NAMES[lang] || FALLBACK_NAMES);
   await page.waitForTimeout(400);
   const buf = await page.screenshot();
   await page.close();
