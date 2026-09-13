@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Maskify: fold mask</title>
+  <rect x="6" y="14" width="52" height="36" rx="5" stroke="#0078d4" stroke-width="4"/>
+  <path fill="#0078d4" fill-rule="evenodd" d="m6 18 20 9c4 2 8 2 12 0l20-9-3 17c-2 9-10 10-15 5l-6-5c-1.2-1-2.8-1-4 0l-6 5c-5 5-13 4-15-5L6 18Zm8 14a5.5 4 0 1 0 11 0 5.5 4 0 1 0-11 0Zm25 0a5.5 4 0 1 0 11 0 5.5 4 0 1 0-11 0Z" clip-rule="evenodd"/>
+</svg>

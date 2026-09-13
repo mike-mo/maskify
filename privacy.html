@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maskify — Privacy Policy</title>
+  <title>Maskify privacy policy</title>
   <link rel="icon" type="image/png" sizes="32x32" href="icons/maskify32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="icons/maskify16x16.png">
   <style>
@@ -13,23 +13,20 @@
   </style>
 </head>
 <body>
-  <h1>Maskify — Privacy Policy</h1>
-  <p><em>Last updated: April 2026</em></p>
+  <h1>Maskify privacy policy</h1>
+  <p><em>Last updated: September 2026</em></p>
 
   <h2>What the extension does</h2>
-  <p>Maskify reads the HTML content of the web page you are currently viewing in order to detect email address patterns. When you click the Maskify button, detected addresses are replaced with randomly generated placeholder addresses using the <code>example.com</code> domain (reserved for documentation per RFC 2606).</p>
+  <p>Maskify reads the current page when you click <strong>Mask Emails</strong> or press <strong>Alt+Shift+M</strong>. It replaces email addresses in page text, the current tab's title, email links, and form fields with made-up ones. Replacements use <code>example.com</code> (reserved for documentation under RFC 2606) unless you choose another domain in the popup.</p>
 
-  <h2>Data collection</h2>
-  <p>Maskify does not collect, record, or store any personal data. No information about you, your browsing activity, or the email addresses found on any page is retained beyond the lifetime of the current browser tab.</p>
+  <h2>Page data</h2>
+  <p>Maskify finds and replaces email addresses in your browser. It does not save page content or detected addresses to extension storage. It does not collect browsing history or send page data to an external service.</p>
 
-  <h2>Data transmission</h2>
-  <p>Maskify makes no network requests. All processing happens entirely within your browser. No data is sent to any server, third party, or external service.</p>
-
-  <h2>Third-party sharing</h2>
-  <p>Because no data leaves your browser, no data is shared with any third party.</p>
+  <h2>Saved settings and usage count</h2>
+  <p>Maskify saves your chosen domain, formatting options, and a count of masking actions in your browser's sync storage. Maskify does not send this data to its developer or to analytics services. Your browser handles any syncing across devices. Check your browser's sync settings to review your options.</p>
 
   <h2>Permissions</h2>
-  <p>Maskify requests the <code>tabs</code> permission solely to send a message from the extension popup to the content script running in the active tab. This permission is not used to read tab URLs, titles, or any other tab metadata.</p>
+  <p>Maskify requests the <code>tabs</code> and <code>storage</code> permissions. It uses the Tabs API to identify the active tab and send it the masking command. It uses browser sync storage to save your preferences and masking-action count.</p>
 
   <h2>Contact</h2>
   <p>Questions or concerns about this policy can be raised via the <a href="https://github.com/mike-mo/maskify/issues">GitHub Issues page</a>.</p>
