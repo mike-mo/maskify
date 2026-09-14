@@ -56,10 +56,18 @@ test('the popup, toast, favicons, and screenshot gallery reference production ic
 
 test('saved icons match the approved SVG/export hashes and the gallery supports native sizes and Windows line endings', async t => {
   const readFile = fs.readFileSync;
+  const writeFile = fs.writeFileSync;
   const gallery = path.join(ROOT, 'icons', 'index.html');
   t.mock.method(fs, 'readFileSync', (file, ...options) => {
     const content = readFile(file, ...options);
     return file === gallery && typeof content === 'string' ? content.replace(/\r?\n/g, '\r\n') : content;
+  });
+  t.mock.method(fs, 'writeFileSync', (file, ...options) => {
+    if (typeof file === 'string') {
+      assert(!path.resolve(file).startsWith(path.join(ROOT, 'icons') + path.sep),
+        'Icon verification must not rewrite exports or approve a new inventory');
+    }
+    return writeFile(file, ...options);
   });
   const launch = chromium.launch.bind(chromium);
   t.mock.method(chromium, 'launch', async options => {
