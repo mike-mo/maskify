@@ -1,0 +1,23 @@
+Maskify privacy policy
+
+Last updated: September 2026
+
+What the extension does
+
+Maskify reads the current page when you click Mask Emails or press Alt+Shift+M. It replaces email addresses in page text, the current tab's title, email links, and form fields with made-up ones. Replacements use example.com (reserved for documentation under RFC 2606) unless you choose another domain in the popup.
+
+Page data
+
+Maskify finds and replaces email addresses in your browser. It does not save page content or detected addresses to extension storage. It does not collect browsing history or send page data to an external service.
+
+Saved settings and usage count
+
+Maskify saves your chosen domain, formatting options, and a count of masking actions in your browser's sync storage. Maskify does not send this data to its developer or to analytics services. Your browser handles any syncing across devices. Check your browser's sync settings to review your options.
+
+Permissions
+
+Maskify requests the tabs and storage permissions. It uses the Tabs API to identify the active tab and send it the masking command. It uses browser sync storage to save your preferences and masking-action count.
+
+Contact
+
+Questions or concerns about this policy can be raised via the GitHub Issues page (https://github.com/mike-mo/maskify/issues).

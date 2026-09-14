@@ -5,11 +5,17 @@
   "scripts": {
     "screenshot": "node screenshot.js",
     "preview": "node preview.js",
-    "icons": "node icon-options.js",
-    "icons:preview": "node icon-options.js --preview",
-    "test": "node --test screenshot.test.js masking.test.js"
+    "icons": "node icons.js",
+    "icons:preview": "node icons.js --preview",
+    "stores": "node store-assets.js",
+    "stores:preview": "node store-assets.js --preview",
+    "stores:check": "node store-assets.js --check",
+    "stores:version": "node refresh-store-version.js",
+    "release:build": "node release-assets.js build",
+    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js refresh-store-version.test.js"
   },
   "dependencies": {
+    "fflate": "^0.8.3",
     "playwright": "^1.59.1"
   }
 }

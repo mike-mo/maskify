@@ -163,7 +163,7 @@ async function captureSources(context, extensionId, lang, origin) {
   return images;
 }
 
-async function captureLocale(lang, origin) {
+async function withLocaleCapture(lang, origin, deviceScaleFactor, consume) {
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'maskify-capture-'));
   let context;
   try {
@@ -178,7 +178,7 @@ async function captureLocale(lang, origin) {
       locale: normalizeChromiumLangTag(lang),
       env: { ...process.env, LANGUAGE: lang },
       viewport: { width: 1200, height: 1000 },
-      deviceScaleFactor: 2,
+      deviceScaleFactor,
     });
     const errors = [];
     context.on('page', page => page.on('pageerror', error => errors.push(error.message)));
@@ -187,6 +187,20 @@ async function captureLocale(lang, origin) {
     assert.match(worker.url(), /^chrome-extension:\/\//, 'Expected the extension service worker');
     assert.equal((await worker.evaluate(() => chrome.i18n.getUILanguage())).split('-')[0], lang, 'Browser extension language mismatch');
     const images = await captureSources(context, extensionId, lang, origin);
+    const result = await consume(context, images);
+    assert.deepEqual(errors, [], 'Browser errors during capture');
+    return result;
+  } finally {
+    try {
+      if (context) await context.close();
+    } finally {
+      fs.rmSync(profile, { recursive: true, force: true });
+    }
+  }
+}
+
+async function captureLocale(lang, origin) {
+  return withLocaleCapture(lang, origin, 2, async (context, images) => {
     const rendered = new Map();
     for (const [i, frame] of FRAMES.entries()) {
       const page = await context.newPage();
@@ -201,14 +215,18 @@ async function captureLocale(lang, origin) {
       rendered.set(COMPOSED[i].file, buffer);
       await page.close();
     }
-    assert.deepEqual(errors, [], 'Browser errors during capture');
     return rendered;
+  });
+}
+
+async function captureSourceImages(lang, { deviceScaleFactor = 2 } = {}) {
+  assert(LANGS.includes(lang) && copy[lang], `Unsupported capture locale: ${lang}`);
+  assert([1, 2, 3, 4].includes(deviceScaleFactor), 'Capture density must be an integer from 1 to 4');
+  const server = await startCaptureServer();
+  try {
+    return await withLocaleCapture(lang, server.origin, deviceScaleFactor, (_context, images) => images);
   } finally {
-    try {
-      if (context) await context.close();
-    } finally {
-      fs.rmSync(profile, { recursive: true, force: true });
-    }
+    await server.close();
   }
 }
 
@@ -244,4 +262,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { normalizeChromiumLangTag, pngDimensions };
+module.exports = { normalizeChromiumLangTag, pngDimensions, captureSourceImages };

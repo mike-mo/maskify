@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <title>Maskify: masked mail</title>
-  <rect x="4" y="10" width="56" height="43" rx="8" fill="#0078d4"/>
-  <path d="m10 17 22 17 22-17" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="14" y="33" width="44" height="23" rx="8" fill="#063e67" stroke="#e3f7ff" stroke-width="2"/>
-  <circle cx="24" cy="44.5" r="3" fill="#58e0e6"/>
-  <circle cx="36" cy="44.5" r="3" fill="#58e0e6"/>
-  <circle cx="48" cy="44.5" r="3" fill="#58e0e6"/>
-</svg>

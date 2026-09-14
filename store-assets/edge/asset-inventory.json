@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "store": "edge",
+  "sources": {
+    "icons/maskify.svg": "d548d9162a3c7f4946452cb2c345eff7fdb42f810f66c9b7e9dcf02167d84744",
+    "icons/maskify128x128.png": "6615647ea7efcc7851dec80c00bfaadd273d2e87715830ed069418b074384187",
+    "icons/maskify300x300.png": "df154463d225812daba54366362804e4b7eb11073eb538dd02cef8e577e02578",
+    "store-assets.md": "f4469614e7135bd7da2ec8c50c6ac74b99f5dea64b333b26d2597065e0cd1731",
+    "privacy.html": "5cd355338780802d5c4f083ff88d46c57d71e96c8ddedc78588fe56231952a00",
+    "LICENSE": "719ec3c7eb839c8e65219b504e13bc2f37e3d09a793865fe1eb3c9927da2329c",
+    "manifest.json": "8f81cb2cc730ca47e679a6eccb7c5f93a0140129e41cd6167d899547be73c9d8",
+    "popup/popup.html": "a8ff63a75b3af263d71185735cc7977b356ed267ecaa41347f2d3d4f3d697ff3",
+    "popup/popup.js": "896fd34789999cd0b85b19ce49f22e215e4c6ff8b2fb6cc3d68f0382b331acf2",
+    "content-scripts/content.js": "0cbef588f021f0bd7702a91c714e56bdd25772739d4928f1367cb989133d5033",
+    "scripts/copy.js": "c50d176170ac6e850690a07c1a144800ef511be2906b92c84a4649eda822e8b6",
+    "scripts/screenshot.js": "249752147cae8509bfde0203469cf0ccce5c2dc3a0b75b07a9e120c831bfb6e9",
+    "scripts/templates.js": "40fed473e65ad8be753835fbed4e7910783c895f1f0c65fb2c1bfc1f23ffa269",
+    "scripts/demo.css": "5327946872251e9d20da4eb778a43356013579c412c3760744a7e60762f062ba",
+    "scripts/assets/Manrope.ttf": "d0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40",
+    "scripts/store-assets.js": "ca1ae28659fde830505ea134675cbc8267f977ccbfa7d7cd3edebdf0e7f5033a",
+    "scripts/store-templates.js": "94fd0ad2993ed860126ff7d896b69fe01f5e8c758c4bd1fa44b256896faff5c2",
+    "scripts/store-compositions.css": "58bf29c33c98839a5f06c51c1ac0c0525cd5d7bd3c6a73812e5eeca8bf9d0779",
+    "scripts/store-gallery.css": "e8409b530c22fc0887507faf188958286a9f9bb3aee7ee6ea68ef7a20487c9d7",
+    "_locales/en/messages.json": "cc45f5555e85d624242cc9708d18ea655bd53ab12e8c1ece604bb1887f9a83af",
+    "screenshots/en/01-result.png": "532a5406230bc7786f8ebe4e8306205aff3fba7a367ee050bb22cadbf4e4b58a",
+    "screenshots/en/02-coverage.png": "37226c20b8323cf8bcacaae8a17f56076a9ae46d50782dcd1fc75cc650c6a691",
+    "screenshots/en/03-controls.png": "5314772c5fff5e003076989e0fd2af7b182c09d96aa5d548b72a4b1cbe561aaf",
+    "_locales/es/messages.json": "750292ec215758fca62bbbcd496ef015a39136d67079019a132920774a88ad82",
+    "screenshots/es/01-result.png": "00593f501dc3542c634f9ceec3585937779686110e2e014a795e99f2c9681aba",
+    "screenshots/es/02-coverage.png": "57f972ebc41a015a5ef5256d7968e6df6910efcb0f812126a972f6bc18215d36",
+    "screenshots/es/03-controls.png": "5ce8bd1aca738c2ae93a611abcfd89f04a8eb651ee3ab8ca3742d4d7bf80731a"
+  },
+  "text_line_endings": "LF",
+  "capture_browser": "Chromium",
+  "firefox_package_status": "Requires a compatible background script and Firefox verification before submission.",
+  "files": [
+    {
+      "file": "UPLOAD.md",
+      "bytes": 1424,
+      "sha256": "8130e066fe9935653449ea9571fdea3e43c9b523b68044045157e90976f83fb9"
+    },
+    {
+      "file": "privacy-policy.txt",
+      "bytes": 1314,
+      "sha256": "17fd1fb8978b48fa9916933d8f08531b8d677d55aebc5c254c188e1d4f195bdf"
+    },
+    {
+      "file": "reviewer-notes.txt",
+      "bytes": 2140,
+      "sha256": "283ebdd42c12987d4192b7b401d6a957c67daa7020d80ad1dcff0d74a2eedd62"
+    },
+    {
+      "file": "LICENSE.txt",
+      "bytes": 524,
+      "sha256": "719ec3c7eb839c8e65219b504e13bc2f37e3d09a793865fe1eb3c9927da2329c"
+    },
+    {
+      "file": "en/description.md",
+      "bytes": 1134,
+      "sha256": "91c332624eb8b13a1a5d28083a37e4aaade4ade34b0901a4f94b2fbeb87786f1"
+    },
+    {
+      "file": "en/description.txt",
+      "bytes": 1114,
+      "sha256": "ef14a733f66559e75a2485917b4154fed7dd35f50ea3f8d46bbbf321e9caa76f"
+    },
+    {
+      "file": "en/captions.json",
+      "bytes": 396,
+      "sha256": "95229249e63773e77d6ba19b800b584ae64ade4d59efaba88217a2e0c1c385b5"
+    },
+    {
+      "file": "en/listing-copy.json",
+      "bytes": 335,
+      "sha256": "8f3f028d83af88983f87626ece5ca74e57af95d42fd48dddc86525870fc311bd"
+    },
+    {
+      "file": "es/description.md",
+      "bytes": 1326,
+      "sha256": "c8ce857df395d01660b40582ba5c3f874f04fa624e747f1788f525e4a4f92c82"
+    },
+    {
+      "file": "es/description.txt",
+      "bytes": 1306,
+      "sha256": "897281def3cfc5052e79f83caa54d32856ac3605482ea0a8e942e670cdf6d48b"
+    },
+    {
+      "file": "es/captions.json",
+      "bytes": 445,
+      "sha256": "53a13e8105b137c3d8ed44c09a0671d320252c9fac0d0ea19332c5e89d9e04b5"
+    },
+    {
+      "file": "es/listing-copy.json",
+      "bytes": 344,
+      "sha256": "81e4efa2c2e90119e799e04c9b0c202eae87f0f7ac6697476d88db8278ccbbc7"
+    },
+    {
+      "file": "icon-300.png",
+      "bytes": 9865,
+      "sha256": "df154463d225812daba54366362804e4b7eb11073eb538dd02cef8e577e02578",
+      "store": "edge",
+      "kind": "icon",
+      "label": "Store icon",
+      "width": 300,
+      "height": 300,
+      "required": true
+    },
+    {
+      "file": "promo-small-440x280.png",
+      "bytes": 10693,
+      "sha256": "ce56429d400605b04265bd45f821df3a2bed0b816592a5e5ab5694ec61b315c0",
+      "store": "edge",
+      "kind": "promo",
+      "label": "Small promotional tile",
+      "width": 440,
+      "height": 280,
+      "required": false
+    },
+    {
+      "file": "promo-marquee-1400x560.png",
+      "bytes": 25803,
+      "sha256": "d046e2e5522d69303c898215370d99e8da0006fca75ae774478d19a7440ab1b1",
+      "store": "edge",
+      "kind": "promo",
+      "label": "Marquee promotional tile",
+      "width": 1400,
+      "height": 560,
+      "required": false
+    },
+    {
+      "file": "en/01-result.png",
+      "bytes": 119663,
+      "sha256": "532a5406230bc7786f8ebe4e8306205aff3fba7a367ee050bb22cadbf4e4b58a",
+      "store": "edge",
+      "kind": "screenshot",
+      "label": "Hide email addresses before you share.",
+      "locale": "en",
+      "frame": "result",
+      "required": true,
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "file": "en/02-coverage.png",
+      "bytes": 115370,
+      "sha256": "37226c20b8323cf8bcacaae8a17f56076a9ae46d50782dcd1fc75cc650c6a691",
+      "store": "edge",
+      "kind": "screenshot",
+      "label": "Email links and form fields, too.",
+      "locale": "en",
+      "frame": "coverage",
+      "required": true,
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "file": "en/03-controls.png",
+      "bytes": 103777,
+      "sha256": "5314772c5fff5e003076989e0fd2af7b182c09d96aa5d548b72a4b1cbe561aaf",
+      "store": "edge",
+      "kind": "screenshot",
+      "label": "Choose the replacement format.",
+      "locale": "en",
+      "frame": "controls",
+      "required": true,
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "file": "es/01-result.png",
+      "bytes": 130089,
+      "sha256": "00593f501dc3542c634f9ceec3585937779686110e2e014a795e99f2c9681aba",
+      "store": "edge",
+      "kind": "screenshot",
+      "label": "Oculta las direcciones de correo antes de compartir.",
+      "locale": "es",
+      "frame": "result",
+      "required": true,
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "file": "es/02-coverage.png",
+      "bytes": 130971,
+      "sha256": "57f972ebc41a015a5ef5256d7968e6df6910efcb0f812126a972f6bc18215d36",
+      "store": "edge",
+      "kind": "screenshot",
+      "label": "También en enlaces y formularios.",
+      "locale": "es",
+      "frame": "coverage",
+      "required": true,
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "file": "es/03-controls.png",
+      "bytes": 113237,
+      "sha256": "5ce8bd1aca738c2ae93a611abcfd89f04a8eb651ee3ab8ca3742d4d7bf80731a",
+      "store": "edge",
+      "kind": "screenshot",
+      "label": "Elige el formato de los reemplazos.",
+      "locale": "es",
+      "frame": "controls",
+      "required": true,
+      "width": 1280,
+      "height": 800
+    }
+  ]
+}
