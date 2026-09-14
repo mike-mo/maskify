@@ -135,6 +135,10 @@ dark toolbars. With the screenshot dependencies installed, run
 from the canonical SVG. This updates the production files directly.
 Use `npm --prefix scripts run icons -- --check` to verify saved exports, or
 `npm --prefix scripts run icons:preview` to serve the preview locally.
+Verification checks the SVG and all PNG bytes against `icons/asset-inventory.json`,
+along with dimensions, transparent margins, coverage, and gallery behavior.
+Explicit regeneration updates this inventory with the artwork for review;
+release checks never rerender or rebaseline approved exports.
 The renderer is `scripts/icons.js`; preview styles are in `icons/gallery.css`.
 After changing the artwork, run `npm --prefix scripts run screenshot` to
 refresh both localized store screenshot sets.

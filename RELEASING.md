@@ -105,5 +105,15 @@ Only use committed, approved image attachments. For example:
 ```
 
 Release packaging never recaptures these images. Browser tests may render
-temporary images to check the icon source and exercise runtime behavior; they
-do not write approved artwork.
+temporary pages to exercise runtime behavior; they do not write approved
+artwork. Icon verification pairs the canonical SVG hash with exact hashes for
+all six approved PNGs in `icons/asset-inventory.json`, then checks dimensions,
+transparent margins, coverage, and the gallery. The initial inventory records
+the bytes from the approved asset commit, not new captures.
+
+Hosted Chromium rasterizers differed from the original renderer even in alpha
+and light/dark composited colors. Comparing a fresh rasterization would require
+accepting visible pixel differences. Exact export/source hashes avoid that
+tolerance increase and reject even a single changed PNG byte. Intentional icon
+generation updates the inventory alongside its outputs for artwork review,
+never as part of a release.

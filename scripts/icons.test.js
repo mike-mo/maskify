@@ -5,7 +5,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { test } = require('node:test');
-const { SIZES, filename, render } = require('./icons');
+const { chromium } = require('playwright');
+const { SIZES, filename, assetInventory, verifyExports, render } = require('./icons');
 const { RUNTIME_ENTRIES } = require('./release-assets');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -53,14 +54,43 @@ test('the popup, toast, favicons, and screenshot gallery reference production ic
   }
 });
 
-test('saved icons match the SVG and the gallery supports native sizes and Windows line endings', async t => {
+test('saved icons match the approved SVG/export hashes and the gallery supports native sizes and Windows line endings', async t => {
   const readFile = fs.readFileSync;
   const gallery = path.join(ROOT, 'icons', 'index.html');
   t.mock.method(fs, 'readFileSync', (file, ...options) => {
     const content = readFile(file, ...options);
     return file === gallery && typeof content === 'string' ? content.replace(/\r?\n/g, '\r\n') : content;
   });
+  const launch = chromium.launch.bind(chromium);
+  t.mock.method(chromium, 'launch', async options => {
+    const browser = await launch(options);
+    const newPage = browser.newPage.bind(browser);
+    t.mock.method(browser, 'newPage', async options => {
+      const page = await newPage(options);
+      t.mock.method(page, 'screenshot', () => {
+        throw new Error('Icon verification must not recapture approved artwork');
+      });
+      return page;
+    });
+    return browser;
+  });
   await render({ check: true });
+});
+
+test('every SVG and PNG byte is checked against the approved inventory without rasterizer tolerances', () => {
+  const source = fs.readFileSync(path.join(ROOT, 'icons', 'maskify.svg'));
+  const outputs = new Map(SIZES.map(size => [filename(size), fs.readFileSync(path.join(ROOT, 'icons', filename(size)))]));
+  const inventory = JSON.parse(fs.readFileSync(path.join(ROOT, 'icons', 'asset-inventory.json'), 'utf8'));
+  verifyExports(source, outputs, inventory);
+  assert.deepEqual(assetInventory(Buffer.from(source.toString().replace(/\r?\n/g, '\r\n')), outputs), inventory);
+  assert.throws(() => verifyExports(Buffer.concat([source, Buffer.from(' ')]), outputs, inventory), /Approved icon source/);
+  for (const [file, bytes] of outputs) {
+    const changed = new Map(outputs);
+    const mutated = Buffer.from(bytes);
+    mutated[mutated.length - 1] ^= 1;
+    changed.set(file, mutated);
+    assert.throws(() => verifyExports(source, changed, inventory), /Approved icon source/, file);
+  }
 });
 
 test('retired icon-selection flags cannot regenerate alternative artwork', () => {

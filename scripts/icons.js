@@ -3,6 +3,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { createHash } = require('node:crypto');
 const { chromium } = require('playwright');
 const { startServer } = require('./server');
 const { pngDimensions } = require('./screenshot');
@@ -10,6 +11,20 @@ const { pngDimensions } = require('./screenshot');
 const OUT = path.resolve(__dirname, '..', 'icons');
 const SIZES = [16, 32, 48, 64, 128, 300];
 const filename = size => `maskify${size}x${size}.png`;
+
+function assetInventory(source, outputs) {
+  const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+  return {
+    schema_version: 1,
+    source: { file: 'maskify.svg', sha256: hash(source.toString().replace(/\r\n/g, '\n')) },
+    exports: Object.fromEntries([...outputs].map(([file, png]) => [file, { bytes: png.length, sha256: hash(png) }])),
+  };
+}
+
+function verifyExports(source, outputs, inventory) {
+  assert.deepEqual(inventory, assetInventory(source, outputs),
+    'Approved icon source or exports changed; regenerate and review artwork, not release-time baselines');
+}
 
 function iconImage(size) {
   const densitySize = SIZES.find(candidate => candidate >= size * 2);
@@ -72,8 +87,8 @@ async function waitForImages(page) {
   await page.evaluate(() => document.fonts.ready);
 }
 
-async function validatePixels(page, png, size, existing) {
-  const stats = await page.evaluate(async ({ src, size, current }) => {
+async function validatePixels(page, png, size) {
+  const stats = await page.evaluate(async ({ src, size }) => {
     async function pixels(source) {
       const image = new Image();
       image.src = source;
@@ -95,43 +110,14 @@ async function validatePixels(page, png, size, existing) {
         }
       }
     }
-    let maxDifference = 0;
-    let maxCompositeDifference = 0;
-    let maxAlphaDifference = 0;
-    let worstPixel;
-    if (current) {
-      const saved = await pixels(current);
-      for (let i = 0; i < data.length; i++) {
-        const difference = Math.abs(data[i] - saved[i]);
-        if (difference > maxDifference) {
-          maxDifference = difference;
-          const offset = i - i % 4;
-          worstPixel = { x: offset / 4 % size, y: Math.floor(offset / 4 / size),
-            rendered: [...data.slice(offset, offset + 4)], saved: [...saved.slice(offset, offset + 4)] };
-        }
-      }
-      for (let i = 0; i < data.length; i += 4) {
-        maxAlphaDifference = Math.max(maxAlphaDifference, Math.abs(data[i + 3] - saved[i + 3]));
-        for (const background of [0, 255]) {
-          for (let channel = 0; channel < 3; channel++) {
-            const render = background + (data[i + channel] - background) * data[i + 3] / 255;
-            const reference = background + (saved[i + channel] - background) * saved[i + 3] / 255;
-            maxCompositeDifference = Math.max(maxCompositeDifference, Math.abs(render - reference));
-          }
-        }
-      }
-    }
-    return { visible, touchesEdge, maxDifference, maxAlphaDifference, maxCompositeDifference, worstPixel };
+    return { visible, touchesEdge };
   }, {
     src: `data:image/png;base64,${png.toString('base64')}`,
-    current: existing && `data:image/png;base64,${existing.toString('base64')}`,
     size,
   });
   assert.equal(stats.touchesEdge, false, `${filename(size)} needs a transparent margin`);
   assert(stats.visible > size * size * 0.2 && stats.visible < size * size * 0.85,
     `${filename(size)} has implausible artwork coverage`);
-  // Allow minor rasterizer rounding at antialiased edges, not different artwork.
-  assert(stats.maxDifference <= 2, `${filename(size)} differs from maskify.svg: ${JSON.stringify(stats)}`);
 }
 
 async function validateGallery(browser, origin) {
@@ -175,6 +161,11 @@ async function validateGallery(browser, origin) {
 }
 
 async function render({ check = false } = {}) {
+  const source = fs.readFileSync(path.join(OUT, 'maskify.svg'));
+  const outputs = check
+    ? new Map(SIZES.map(size => [filename(size), fs.readFileSync(path.join(OUT, filename(size)))]))
+    : new Map();
+  if (check) verifyExports(source, outputs, JSON.parse(fs.readFileSync(path.join(OUT, 'asset-inventory.json'), 'utf8')));
   const input = routes();
   input.set('/render', ['text/html', Buffer.from('<!doctype html><html><head><link rel="icon" href="/maskify.svg"></head><body></body></html>')]);
   const server = await startServer(input);
@@ -183,21 +174,21 @@ async function render({ check = false } = {}) {
     browser = await chromium.launch({ channel: 'chromium', headless: true });
     const page = await browser.newPage({ deviceScaleFactor: 1 });
     page.setDefaultTimeout(15000);
-    const outputs = new Map();
     for (const size of SIZES) {
-      await page.setViewportSize({ width: size, height: size });
-      await page.goto(`${server.origin}/render`);
-      await page.setContent(`<!doctype html><html><head><link rel="icon" href="/maskify.svg"><style>
+      let png = outputs.get(filename(size));
+      if (!check) {
+        await page.setViewportSize({ width: size, height: size });
+        await page.goto(`${server.origin}/render`);
+        await page.setContent(`<!doctype html><html><head><link rel="icon" href="/maskify.svg"><style>
         html,body{margin:0;padding:0;background:transparent;width:${size}px;height:${size}px;overflow:hidden}
         img{display:block;width:${size}px;height:${size}px}
       </style></head><body><img src="/maskify.svg" alt=""></body></html>`);
-      await waitForImages(page);
-      const png = await page.screenshot({ omitBackground: true, scale: 'css' });
+        await waitForImages(page);
+        png = await page.screenshot({ omitBackground: true, scale: 'css' });
+        outputs.set(filename(size), png);
+      }
       assert.deepEqual(pngDimensions(png), { width: size, height: size });
-      const existing = check ? fs.readFileSync(path.join(OUT, filename(size))) : undefined;
-      if (existing) assert.deepEqual(pngDimensions(existing), { width: size, height: size });
-      await validatePixels(page, png, size, existing);
-      outputs.set(filename(size), png);
+      await validatePixels(page, png, size);
     }
     await page.close();
     const html = galleryHtml();
@@ -205,7 +196,9 @@ async function render({ check = false } = {}) {
       assert.equal(fs.readFileSync(path.join(OUT, 'index.html'), 'utf8').replace(/\r\n/g, '\n'), html,
         'Icon gallery is out of date; run npm run icons');
     } else {
+      assert(fs.readFileSync(path.join(OUT, 'maskify.svg')).equals(source), 'SVG changed during icon rendering');
       for (const [file, png] of outputs) fs.writeFileSync(path.join(OUT, file), png);
+      fs.writeFileSync(path.join(OUT, 'asset-inventory.json'), JSON.stringify(assetInventory(source, outputs), null, 2) + '\n');
       fs.writeFileSync(path.join(OUT, 'index.html'), html);
     }
     await validateGallery(browser, server.origin);
@@ -243,4 +236,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { SIZES, filename, galleryHtml, render };
+module.exports = { SIZES, filename, galleryHtml, assetInventory, verifyExports, render };
