@@ -192,6 +192,19 @@ test('only one workflow handles published releases, with reused checks and no st
   const publish = workflow('publish.yml');
   const screenshots = workflow('screenshots.yml');
   const ci = workflow('ci.yml');
+  const [defaults, resolve, verify, upload] = publish.split(/\n  (?:resolve|verify|upload):\r?\n/);
+  assert.match(defaults, /\npermissions:\r?\n  contents: read\r?\n/);
+  for (const job of [resolve, upload]) {
+    assert.match(job, /\n    permissions:\r?\n      contents: write\r?\n/);
+  }
+  assert.doesNotMatch(verify, /permissions:/);
+  assert.equal((publish.match(/contents: write/g) || []).length, 2);
+  assert.match(ci, /\npermissions:\r?\n  contents: read\r?\n/);
+  assert.doesNotMatch(ci, /contents: write/);
+  for (const source of [publish, ci]) {
+    assert.equal((source.match(/uses: actions\/checkout@/g) || []).length,
+      (source.match(/persist-credentials: false/g) || []).length);
+  }
   assert.match(ci, /pull_request:/);
   assert.match(ci, /\n  push:/);
   assert.match(ci, /workflow_call:/);

@@ -25,6 +25,9 @@ concurrency:
 jobs:
   resolve:
     runs-on: ubuntu-latest
+    # GitHub requires push access to discover draft release metadata.
+    permissions:
+      contents: write
     outputs:
       tag: ${{ steps.target.outputs.tag }}
       commit: ${{ steps.target.outputs.commit }}

@@ -52,7 +52,11 @@ Creation of a published release triggers **Release artifacts** (`publish.yml`).
 It resolves the existing tag to its exact commit (including annotated tags),
 checks out that commit, requires manifest/tag agreement, and runs the same
 Node 24 / Playwright Chromium checks as PR and push CI before building artifacts.
-Only the upload job has write access to release contents.
+The workflow defaults to `contents: read`. The `resolve` job needs
+`contents: write` because [GitHub requires push access to discover draft releases](https://docs.github.com/en/rest/releases/releases#list-releases).
+It only reads release metadata and tag refs. The verifier stays read-only;
+the `upload` job retains `contents: write` and is the only job that mutates release
+assets. All checkouts use `persist-credentials: false`.
 
 The workflow attaches:
 
