@@ -6,8 +6,8 @@ const os = require('node:os');
 const path = require('node:path');
 const { test } = require('node:test');
 const { unzipSync } = require('fflate');
-const { versionRefresh } = require('./refresh-store-version');
-const { readCanonical, sha256 } = require('./release-assets');
+const { versionRefresh, verifyRuntimeBaseline } = require('./refresh-store-version');
+const { runtimeFiles, readCanonical, sha256 } = require('./release-assets');
 const { makeArchive } = require('./store-assets');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -17,18 +17,37 @@ function fixture(t) {
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   fs.cpSync(path.join(ROOT, 'store-assets'), path.join(root, 'store-assets'), { recursive: true });
   const inventory = JSON.parse(readCanonical(path.join(ROOT, 'store-assets', 'edge', 'asset-inventory.json')));
-  for (const file of Object.keys(inventory.sources)) {
+  for (const file of new Set([...Object.keys(inventory.sources), ...runtimeFiles(ROOT)])) {
     const destination = path.join(root, ...file.split('/'));
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     fs.copyFileSync(path.join(ROOT, ...file.split('/')), destination);
   }
   const before = readCanonical(path.join(root, 'manifest.json'));
+  const baseline = new Map(runtimeFiles(root).map(file => [file, readCanonical(path.join(root, ...file.split('/')))]));
   const version = JSON.parse(before).version;
   const parts = version.split('.').map(Number);
   parts[2]++;
   fs.writeFileSync(path.join(root, 'manifest.json'), before.toString().replace(`"${version}"`, `"${parts.join('.')}"`));
-  return { root, before };
+  return { root, before, baseline };
 }
+
+test('version-only preflight checks every runtime input, including files omitted by legacy source hashes', t => {
+  const { root, baseline } = fixture(t);
+  verifyRuntimeBaseline(root, baseline);
+  for (const file of ['background.js', 'data/names-en.js', 'data/names-es.js', 'data/domain-utils.js', 'icons/maskify32x32.png']) {
+    const destination = path.join(root, ...file.split('/'));
+    const original = fs.readFileSync(destination);
+    fs.appendFileSync(destination, 'changed');
+    assert.throws(() => verifyRuntimeBaseline(root, baseline), /runtime changed from the approved commit/, file);
+    fs.writeFileSync(destination, original);
+  }
+  const added = path.join(root, 'data', 'unexpected.js');
+  fs.writeFileSync(added, 'unapproved');
+  assert.throws(() => verifyRuntimeBaseline(root, baseline), /Runtime file inventory changed/);
+  fs.unlinkSync(added);
+  fs.unlinkSync(path.join(root, 'data', 'names-en.js'));
+  assert.throws(() => verifyRuntimeBaseline(root, baseline), /Runtime file inventory changed/);
+});
 
 test('version refresh changes only manifest provenance and ZIP inventories without touching PNGs or copy', t => {
   const { root, before } = fixture(t);

@@ -64,7 +64,7 @@ function github({ tag = TAG, commit = COMMIT, annotated = false, prerelease = fa
     } else throw new Error(`Unexpected GitHub request: ${args.join(' ')}`);
     return Buffer.from(JSON.stringify(result));
   };
-  return { calls, assets, run };
+  return { calls, assets, run, moveTag: next => { commit = next; } };
 }
 
 test('modern release tags must be stable, v1.3.0+, and match the manifest exactly', () => {
@@ -173,6 +173,18 @@ test('conflicting historical assets and moved tags fail before any upload', t =>
   const moved = github({ commit: 'c'.repeat(40) });
   assert.throws(() => uploadAssets(REPO, TAG, COMMIT, directory, moved.run), /tag moved/);
   assert(!moved.calls.some(args => args[1] === 'upload'));
+});
+
+test('a concurrent external tag move is detected after upload and never reported as success', t => {
+  const directory = bundle(t);
+  const server = github();
+  const run = args => {
+    const result = server.run(args);
+    if (args[1] === 'upload') server.moveTag('c'.repeat(40));
+    return result;
+  };
+  assert.throws(() => uploadAssets(REPO, TAG, COMMIT, directory, run), /tag moved during upload/);
+  assert.equal(JSON.parse(server.assets.get('release-provenance.json')).commit, COMMIT);
 });
 
 test('only one workflow handles published releases, with reused checks and no store submission or recapture', () => {

@@ -7,9 +7,20 @@ const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { unzipSync } = require('fflate');
 const { STORES, makeArchive, check } = require('./store-assets');
-const { readCanonical, sha256, validateTag } = require('./release-assets');
+const { RUNTIME_ENTRIES, runtimeFiles, readCanonical, sha256, validateTag } = require('./release-assets');
 
 const ROOT = path.resolve(__dirname, '..');
+
+function verifyRuntimeBaseline(root, baseline) {
+  assert.deepEqual(runtimeFiles(root), [...baseline.keys()].sort(),
+    'Runtime file inventory changed; version-only refresh requires the approved runtime');
+  for (const [file, bytes] of baseline) {
+    if (file !== 'manifest.json') {
+      assert(readCanonical(path.join(root, ...file.split('/'))).equals(bytes),
+        `${file}: runtime changed from the approved commit; review assets before refreshing`);
+    }
+  }
+}
 
 function versionRefresh(root, previousManifest) {
   const before = Buffer.from(previousManifest.toString().replace(/\r\n/g, '\n'));
@@ -56,7 +67,13 @@ function versionRefresh(root, previousManifest) {
 
 async function refresh(from) {
   assert(/^[a-f0-9]{40}$/.test(from), 'Pass --from with the exact approved baseline commit SHA');
-  const before = execFileSync('git', ['show', `${from}:manifest.json`], { cwd: ROOT });
+  const files = execFileSync('git', ['ls-tree', '-r', '--name-only', from, '--', ...RUNTIME_ENTRIES],
+    { cwd: ROOT, encoding: 'utf8' }).trim().split('\n');
+  const baseline = new Map(files.map(file => [
+    file, execFileSync('git', ['show', `${from}:${file}`], { cwd: ROOT }),
+  ]));
+  verifyRuntimeBaseline(ROOT, baseline);
+  const before = baseline.get('manifest.json');
   const output = versionRefresh(ROOT, before);
   const staged = fs.mkdtempSync(path.join(os.tmpdir(), 'maskify-version-refresh-'));
   try {
@@ -80,4 +97,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { versionRefresh };
+module.exports = { versionRefresh, verifyRuntimeBaseline };

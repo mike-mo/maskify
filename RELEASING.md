@@ -18,9 +18,10 @@ verification before a Firefox submission.
 1. Start from the approved commit. Change only `manifest.json`'s `version`.
 2. If the approved store-pack inputs are unchanged apart from that version, run
    `npm --prefix scripts run stores:version -- --from <full-approved-commit-sha>`.
-   This rejects other manifest/source changes and stale ZIPs, checks staged
-   packs, then updates only the three inventory hashes and three ZIPs. No PNG
-   is captured or regenerated, and listing/UI copy stays unchanged.
+   This compares the complete runtime allowlist (including added/removed files)
+   with that Git commit, rejects other manifest/source changes and stale ZIPs,
+   checks staged packs, then updates only the three inventory hashes and three
+   ZIPs. No PNG is captured or regenerated, and listing/UI copy stays unchanged.
 3. Run `npm --prefix scripts test`, open a PR, and wait for GitHub CI. CI also
    builds a downloadable `release-assets` artifact. A PR artifact records its
    tested PR merge SHA, not the eventual squash-merge SHA.
@@ -86,9 +87,17 @@ same artifact workflow; it does not race the published-release event.
 
 Retries compare existing asset bytes, upload only missing files, and verify the
 saved bytes. They never use `--clobber`, move a tag, or rewrite release notes.
-A moved tag, mismatched asset, incomplete upload, or incompatible/immutable
-release fails explicitly. Inspect a conflict manually instead of deleting or
-replacing historical assets to make a retry pass.
+Tag checks before and after upload detect a moved tag, but GitHub provides no
+atomic tag-ref-and-asset-upload operation. A manual tag move during an upload
+can leave some assets attached before the workflow fails. Treat such a run as
+invalid, compare the recorded source commit, and do not use its package.
+Do not move or delete release tags; use repository tag protection/immutability
+where available and create a new version for changed code. The workflow does
+not change repository rules or request administrative permissions.
+
+A mismatched asset, incomplete upload, or incompatible/immutable release also
+fails explicitly. Inspect a conflict manually instead of deleting or replacing
+historical assets to make a retry pass.
 
 The legacy screenshot capture path is retired. Modern workflows refuse tags
 older than v1.3.0 and do not modify historical release artwork. Capture scripts
