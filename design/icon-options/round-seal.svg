@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Maskify: round seal</title>
+  <rect x="4" y="8" width="56" height="42" rx="7" fill="#0078d4"/>
+  <path d="m10 15 22 16 22-16" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="32" cy="40" r="17" fill="#063e67" stroke="#fff" stroke-width="2"/>
+  <path d="M32 29v22m-9.5-16.5 19 11m-19 0 19-11" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+</svg>

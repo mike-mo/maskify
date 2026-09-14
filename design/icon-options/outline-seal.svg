@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Maskify: outline envelope and seal</title>
+  <defs>
+    <mask id="seal-gap">
+      <rect width="64" height="64" fill="#fff"/>
+      <circle cx="32" cy="40" r="20" fill="#000"/>
+    </mask>
+  </defs>
+  <g stroke="#0078d4" stroke-width="4" mask="url(#seal-gap)">
+    <rect x="6" y="10" width="52" height="37" rx="5"/>
+    <path d="m9 15 23 15 23-15" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <circle cx="32" cy="40" r="17" fill="#0078d4"/>
+  <path d="M32 29v22m-9.5-16.5 19 11m-19 0 19-11" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+</svg>

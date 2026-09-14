@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "screenshot": "node screenshot.js"
+    "screenshot": "node screenshot.js",
+    "preview": "node preview.js",
+    "icons": "node icon-options.js",
+    "icons:preview": "node icon-options.js --preview",
+    "test": "node --test screenshot.test.js masking.test.js"
   },
   "dependencies": {
     "playwright": "^1.59.1"

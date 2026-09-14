@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Maskify: flap mask</title>
+  <defs>
+    <mask id="flap-seam">
+      <rect width="64" height="64" fill="#fff"/>
+      <path d="m10 18 22 12 22-12" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    </mask>
+  </defs>
+  <path fill="#0078d4" fill-rule="evenodd" d="M12 12h40a8 8 0 0 1 8 8v24a8 8 0 0 1-8 8H12a8 8 0 0 1-8-8V20a8 8 0 0 1 8-8Zm1 24a6 4 0 1 0 12 0 6 4 0 1 0-12 0Zm26 0a6 4 0 1 0 12 0 6 4 0 1 0-12 0Z" clip-rule="evenodd" mask="url(#flap-seam)"/>
+</svg>
