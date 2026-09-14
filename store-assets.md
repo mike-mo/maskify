@@ -220,10 +220,17 @@ o grabar la pantalla." The reminder remains "Review the page before sharing." /
 
 The complete localized captions and supporting copy live in `scripts\copy.js`.
 The popup's original strings come from `_locales`, not from a redrawn interface.
-The selected **Round seal (I)** icon is used in the extension and marketing
-headers: a solid blue envelope with a dark circular asterisk seal. Its transparent
-artwork is shown without a circular crop, preserving the envelope corners.
-The editable source is `design\icon-options\round-seal.svg`.
+The Maskify icon is used in the extension and marketing headers: a solid blue
+envelope with a dark circular asterisk seal. Its transparent artwork is shown
+without a circular crop, preserving the envelope corners.
+The only editable icon source is `icons\maskify.svg`. Generate every export with
+`npm --prefix scripts run icons`. Use `icons\maskify300x300.png` for the English
+and Spanish store logos. This matches Edge's recommended 300 x 300 size.
+
+When updating the store, replace the existing screenshots with the three files
+for that language, update the description with the listing copy above, and
+replace or remove any promotional tiles that still show older branding.
+Publishing an extension package alone does not update these listing assets.
 
 The artwork uses the bundled Manrope typeface, licensed under the SIL Open Font
 License. Capture sources are editable HTML templates in `scripts\templates.js`
@@ -231,3 +238,36 @@ and shared styles in `scripts\demo.css` and `scripts\composition.css`.
 
 Edge screenshot requirements:
 https://learn.microsoft.com/en-us/microsoft-edge/extensions/publish/publish-extension
+
+## Browser store upload packs
+
+Run `npm --prefix scripts run stores` and open `store-assets/index.html`.
+The generated folders and ZIPs contain all listing images for Edge, Chrome,
+and Firefox, along with this approved copy and store-specific upload guides.
+Do not edit the generated files directly.
+
+Edge uses a 300 x 300 logo, the approved 1280 x 800 screenshots for each
+language, and optional 440 x 280 and 1400 x 560 promotional graphics.
+Chrome uses a 128 x 128 icon with transparent clear space, the same localized
+screenshots, a required 440 x 280 tile, and an optional 1400 x 560 marquee.
+Chrome's promotional tiles cannot be localized. Both stores therefore use a
+language-neutral icon-and-wordmark composition on the seal's navy background.
+
+Firefox's pack uses 2400 x 1800 screenshots in a 4:3 ratio, matching AMO's
+newer media-form guidance and its stricter validation when enabled, rather than
+the older 1280 x 800 recommendation in the Extension Workshop guide.
+AMO has one shared screenshot gallery, so its
+three images omit editorial headlines and have separate English and Spanish
+captions. Text inside the real captured interface and fictional page remains
+English. The 128 x 128 PNG logo is suitable for AMO's current icon uploader.
+
+Firefox images use real captures of the current Chromium extension. They are
+not evidence of Firefox compatibility: the current `background.service_worker`
+manifest entry is unsupported there. Prepare and verify the Firefox extension
+package before submitting its listing. No browser package, store submission,
+video, or privacy-form declaration is created by the asset generator.
+
+Each pack contains its own `UPLOAD.md` and source references. PNG dimensions,
+color format, Chrome icon padding, source-copy equality, localized text, and
+ZIP contents are checked. Images are kept below a project budget of 2 MiB each;
+this is a production budget, not a claim about every store's upload limit.

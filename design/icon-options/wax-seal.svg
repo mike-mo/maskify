@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
-  <title>Maskify: wax seal</title>
-  <rect x="6" y="10" width="52" height="37" rx="5" fill="#dff6ff" stroke="#0078d4" stroke-width="4"/>
-  <path d="m9 15 23 15 23-15" stroke="#0078d4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M32 21c4-1 7 2 10 3 5 1 6 4 6 8 3 3 3 7 1 10 0 5-3 7-7 8-3 5-7 7-11 5-4 2-8 0-10-3-5-1-7-4-6-8-3-4-2-8 0-11-1-5 3-8 7-8 3-4 6-5 10-4Z" fill="#0078d4"/>
-  <path d="M32 28v22m-9.5-16.5 19 11m-19 0 19-11" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-</svg>

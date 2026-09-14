@@ -26,6 +26,7 @@ jobs:
         run: |
           zip -r maskify.zip \
             manifest.json \
+            background.js \
             _locales/ \
             popup/ \
             content-scripts/ \
@@ -35,8 +36,8 @@ jobs:
             icons/maskify48x48.png \
             icons/maskify128x128.png
 
-      - name: Attach maskify.zip to release
-        run: gh release upload ${{ github.ref_name }} maskify.zip
+      - name: Attach extension and store logo to release
+        run: gh release upload ${{ github.ref_name }} maskify.zip icons/maskify300x300.png
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

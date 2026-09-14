@@ -117,34 +117,57 @@ covers release asset selection, including older tags that produce `popup.png`
 and `testpage.png`. The release workflow packages the complete localized set and
 embeds the English images in release notes.
 
-## Icon concepts
+## Brand assets
 
-**Round seal (I)** is the selected production icon. Its editable source is
-[`design/icon-options/round-seal.svg`](design/icon-options/round-seal.svg).
-The 16-, 32-, 48-, and 128-pixel exports are installed at the existing
-`icons/maskify<size>x<size>.png` paths, used by the toolbar, popup, toast,
-page favicons, and store screenshot branding.
+Maskify uses one icon: a blue envelope with a dark circular asterisk seal.
+Its editable source is [`icons/maskify.svg`](icons/maskify.svg).
+The 16-, 32-, 48-, and 128-pixel PNGs at `icons/maskify<size>x<size>.png`
+serve the toolbar, popup, toast, page favicons, and store screenshots.
+A 64-pixel export supports high-DPI previews. Use
+[`icons/maskify300x300.png`](icons/maskify300x300.png) as the logo for both
+language listings in the Edge store.
 
-The [icon gallery](design/icon-options/index.html) leads with three envelope and
-asterisk-seal proposals (I-K): a round stamp, a wax-edged stamp, and an outline
-envelope. The mask hybrids (E-H) and original options (A-D) remain available
-in the earlier-proposals sections.
-Each has an editable SVG and transparent PNGs at 16, 32, 48, and 128 pixels.
-The seal and hybrid rounds also include 64-pixel PNGs for sharp 32-pixel previews
-on high-DPI displays. The gallery shows actual-size light and dark toolbar
-samples, selecting higher-resolution PNGs as needed.
+The [icon preview](icons/index.html) shows the current artwork on light and
+dark toolbars. With the screenshot dependencies installed, run
+`npm --prefix scripts run icons` to regenerate every PNG and the preview
+from the canonical SVG. This updates the production files directly.
+Use `npm --prefix scripts run icons -- --check` to verify saved exports, or
+`npm --prefix scripts run icons:preview` to serve the preview locally.
+The renderer is `scripts/icons.js`; preview styles are in `icons/gallery.css`.
+After changing the artwork, run `npm --prefix scripts run screenshot` to
+refresh both localized store screenshot sets.
 
-With the screenshot dependencies installed, run `npm --prefix scripts run icons`
-to regenerate the seal exports and comparison image, or
-`npm --prefix scripts run icons:preview` to serve the gallery locally.
-Use `npm --prefix scripts run icons -- --all` to regenerate every round.
-Use `npm --prefix scripts run icons -- --install-selected` to render the seal
-round and copy the selected artwork to the production icon paths. Ordinary
-gallery generation does not overwrite production icons. After changing
-production artwork, run `npm --prefix scripts run screenshot` to refresh both
-localized store screenshot sets.
-Edit the SVGs and `gallery.css` in `design/icon-options/`; gallery copy and the
-renderer are in `scripts/icon-options.js`.
+Merging artwork updates changes the repository and its GitHub Pages site,
+not an already published extension or its store listing. Publish a new version
+to distribute updated runtime icons. Separately update each store language's
+logo, screenshots, and description using the files and copy in this repository.
+Replace or remove any optional promotional tiles that contain older branding.
+Historical commits and versioned releases retain the assets they shipped with.
+
+## Browser store packs
+
+The [store asset gallery](store-assets/index.html) contains downloadable packs
+for Edge Add-ons, the Chrome Web Store, and Firefox Add-ons. Each ZIP includes
+the store's icon, screenshot files, approved English and Spanish listing copy,
+captions, privacy policy, license, and upload instructions.
+
+Edge and Chrome reuse the approved localized screenshots. Their promotional
+tiles use only the icon and wordmark, so one design works in both languages.
+Chrome's icon has the store's transparent clear space. Firefox has a separate
+shared gallery with localized captions and no added editorial headlines.
+
+Run `npm --prefix scripts run stores` to regenerate the packs,
+`npm --prefix scripts run stores:check` to verify them, or
+`npm --prefix scripts run stores:preview` to serve the gallery locally.
+The generator captures real UI for Firefox's image layouts without overwriting
+the approved screenshots in `screenshots/en` and `screenshots/es`.
+After changing the extension or its branding, regenerate icons and screenshots
+before rebuilding the store packs.
+
+These are listing assets, not signed extension packages. The current
+Chromium-only background service worker needs a Firefox-compatible replacement
+and browser verification before a Firefox submission. Generating these files
+does not publish or update any listing.
 
 ## Privacy
 
