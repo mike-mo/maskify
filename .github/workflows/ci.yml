@@ -19,7 +19,11 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # Match the approved artwork's rasterizer platform without loosening pixel checks.
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
         with:
