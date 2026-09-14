@@ -114,8 +114,10 @@ sources are not included in the extension's release package.
 The generator checks masking behavior, localization, preview wrapping, image
 dimensions, clipping, and separation between composition blocks. `npm test` also
 covers release asset selection, including older tags that produce `popup.png`
-and `testpage.png`. The release workflow packages the complete localized set and
-embeds the English images in release notes.
+and `testpage.png`. Modern releases package the committed, approved localized
+set without recapturing images. English images are also attached for optional
+release-note use. See [the release procedure](RELEASING.md) for version checks,
+CI gates, retry behavior, and the separate manual store-upload step.
 
 ## Brand assets
 
@@ -163,6 +165,9 @@ The generator captures real UI for Firefox's image layouts without overwriting
 the approved screenshots in `screenshots/en` and `screenshots/es`.
 After changing the extension or its branding, regenerate icons and screenshots
 before rebuilding the store packs.
+
+For a version-only manifest change, preserve the approved images and use the
+guarded metadata refresh described in [RELEASING.md](RELEASING.md) instead.
 
 These are listing assets, not signed extension packages. The current
 Chromium-only background service worker needs a Firefox-compatible replacement

@@ -10,7 +10,9 @@
     "stores": "node store-assets.js",
     "stores:preview": "node store-assets.js --preview",
     "stores:check": "node store-assets.js --check",
-    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js"
+    "stores:version": "node refresh-store-version.js",
+    "release:build": "node release-assets.js build",
+    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js refresh-store-version.test.js"
   },
   "dependencies": {
     "fflate": "^0.8.3",

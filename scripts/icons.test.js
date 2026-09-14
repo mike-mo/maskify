@@ -6,6 +6,7 @@ const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const { test } = require('node:test');
 const { SIZES, filename, render } = require('./icons');
+const { RUNTIME_ENTRIES } = require('./release-assets');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -23,10 +24,7 @@ test('runtime icons and release packaging use only the current production export
   assert.deepEqual(manifest.icons, expected);
   if (manifest.action.default_icon) assert.deepEqual(manifest.action.default_icon, expected);
 
-  const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'publish.yml'), 'utf8');
-  const zip = workflow.match(/zip -r maskify\.zip\s+\\\r?\n([\s\S]*?)(?:\r?\n\s*\r?\n)/);
-  assert(zip, 'Missing extension package build');
-  const entries = zip[1].split(/[\s\\]+/).filter(Boolean);
+  const entries = RUNTIME_ENTRIES;
   assert.deepEqual(entries.filter(entry => entry.startsWith('icons/')), Object.values(expected));
   const resources = [
     'manifest.json', manifest.background.service_worker, manifest.action.default_popup,

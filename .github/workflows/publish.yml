@@ -1,61 +1,74 @@
-name: Publish to Edge Add-ons
+name: Release artifacts
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing stable release tag (blank selects GitHub stable latest)'
+        type: string
+        required: false
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maskify-release-artifacts
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.target.outputs.tag }}
+      commit: ${{ steps.target.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Resolve stable release and exact tag commit
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: node scripts/release-assets.js resolve
+
+  verify:
+    needs: resolve
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.resolve.outputs.commit }}
+      tag: ${{ needs.resolve.outputs.tag }}
+
+  upload:
+    needs: [resolve, verify]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Verify version matches tag
-        run: |
-          MANIFEST_VERSION=$(jq -r '.version' manifest.json)
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
-            echo "Version mismatch: manifest=$MANIFEST_VERSION, tag=$TAG_VERSION"
-            exit 1
-          fi
-          echo "Version check passed: $MANIFEST_VERSION"
-
-      - name: Build maskify.zip
-        run: |
-          zip -r maskify.zip \
-            manifest.json \
-            background.js \
-            _locales/ \
-            popup/ \
-            content-scripts/ \
-            data/ \
-            icons/maskify16x16.png \
-            icons/maskify32x32.png \
-            icons/maskify48x48.png \
-            icons/maskify128x128.png
-
-      - name: Attach extension and store logo to release
-        run: gh release upload ${{ github.ref_name }} maskify.zip icons/maskify300x300.png
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Check BPP_KEYS secret
-        id: check_secret
-        run: |
-          if [ -n "$BPP_KEYS" ]; then
-            echo "available=true" >> $GITHUB_OUTPUT
-          else
-            echo "available=false" >> $GITHUB_OUTPUT
-            echo "BPP_KEYS secret not set — skipping Edge publish"
-          fi
-        env:
-          BPP_KEYS: ${{ secrets.BPP_KEYS }}
-
-      - name: Publish to Edge Add-ons Store
-        if: steps.check_secret.outputs.available == 'true'
-        uses: PlasmoHQ/bpp@v3
         with:
-          artifact: maskify.zip
-          keys: ${{ secrets.BPP_KEYS }}
+          ref: ${{ needs.resolve.outputs.commit }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+          path: ${{ runner.temp }}/maskify-release
+      - name: Verify and attach assets without replacing historical bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
+          RELEASE_COMMIT: ${{ needs.resolve.outputs.commit }}
+        run: node scripts/release-assets.js upload "$RUNNER_TEMP/maskify-release"
