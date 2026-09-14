@@ -28,11 +28,15 @@ function bundle(t) {
   return directory;
 }
 
-function github({ tag = TAG, commit = COMMIT, annotated = false, prerelease = false } = {}) {
+function github({ tag = TAG, commit = COMMIT, annotated = false, prerelease = false, draft = false } = {}) {
   const calls = [];
   const assets = new Map();
   const run = args => {
     calls.push(args);
+    if (args[0] === 'release' && args[1] === 'view') {
+      assert.deepEqual(args, ['release', 'view', tag, '--repo', REPO, '--json', 'databaseId']);
+      return Buffer.from(JSON.stringify({ databaseId: 42 }));
+    }
     if (args[0] === 'release') {
       assert.deepEqual(args.slice(0, 3), ['release', 'upload', tag]);
       assert.deepEqual(args.slice(-2), ['--repo', REPO]);
@@ -46,8 +50,8 @@ function github({ tag = TAG, commit = COMMIT, annotated = false, prerelease = fa
     const endpoint = args[1].replace(`repos/${REPO}/`, '');
     let result;
     if (endpoint === 'releases/latest') result = { tag_name: tag };
-    else if (endpoint === `releases/tags/${tag}`) result = {
-      id: 42, tag_name: tag, prerelease,
+    else if (endpoint === 'releases/42') result = {
+      id: 42, tag_name: tag, prerelease, draft,
       assets: [...assets].map(([name], index) => ({ id: index + 1, name, state: 'uploaded' })),
     };
     else if (endpoint === `git/ref/tags/${tag}`) result = {
@@ -86,6 +90,15 @@ test('explicit tags resolve their exact lightweight or annotated commit without 
     assert(!server.calls.some(args => args[1].endsWith('/latest')));
   }
   assert.throws(() => resolveTarget(REPO, TAG, github({ prerelease: true }).run), /not a prerelease/);
+});
+
+test('an explicitly selected draft resolves by release ID rather than the published-only tag endpoint', () => {
+  const server = github({ draft: true });
+  const target = resolveTarget(REPO, TAG, server.run);
+  assert.equal(target.commit, COMMIT);
+  assert.equal(target.release.draft, true);
+  assert(server.calls.some(args => args[1] === `repos/${REPO}/releases/42`));
+  assert(!server.calls.some(args => args[1].includes('/releases/tags/')));
 });
 
 test('packaging uses the selective runtime allowlist including the background worker and every runtime byte', t => {
@@ -145,9 +158,9 @@ test('upload fills partial releases, verifies the saved bytes, and retries witho
   server.assets.set('maskify.zip', fs.readFileSync(path.join(directory, 'maskify.zip')));
   uploadAssets(REPO, TAG, COMMIT, directory, server.run);
   assert.equal(server.assets.size, 11);
-  assert.equal(server.calls.filter(args => args[0] === 'release').length, 1);
+  assert.equal(server.calls.filter(args => args[1] === 'upload').length, 1);
   uploadAssets(REPO, TAG, COMMIT, directory, server.run);
-  assert.equal(server.calls.filter(args => args[0] === 'release').length, 1);
+  assert.equal(server.calls.filter(args => args[1] === 'upload').length, 1);
   assert(!server.calls.flat().includes('--clobber'));
 });
 
@@ -156,10 +169,10 @@ test('conflicting historical assets and moved tags fail before any upload', t =>
   const server = github();
   server.assets.set('en-03-controls.png', Buffer.from('different approved image'));
   assert.throws(() => uploadAssets(REPO, TAG, COMMIT, directory, server.run), /refusing to overwrite/);
-  assert(!server.calls.some(args => args[0] === 'release'));
+  assert(!server.calls.some(args => args[1] === 'upload'));
   const moved = github({ commit: 'c'.repeat(40) });
   assert.throws(() => uploadAssets(REPO, TAG, COMMIT, directory, moved.run), /tag moved/);
-  assert(!moved.calls.some(args => args[0] === 'release'));
+  assert(!moved.calls.some(args => args[1] === 'upload'));
 });
 
 test('only one workflow handles published releases, with reused checks and no store submission or recapture', () => {

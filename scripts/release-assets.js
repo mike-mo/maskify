@@ -87,7 +87,10 @@ function resolveTarget(repo, requestedTag, run = gh) {
   const api = endpoint => JSON.parse(run(['api', `repos/${repo}/${endpoint}`]).toString());
   const tag = requestedTag || api('releases/latest').tag_name;
   validateTag(tag);
-  const release = api(`releases/tags/${tag}`);
+  // The REST by-tag endpoint excludes drafts; gh resolves both published and draft releases.
+  const { databaseId } = JSON.parse(run(['release', 'view', tag, '--repo', repo, '--json', 'databaseId']).toString());
+  assert(Number.isSafeInteger(databaseId) && databaseId > 0, 'Release identifier is invalid');
+  const release = api(`releases/${databaseId}`);
   assert.equal(release.tag_name, tag, 'Release tag changed during resolution');
   assert.equal(release.prerelease, false, 'Use a stable release, not a prerelease');
   let object = api(`git/ref/tags/${tag}`).object;

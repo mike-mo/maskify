@@ -96,13 +96,32 @@ async function validatePixels(page, png, size, existing) {
       }
     }
     let maxDifference = 0;
+    let maxCompositeDifference = 0;
+    let maxAlphaDifference = 0;
+    let worstPixel;
     if (current) {
       const saved = await pixels(current);
       for (let i = 0; i < data.length; i++) {
-        maxDifference = Math.max(maxDifference, Math.abs(data[i] - saved[i]));
+        const difference = Math.abs(data[i] - saved[i]);
+        if (difference > maxDifference) {
+          maxDifference = difference;
+          const offset = i - i % 4;
+          worstPixel = { x: offset / 4 % size, y: Math.floor(offset / 4 / size),
+            rendered: [...data.slice(offset, offset + 4)], saved: [...saved.slice(offset, offset + 4)] };
+        }
+      }
+      for (let i = 0; i < data.length; i += 4) {
+        maxAlphaDifference = Math.max(maxAlphaDifference, Math.abs(data[i + 3] - saved[i + 3]));
+        for (const background of [0, 255]) {
+          for (let channel = 0; channel < 3; channel++) {
+            const render = background + (data[i + channel] - background) * data[i + 3] / 255;
+            const reference = background + (saved[i + channel] - background) * saved[i + 3] / 255;
+            maxCompositeDifference = Math.max(maxCompositeDifference, Math.abs(render - reference));
+          }
+        }
       }
     }
-    return { visible, touchesEdge, maxDifference };
+    return { visible, touchesEdge, maxDifference, maxAlphaDifference, maxCompositeDifference, worstPixel };
   }, {
     src: `data:image/png;base64,${png.toString('base64')}`,
     current: existing && `data:image/png;base64,${existing.toString('base64')}`,
@@ -112,7 +131,7 @@ async function validatePixels(page, png, size, existing) {
   assert(stats.visible > size * size * 0.2 && stats.visible < size * size * 0.85,
     `${filename(size)} has implausible artwork coverage`);
   // Allow minor rasterizer rounding at antialiased edges, not different artwork.
-  assert(stats.maxDifference <= 2, `${filename(size)} differs from maskify.svg; run npm run icons`);
+  assert(stats.maxDifference <= 2, `${filename(size)} differs from maskify.svg: ${JSON.stringify(stats)}`);
 }
 
 async function validateGallery(browser, origin) {

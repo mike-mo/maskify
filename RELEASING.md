@@ -51,10 +51,7 @@ Creation of a published release triggers **Release artifacts** (`publish.yml`).
 It resolves the existing tag to its exact commit (including annotated tags),
 checks out that commit, requires manifest/tag agreement, and runs the same
 Node 24 / Playwright Chromium checks as PR and push CI before building artifacts.
-Validation and packaging run on Windows, the approved artwork's rasterizer
-platform, so the strict icon pixel comparison needs no cross-platform tolerance
-increase. The artifact uploader runs on Linux. Only the upload job has write
-access to release contents.
+Only the upload job has write access to release contents.
 
 The workflow attaches:
 
