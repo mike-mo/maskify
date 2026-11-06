@@ -7,8 +7,8 @@
   },
   "default_locale": "en-US",
   "locales": {
-    "en-US": "store-assets/firefox/en",
-    "es-ES": "store-assets/firefox/es"
+    "en-US": "en",
+    "es-ES": "es"
   },
   "categories": {
     "firefox": ["privacy-security"]
@@ -17,30 +17,30 @@
   "is_experimental": false,
   "requires_payment": false,
   "support_email": null,
-  "privacy_policy_file": "store-assets/firefox/privacy-policy.txt",
+  "privacy_policy_file": "privacy.html",
   "privacy_policy_suffix": "\n\nPublished policy: https://mike-mo.github.io/maskify/privacy.html",
   "custom_license": {
     "name": "Maskify personal, non-commercial license",
     "text_file": "LICENSE"
   },
-  "icon_file": "store-assets/firefox/icon-128.png",
+  "icon_file": "icons/maskify128x128.png",
   "screenshots": [
     {
-      "file": "store-assets/firefox/screenshots/01-result.png",
+      "file": "store-artwork/firefox-01-result.png",
       "id": 443842,
       "initial_position": 0,
       "uploaded_sha256": "b52424965c4267f113d27ea925830bb8772e18ffa6fc0459e7ebb4c1ea9dbdee",
       "initial_caption_sha256": "98a41457de1c037690d9e130cd08a5ec922f9f7029622dfd71fd08f780d66ef1"
     },
     {
-      "file": "store-assets/firefox/screenshots/02-coverage.png",
+      "file": "store-artwork/firefox-02-coverage.png",
       "id": 443843,
       "initial_position": 1,
       "uploaded_sha256": "2d7f4123c33dd3818a12ee1dd02e71864e41cfc13a34c7966b71f156e3ee0dc4",
       "initial_caption_sha256": "a47412db18a6ae5c24acce0f3eef22b428375f817c391014c2c60208ce256141"
     },
     {
-      "file": "store-assets/firefox/screenshots/03-controls.png",
+      "file": "store-artwork/firefox-03-controls.png",
       "id": 443844,
       "initial_position": 2,
       "uploaded_sha256": "7290c02597955e66f5d3325e19c814e000e1b92eecb8e75df2bf39b0725a3280",

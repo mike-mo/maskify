@@ -10,6 +10,7 @@ const {
   readCanonical, validateTag, runtimeFiles, buildAssets, resolveTarget, verifyBundle, uploadAssets,
 } = require('./release-assets');
 const { selectAssets } = require('./release-screenshots');
+const { buildStoreFiles, makeArchive } = require('./store-assets');
 
 const ROOT = path.resolve(__dirname, '..');
 const COMMIT = 'a'.repeat(40);
@@ -114,11 +115,11 @@ test('packaging uses the selective runtime allowlist including the background wo
   }
 });
 
-test('release artwork and store bundles are copied exactly and both screenshot locales are complete', t => {
+test('release listing packs are built from canonical sources and approved screenshots remain exact', t => {
   const directory = bundle(t);
   for (const store of ['edge', 'chrome', 'firefox']) {
     const name = `maskify-${store}-assets.zip`;
-    assert(fs.readFileSync(path.join(directory, name)).equals(fs.readFileSync(path.join(ROOT, 'store-assets', name))));
+    assert(fs.readFileSync(path.join(directory, name)).equals(makeArchive(buildStoreFiles(ROOT, store))));
   }
   assert(fs.readFileSync(path.join(directory, 'maskify300x300.png'))
     .equals(fs.readFileSync(path.join(ROOT, 'icons', 'maskify300x300.png'))));
@@ -190,8 +191,13 @@ test('a concurrent external tag move is detected after upload and never reported
 test('only one workflow handles published releases, with reused checks and no store submission or recapture', () => {
   const workflow = name => fs.readFileSync(path.join(ROOT, '.github', 'workflows', name), 'utf8');
   const publish = workflow('publish.yml');
-  const screenshots = workflow('screenshots.yml');
+  assert(!fs.existsSync(path.join(ROOT, '.github', 'workflows', 'screenshots.yml')), 'Duplicate release entry point retired');
   const ci = workflow('ci.yml');
+  assert.match(publish, /name: 'GitHub release: Attach packages'/);
+  assert.match(ci, /name: 'Check: Test and build packages'/);
+  assert.match(ci, /name: store-listings/);
+  assert.match(ci, /path: dist\/store-assets\//);
+  assert.equal((ci.match(/if: hashFiles\('store-artwork\/approved\.json'\) != ''/g) || []).length, 2);
   const [defaults, resolve, verify, upload] = publish.split(/\n  (?:resolve|verify|upload):\r?\n/);
   assert.match(defaults, /\npermissions:\r?\n  contents: read\r?\n/);
   for (const job of [resolve, upload]) {
@@ -216,9 +222,7 @@ test('only one workflow handles published releases, with reused checks and no st
   assert.match(publish, /needs: \[resolve, verify\]/);
   assert.match(publish, /ref: \$\{\{ needs\.resolve\.outputs\.commit \}\}/);
   assert.match(publish, /group: maskify-release-artifacts/);
-  assert.match(screenshots, /uses: \.\/\.github\/workflows\/publish\.yml/);
-  assert.doesNotMatch(screenshots, /\n  release:/);
-  for (const source of [publish, screenshots, ci]) {
-    assert.doesNotMatch(source, /PlasmoHQ|BPP_KEYS|--clobber|node screenshot\.js|npm run screenshot/);
+  for (const source of [publish, ci]) {
+    assert.doesNotMatch(source, /PlasmoHQ|BPP_KEYS|--clobber|node screenshot\.js|npm run screenshot|stores:capture|--capture/);
   }
 });

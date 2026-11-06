@@ -241,7 +241,12 @@ https://learn.microsoft.com/en-us/microsoft-edge/extensions/publish/publish-exte
 
 ## Browser store upload packs
 
-Run `npm --prefix scripts run stores` and open `store-assets/index.html`.
+Run `npm --prefix scripts run stores` and open `dist/store-assets/index.html`.
+Store-specific copy, duplicate image layouts, inventories and ZIPs are generated
+artifacts, not separately maintained source. Shared captions/demo text live in
+`scripts/copy.json`; approved unique store artwork lives in `store-artwork/`.
+Normal builds reuse approved PNGs. Only `stores:capture` creates new store
+artwork for review. See [RELEASING.md](RELEASING.md#canonical-sources-and-generated-listings).
 The generated folders and ZIPs contain all listing images for Edge, Chrome,
 and Firefox, along with this approved copy and store-specific upload guides.
 Do not edit the generated files directly.

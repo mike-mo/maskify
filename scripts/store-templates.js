@@ -70,17 +70,17 @@ These 2400 x 1800 images follow AMO's newer media-form guidance, including
 stricter 4:3 validation when enabled. They omit editorial headlines; the English
 text remaining inside them belongs to the captured UI and fictional demonstration page.
 
-The captures come from the working Chromium extension, not a verified Firefox
-build. The current manifest uses \`background.service_worker\`, which Firefox
-does not support. Prepare and verify a Firefox-compatible extension package,
-then confirm these screenshots still represent its behavior before submission.
-Do not select unsupported platforms or invent data-collection declarations.
+These are approved Chromium-captured listing images, not evidence of Firefox
+browser verification. Build the separate Firefox package and matching reviewer
+sources using RELEASING.md, then run its compatibility checks before submission.
+The existing AMO listing and gallery IDs are tracked in amo/listing.json.
+Do not reupload an existing version or select unsupported platforms.
 `,
   };
   return `# ${store.name} upload guide
 
-This is a listing-asset pack, not an installable extension. No store submission
-has been made.
+This is a generated listing-asset pack, not an installable extension. Building
+it does not upload, submit, or publish anything.
 
 ${specifics[store.id]}
 ## Copy
@@ -114,10 +114,10 @@ function galleryHtml(stores, specs) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Maskify store assets</title><link rel="icon" href="firefox/icon-128.png">
-<link rel="stylesheet" href="../scripts/store-gallery.css"></head><body><main>
+<link rel="stylesheet" href="scripts/store-gallery.css"></head><body><main>
 <header><img src="edge/icon-300.png" alt="" width="72" height="72"><div><h1>Maskify store assets</h1>
 <p>The current icon, approved copy, and screenshots for each store.</p></div></header>
-<p class="notice">Listing files only. Nothing has been published. The Firefox extension package still needs a compatible background script and browser verification.</p>
+<p class="notice">Generated listing files only. Building these packs does not upload or publish anything. Extension packages and store submissions have separate workflows; see RELEASING.md.</p>
 <nav aria-label="Stores">${stores.map(store => `<a href="#${store.id}">${store.name}</a>`).join('')}</nav>
 ${stores.map(store => `<section class="store" id="${store.id}">
 <div class="store-heading"><h2>${store.name}</h2><a class="download" href="maskify-${store.id}-assets.zip" download>Download asset pack</a></div>

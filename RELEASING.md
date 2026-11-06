@@ -2,40 +2,93 @@
 
 ## Scope and approval
 
-The **Release artifacts** workflow supports stable releases starting with **v1.3.0**. It builds
+The **GitHub release: Attach packages** workflow supports stable releases starting with **v1.3.0**. It builds
 GitHub release assets only. It does not create or move tags, create releases,
 invoke PlasmoHQ/bpp, use `BPP_KEYS`, or submit anything to a browser store.
 Publishing a GitHub release cannot trigger an automated Edge submission.
 
 Store upload is a separate, human-authorized operation in Partner Center.
 Uploading a draft package does not authorize certification, submission, or
-publication. Firefox has a separate, manually dispatched **Firefox Add-ons**
+publication. Firefox has a separate, manually dispatched **Firefox store: Plan or publish**
 workflow with an offline plan and protected approval gate. It can synchronize
 AMO metadata or submit a new version, but is never triggered by a push or GitHub
 release. Its listing pack is not an extension; use the separate Firefox package.
 
+## Which workflow to use
+
+| Actions name | Entry point | Responsibility and outputs | External writes |
+| --- | --- | --- | --- |
+| **Check: Test and build packages** (`ci.yml`) | Push, pull request, or reused by the other workflows for an exact ref | Shared regression/browser/lint checks, `release-assets`, and generated `store-listings` gallery/packs | None |
+| **GitHub release: Attach packages** (`publish.yml`) | Published GitHub release, or manual existing stable tag | Resolve the immutable tag commit, reuse checks, verify and attach the resulting assets | GitHub release assets only; never store submission |
+| **Firefox store: Plan or publish** (`firefox-publish.yml`) | Manual, workflow on main, exact approved SHA/version | Default offline `amo-plan`; explicit protected sync or new-version submission, with `amo-receipt` | Only an authorized sync/publish can write to AMO |
+
+The old `screenshots.yml` was only a second entry point to `publish.yml`; it has
+been removed. Prior run history can still show the old workflow names. Release
+attachment and AMO publication remain separate because their destinations,
+credentials and approval requirements differ. They reuse one check/build
+workflow and the same packaging helpers, not separate capture pipelines.
+No current workflow captures or approves new artwork. The listing-artifact step
+is gated on the canonical artwork record, so running checks for an older ref
+does not invoke that ref's historical artwork-regeneration command.
+
+## Canonical sources and generated listings
+
+| Maintained source | Generated output |
+| --- | --- |
+| `store-assets.md` listing sections and certification notes | Each store's English/Spanish Markdown/plain descriptions and generic reviewer notes |
+| `_locales/en/messages.json`, `_locales/es/messages.json` and shared public-link constants in `scripts/store-assets.js` | Localized name, summary and listing links |
+| `scripts/copy.json` | Caption files and screenshot/demo composition text |
+| `privacy.html`, root `LICENSE` | Shared plain-text policy and license copies |
+| `icons/`, `screenshots/en/`, `screenshots/es/` | Reused production icons and localized Edge/Chrome screenshots |
+| Unique approved `store-artwork/` PNGs and `approved.json` | Padded Chrome icon, shared promos, Firefox gallery, per-store inventories |
+| `amo/listing.json`, `amo/versions/VERSION/` and `manifest.firefox.json` | AMO-specific choices, version payloads and Firefox package metadata |
+
+`npm --prefix scripts run stores` deterministically builds **`dist/store-assets/`**:
+three store folders/ZIPs, a gallery and its local font/CSS. These are ignored
+outputs, also downloadable as the **store-listings** CI artifact. Release
+packaging and AMO planning use the same in-memory builder directly, so they
+cannot read stale local ZIPs. The generated inventories include hashes for
+canonical copy, artwork, source inputs and the build scripts. ZIP timestamps
+and text line endings are normalized.
+
+The single artwork approval record replaces three duplicated committed
+inventories. Its migration receipt records the prior source commit and inventory
+hashes. Migration preserved all 22 logical store images exactly and all 33
+approved text/license/caption files with canonical LF; no image was recaptured.
+There are 14 unique approved image sources, six of which live in `store-artwork/`.
+Artwork verification covers the full runtime allowlist (including added/removed
+files), render inputs, fonts and approved PNG bytes. Only the manifest's version
+value is excluded from artwork freshness checks. All other manifest/runtime
+changes still fail closed until the relevant artwork has been reviewed.
+
+Normal build/check/release/AMO commands never rewrite the approval record.
+For intentional visual/runtime changes, regenerate the affected production
+icons and localized screenshots first, then explicitly run
+`npm --prefix scripts run stores:capture`. This renders the store-only images
+and records their new source/output hashes for review. Review the PNG diff and
+approval-record diff before merging. Listing-only policy/description updates
+are built from their shared sources and do not require recapturing images.
+The canonical policy currently uses headings, paragraphs and inline
+emphasis/code/links; unsupported markup fails explicitly rather than silently
+losing content in the plain-text conversion.
+
 ## Prepare a version
 
 1. Start from the approved commit. Change only `manifest.json`'s `version`.
-2. If the approved store-pack inputs are unchanged apart from that version, run
-   `npm --prefix scripts run stores:version -- --from <full-approved-commit-sha>`.
-   This compares the complete runtime allowlist (including added/removed files)
-   with that Git commit, rejects other manifest/source changes and stale ZIPs,
-   checks staged packs, then updates only the three inventory hashes and three
-   ZIPs. No PNG is captured or regenerated, and listing/UI copy stays unchanged.
+2. Run `npm --prefix scripts run stores` and `npm --prefix scripts run stores:check`.
+   A version-only change reuses the approved PNGs and copy, while generated
+   inventories record the new manifest bytes. There are no ZIPs or derived
+   inventories to commit. The old `stores:version` rewrite helper is no longer
+   needed; strict non-version source and image checks remain in the builder.
 3. Run `npm --prefix scripts test`, open a PR, and wait for GitHub CI. CI also
    builds a downloadable `release-assets` artifact. A PR artifact records its
    tested PR merge SHA, not the eventual squash-merge SHA.
 4. Merge only after approval. Record the exact merged commit and confirm its
    manifest version, then create the stable tag at **that commit**.
 
-For v1.3.0, the approved asset baseline was
-`f2b92fb4dfe626bd79cd290611741eb902684aef`. The version-only refresh preserves
-all its approved PNGs and marketing/UI copy. Do not run `stores`, `screenshot`,
-or `icons` generators merely to prepare a release.
-
-For actual artwork or runtime changes, review the relevant assets and their
-source-hash changes instead of using the version-only helper to bypass review.
+Do not run `stores:capture`, `screenshot`, or `icons` merely to prepare a version.
+For actual artwork or runtime changes, review the relevant assets and source
+hashes instead of rebaselining them to bypass review.
 
 ## Create and package the official release
 
@@ -49,7 +102,7 @@ git push origin refs/tags/v1.3.0
 gh release create v1.3.0 --repo mike-mo/maskify --verify-tag --title "Maskify v1.3.0" --generate-notes --latest
 ```
 
-Creation of a published release triggers **Release artifacts** (`publish.yml`).
+Creation of a published release triggers **GitHub release: Attach packages** (`publish.yml`).
 It resolves the existing tag to its exact commit (including annotated tags),
 checks out that commit, requires manifest/tag agreement, and runs the same
 Node 24 / Playwright Chromium and desktop Firefox checks as PR and push CI before
@@ -70,7 +123,7 @@ The workflow attaches:
   instructions in this document, including the manifest overlay and locked tools.
 - `maskify300x300.png`: the approved store logo.
 - `maskify-edge-assets.zip`, `maskify-chrome-assets.zip`, and
-  `maskify-firefox-assets.zip`: exact committed store upload packs.
+  `maskify-firefox-assets.zip`: reproducible listing packs built from canonical sources.
 - `screenshots.zip`: all six approved English/Spanish screenshots, plus the
   three `en-*.png` attachments for optional release-note images.
 - `release-provenance.json` and `SHA256SUMS`: exact tag/commit and file hashes.
@@ -92,8 +145,7 @@ gh run watch RUN_ID --repo mike-mo/maskify --exit-status
 Use the explicit tag for release work. A blank tag calls GitHub's
 `releases/latest` endpoint, which selects the stable latest, not the
 newest-created prerelease. The historical `v1.2.0-screenshot-test` prerelease
-will not be selected. The manual `screenshots.yml` entry point delegates to this
-same artifact workflow; it does not race the published-release event.
+will not be selected. Use this single manual entry point for retries or backfills.
 
 Retries compare existing asset bytes, upload only missing files, and verify the
 saved bytes. They never use `--clobber`, move a tag, or rewrite release notes.
@@ -205,17 +257,19 @@ or listing prose into another source:
 
 | Submitted content | Canonical repository input |
 | --- | --- |
-| English/Spanish names and summaries, homepage/support/policy URLs | `store-assets/firefox/en/listing-copy.json` and `es/listing-copy.json`; checked against package locale messages |
-| English/Spanish descriptions | `store-assets/firefox/en/description.md` and `es/description.md`, originally generated from `store-assets.md` |
-| Privacy policy | `store-assets/firefox/privacy-policy.txt` plus `privacy_policy_suffix` in `amo/listing.json`; only English was submitted |
+| English/Spanish names and summaries, homepage/support/policy URLs | Package locale messages and shared public-link constants in `scripts/store-assets.js` |
+| English/Spanish descriptions | Listing sections in `store-assets.md` |
+| Privacy policy | Plain text derived from `privacy.html` plus `privacy_policy_suffix` in `amo/listing.json`; only English was submitted |
 | Custom license | Root `LICENSE` plus its submitted name in `amo/listing.json` |
-| Icon, ordered screenshots and bilingual captions | Existing `store-assets/firefox/` PNGs and `en/captions.json` / `es/captions.json`; AMO image IDs and approved-image/caption fingerprints in `amo/listing.json` |
+| Icon, ordered screenshots and bilingual captions | `icons/maskify128x128.png`, unique `store-artwork/firefox-*.png`, and shared `scripts/copy.json`; AMO image IDs and approved-image/caption fingerprints in `amo/listing.json` |
 | Category Privacy & Security, tag privacy, non-experimental, no required payment/service/hardware, blank support email, locale mapping | `amo/listing.json` |
 | Public version notes and reviewer instructions | `amo/versions/1.3.0/release-notes.txt` and `reviewer-notes.txt`, captured from the submitted text |
 | Desktop >=140, no Android, extension ID and data declarations | `manifest.firefox.json` |
 | Initial submitted source commit, package/source hashes and AMO version/file IDs | `initial_submission` in `amo/listing.json` |
 
-Listing text is read from the loose approved files, not from stale ZIP copies.
+Listing text is built from canonical shared sources, not from generated loose
+files or stale ZIP copies. `buildStoreFiles(root, 'firefox')` is shared by AMO
+planning and release packaging; neither requires a prior local store build.
 The publisher normalizes CRLF to LF and trims trailing text whitespace. It does
 not regenerate store packs, change approved art, invent a support email, or
 invent a Spanish privacy policy or Spanish release notes. The English policy
@@ -260,7 +314,7 @@ An owner must perform this setup outside chat:
 
 ### Plan, synchronize, or submit
 
-Use the **Firefox Add-ons** workflow (`.github/workflows/firefox-publish.yml`)
+Use the **Firefox store: Plan or publish** workflow (`.github/workflows/firefox-publish.yml`)
 on **main**. Every run requires the full immutable 40-character `source_sha`
 already merged into main and the exact `version` in that commit's manifest.
 Branch names, tags, non-main workflow refs, unmerged commits and mismatched
@@ -305,8 +359,7 @@ gh workflow run firefox-publish.yml --repo mike-mo/maskify --ref main -f source_
 
 **publish** submits a **new listed version for review**, not an unlisted build.
 For a real future release, increase `manifest.json` only when there are approved
-changes to distribute, refresh version-only store provenance using the existing
-release procedure where applicable, and add
+changes to distribute, build/check listing artifacts without recapturing images, and add
 `amo/versions/NEW_VERSION/release-notes.txt` and `reviewer-notes.txt`. Notes must
 describe that specific release and current reviewer steps; do not reuse initial
 release notes automatically. Merge, plan and review before authorizing publish.
@@ -413,9 +466,9 @@ credentials are redacted and never stored in plan or receipt artifacts.
    warnings, site-access grant, and temporary-install refresh step.
 4. Populate the English and Spanish listings with the approved copy, 128-pixel
    icon, shared screenshots, and localized captions in
-   `store-assets/maskify-firefox-assets.zip`. Those media were captured in
-   Chromium and are not Firefox-verification evidence. Its historical upload
-   warning is superseded by this document. Link the
+   generated `dist/store-assets/maskify-firefox-assets.zip`, also supplied in the
+   CI/release artifacts. Those media were captured in Chromium and are not
+   Firefox-verification evidence. Link the
    [privacy policy](https://mike-mo.github.io/maskify/privacy.html), support
    issues, and homepage. Use `amo/listing.json` for listing choices and the
    version-specific notes under `amo/versions/`. Select the license matching

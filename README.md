@@ -38,8 +38,9 @@ See [Firefox submission](RELEASING.md#firefox-add-ons-amo) for validation,
 reviewer sources, and the manual store-submission procedure.
 
 AMO listing inputs are tracked in [`amo/listing.json`](amo/listing.json), reusing
-the approved bilingual copy and media in `store-assets/firefox/`. Release and
-reviewer notes are versioned under `amo/versions/`. The manual **Firefox Add-ons**
+shared canonical copy and approved artwork rather than committed store packs.
+Release and reviewer notes are versioned under `amo/versions/`.
+The manual **Firefox store: Plan or publish**
 GitHub Action defaults to a plan with no AMO requests and supports protected
 listing sync or new-version submission after owner setup. See
 [the publishing procedure](RELEASING.md#github-actions-setup) for API coverage,
@@ -117,7 +118,7 @@ controls. Final images are tracked under `screenshots/en/` and `screenshots/es/`
 The [creative brief](store-assets.md#screenshot-creative-brief) explains the copy and
 compositions.
 
-To regenerate with Node.js 20 or later:
+To regenerate with Node.js 24 LTS:
 
 ```text
 cd scripts
@@ -139,7 +140,7 @@ normal browser profile. Set `MASKIFY_HEADED=1` to watch the capture browser.
 Generated replacement names vary between runs.
 
 Editable sources are in `scripts/templates.js`, `scripts/demo.css`,
-`scripts/composition.css`, and `scripts/copy.js`.
+`scripts/composition.css`, and `scripts/copy.json`.
 [Manrope](https://github.com/google/fonts/tree/main/ofl/manrope) is distributed under the
 [SIL Open Font License](scripts/assets/Manrope-OFL.txt). The font and capture-only
 sources are not included in the extension's release package.
@@ -185,31 +186,37 @@ Historical commits and versioned releases retain the assets they shipped with.
 
 ## Browser store packs
 
-The [store asset gallery](store-assets/index.html) contains downloadable packs
-for Edge Add-ons, the Chrome Web Store, and Firefox Add-ons. Each ZIP includes
-the store's icon, screenshot files, approved English and Spanish listing copy,
-captions, privacy policy, license, and upload instructions.
+Store-specific folders, listing copy, inventories, ZIPs, and the download gallery
+are **build artifacts**, not separately maintained source. Run
+`npm --prefix scripts run stores` to build `dist/store-assets/`, or download
+the **store-listings** artifact from **Check: Test and build packages**.
+Each pack contains its icon, screenshots, English/Spanish listing copy, captions,
+privacy policy, license, and upload instructions.
 
 Edge and Chrome reuse the approved localized screenshots. Their promotional
 tiles use only the icon and wordmark, so one design works in both languages.
 Chrome's icon has the store's transparent clear space. Firefox has a separate
 shared gallery with localized captions and no added editorial headlines.
 
-Run `npm --prefix scripts run stores` to regenerate the packs,
-`npm --prefix scripts run stores:check` to verify them, or
-`npm --prefix scripts run stores:preview` to serve the gallery locally.
-The generator captures real UI for Firefox's image layouts without overwriting
-the approved screenshots in `screenshots/en` and `screenshots/es`.
-After changing the extension or its branding, regenerate icons and screenshots
-before rebuilding the store packs.
+Shared sources are `store-assets.md`, `privacy.html`, `LICENSE`, package locale
+messages, `scripts/copy.json`, the production icons, and approved screenshots.
+`store-artwork/` holds only the unique padded Chrome icon, shared promo tiles,
+Firefox compositions, and one approval/provenance record. The existing localized
+screenshots and runtime/store icons are reused directly, not copied into source
+folders for each store.
 
-For a version-only manifest change, preserve the approved images and use the
-guarded metadata refresh described in [RELEASING.md](RELEASING.md) instead.
+`npm --prefix scripts run stores:check` verifies built output.
+`npm --prefix scripts run stores:preview` builds and serves the gallery locally;
+the generated gallery also opens directly at `dist/store-assets/index.html`.
+Normal builds never start a browser or recapture artwork. Only the explicit
+`stores:capture` command renders new store artwork for review. After intentional
+runtime/branding changes, refresh the relevant icons/screenshots and review
+the artwork/source diff before rebuilding. Version-only changes need no
+committed inventory refresh or regenerated images.
 
 These are listing assets, not extension packages. Build `maskify-firefox.zip`
-separately for AMO. The approved packs retain their original Chromium-capture
-provenance and historical Firefox compatibility warning; the current package
-status and submission instructions are in [RELEASING.md](RELEASING.md).
+separately for AMO. See [RELEASING.md](RELEASING.md#which-workflow-to-use) for the
+three workflow responsibilities, source/output mapping and publishing gates.
 Generating these files does not publish or update any listing.
 
 ## Privacy

@@ -14,6 +14,7 @@ const {
 } = require('./amo-publish');
 const { buildFirefox } = require('./firefox-package');
 const { makeArchive } = require('./extension-package');
+const { sourceHashes } = require('./store-assets');
 
 const ROOT = path.resolve(__dirname, '..');
 const COMMIT = 'a'.repeat(40);
@@ -34,8 +35,11 @@ function fixture(t, version = '1.3.0') {
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, bytes);
   }
-  for (const directory of ['amo', path.join('store-assets', 'firefox')]) {
-    fs.cpSync(path.join(ROOT, directory), path.join(root, directory), { recursive: true });
+  fs.cpSync(path.join(ROOT, 'amo'), path.join(root, 'amo'), { recursive: true });
+  for (const file of Object.keys(sourceHashes(ROOT))) {
+    const destination = path.join(root, ...file.split('/'));
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.copyFileSync(path.join(ROOT, ...file.split('/')), destination);
   }
   if (version !== '1.3.0') {
     const file = path.join(root, 'manifest.json');
@@ -228,9 +232,9 @@ test('unsupported fields, missing translations and changed existing images canno
   assert.throws(() => createPlan(root, COMMIT, '1.3.0'), /unsupported or missing fields/);
   editListing(root, listing => { delete listing.unsupported_setting; delete listing.locales['es-ES']; });
   assert.throws(() => createPlan(root, COMMIT, '1.3.0'), /Both submitted locales/);
-  editListing(root, listing => { listing.locales['es-ES'] = 'store-assets/firefox/es'; });
-  fs.appendFileSync(path.join(root, 'store-assets', 'firefox', 'screenshots', '01-result.png'), 'changed');
-  assert.throws(() => createPlan(root, COMMIT, '1.3.0'), /cannot replace an existing preview/);
+  editListing(root, listing => { listing.locales['es-ES'] = 'es'; });
+  fs.appendFileSync(path.join(root, 'store-artwork', 'firefox-01-result.png'), 'changed');
+  assert.throws(() => createPlan(root, COMMIT, '1.3.0'), /approved artwork bytes differ/);
 });
 
 test('JWT is short-lived, signed with HS256, unique per request and never sent outside AMO', async () => {
@@ -274,7 +278,7 @@ test('transport errors fail explicitly without retries or leaking API secrets', 
 });
 
 test('image preflight validates immutable IDs, URLs and downloaded image bytes without authorization', async () => {
-  const image = fs.readFileSync(path.join(ROOT, 'store-assets', 'firefox', 'screenshots', '01-result.png'));
+  const image = fs.readFileSync(path.join(ROOT, 'store-artwork', 'firefox-01-result.png'));
   let calls = 0;
   const fetchImage = async (_url, options) => {
     calls++;

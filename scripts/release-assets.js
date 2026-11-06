@@ -26,6 +26,7 @@ function validateTag(tag, version) {
 function buildAssets(root, output, tag, commit) {
   const { buildFirefox } = require('./firefox-package');
   const { selectAssets } = require('./release-screenshots');
+  const { buildStoreFiles } = require('./store-assets');
   const version = JSON.parse(readCanonical(path.join(root, 'manifest.json'))).version;
   tag ||= `v${version}`;
   validateTag(tag, version);
@@ -38,7 +39,7 @@ function buildAssets(root, output, tag, commit) {
     ...buildFirefox(root),
     ['maskify300x300.png', fs.readFileSync(path.join(root, 'icons', 'maskify300x300.png'))],
     ...['edge', 'chrome', 'firefox'].map(store => [
-      `maskify-${store}-assets.zip`, fs.readFileSync(path.join(root, 'store-assets', `maskify-${store}-assets.zip`)),
+      `maskify-${store}-assets.zip`, makeArchive(buildStoreFiles(root, store)),
     ]),
     ['screenshots.zip', makeArchive(new Map(screenshots.files.map(file => [file, fs.readFileSync(diskPath(root, file))])))],
     ...screenshots.english.map(image => [image.asset, fs.readFileSync(diskPath(root, image.path))]),

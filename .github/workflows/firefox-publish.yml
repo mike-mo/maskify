@@ -1,4 +1,4 @@
-name: Firefox Add-ons
+name: 'Firefox store: Plan or publish'
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       operation:
-        description: 'Plan only, sync existing listing/version metadata, or submit a NEW version'
+        description: 'plan: no AMO requests; sync: existing metadata; publish: new version for review'
         type: choice
         options: [plan, sync, publish]
         default: plan

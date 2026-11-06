@@ -59,6 +59,7 @@ function verifySources(files) {
 
 function createPlan(root, commit, version) {
   const { unzipSync } = require('fflate');
+  const { buildStoreFiles } = require('./store-assets');
   assert(isSha(commit), 'Use the full immutable 40-character source commit SHA');
   assert(isVersion(version), 'Use the exact stable MAJOR.MINOR.PATCH version');
   const config = JSON.parse(read(root, 'amo/listing.json'));
@@ -69,6 +70,8 @@ function createPlan(root, commit, version) {
   assert.deepEqual(config.addon, ADDON, 'Refusing to target another AMO listing');
   assert.equal(config.default_locale, 'en-US');
   assert.deepEqual(Object.keys(config.locales), LOCALES, 'Both submitted locales must be present in order');
+  assert.deepEqual(config.locales, { 'en-US': 'en', 'es-ES': 'es' });
+  assert.equal(config.privacy_policy_file, 'privacy.html', 'Policy must use the shared canonical HTML source');
   assert.deepEqual(Object.keys(config.categories), ['firefox'], 'Only desktop Firefox is supported');
   assert(config.categories.firefox.length && config.categories.firefox.every(value => typeof value === 'string'));
   assert(config.tags.length && config.tags.every(value => typeof value === 'string'));
@@ -90,6 +93,7 @@ function createPlan(root, commit, version) {
   const manifest = JSON.parse(read(root, 'manifest.json'));
   assert.equal(manifest.version, version, 'Requested version differs from manifest.json');
   const files = packageFirefox(root);
+  const listingFiles = buildStoreFiles(root, 'firefox');
   verifySources(files);
   const firefoxManifest = JSON.parse(Buffer.from(unzipSync(files.get('maskify-firefox.zip'))['manifest.json']));
   assert.equal(firefoxManifest.browser_specific_settings.gecko.id, ADDON.guid);
@@ -103,7 +107,7 @@ function createPlan(root, commit, version) {
   const copies = {};
   for (const locale of LOCALES) {
     const directory = config.locales[locale];
-    const copy = JSON.parse(read(root, `${directory}/listing-copy.json`));
+    const copy = JSON.parse(listingFiles.get(`${directory}/listing-copy.json`));
     keys(copy, ['name', 'summary', 'homepage_url', 'support_url', 'privacy_policy_url'], `${locale} listing copy`);
     const messages = JSON.parse(read(root, `_locales/${locale === 'en-US' ? 'en' : 'es'}/messages.json`));
     assert.equal(copy.name, messages.appName.message, `${locale}: store name differs from package`);
@@ -115,16 +119,16 @@ function createPlan(root, commit, version) {
     Object.assign(copies, { [locale]: copy });
     listing.name[locale] = copy.name;
     listing.summary[locale] = copy.summary;
-    listing.description[locale] = text(root, `${directory}/description.md`);
+    listing.description[locale] = listingFiles.get(`${directory}/description.md`).toString('utf8').trimEnd();
     listing.homepage[locale] = copy.homepage_url;
     listing.support_url[locale] = copy.support_url;
     listing.support_email[locale] = null;
-    captions[locale] = JSON.parse(read(root, `${directory}/captions.json`));
+    captions[locale] = JSON.parse(listingFiles.get(`${directory}/captions.json`));
   }
   assert.equal(config.privacy_policy_suffix, `\n\nPublished policy: ${copies['en-US'].privacy_policy_url}`,
     'Privacy policy suffix must reference the canonical published policy');
   const policy = { privacy_policy: {
-    'en-US': text(root, config.privacy_policy_file) + config.privacy_policy_suffix,
+    'en-US': listingFiles.get('privacy-policy.txt').toString('utf8').trimEnd() + config.privacy_policy_suffix,
   } };
   const versionPayload = {
     compatibility: ['firefox'],
@@ -146,7 +150,7 @@ function createPlan(root, commit, version) {
     assert(item.id === null || (Number.isSafeInteger(item.id) && item.id > 0), 'Invalid preview ID');
     const image = read(root, item.file);
     assert.equal(image.toString('hex', 0, 8), '89504e470d0a1a0a', 'Screenshots must be PNG');
-    const captionKey = item.file.replace(/^store-assets\/firefox\//, '');
+    const captionKey = `screenshots/${path.posix.basename(item.file).replace(/^firefox-/, '')}`;
     const caption = Object.fromEntries(LOCALES.map(locale => {
       const value = captions[locale][captionKey];
       assert(typeof value === 'string' && value.trim(), `Missing ${locale} caption for ${item.file}`);
@@ -175,7 +179,7 @@ function createPlan(root, commit, version) {
   assert.equal(new Set(ids).size, ids.length, 'Duplicate preview IDs');
   for (const locale of LOCALES) {
     assert.deepEqual(Object.keys(captions[locale]).sort(),
-      config.screenshots.map(item => item.file.replace(/^store-assets\/firefox\//, '')).sort(),
+      config.screenshots.map(item => `screenshots/${path.posix.basename(item.file).replace(/^firefox-/, '')}`).sort(),
       `${locale}: captions and screenshot inventory differ`);
   }
   return { files, plan: {

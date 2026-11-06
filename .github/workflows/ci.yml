@@ -1,4 +1,4 @@
-name: CI
+name: 'Check: Test and build packages'
 
 on:
   pull_request:
@@ -66,6 +66,16 @@ jobs:
         run: npm --prefix scripts test
       - name: Validate Firefox package with Mozilla tooling
         run: npm --prefix scripts run firefox:lint
+      - name: Build listing packs and gallery from shared sources
+        if: hashFiles('store-artwork/approved.json') != ''
+        run: npm --prefix scripts run stores
+      - uses: actions/upload-artifact@v4
+        if: hashFiles('store-artwork/approved.json') != ''
+        with:
+          name: store-listings
+          path: dist/store-assets/
+          if-no-files-found: error
+          retention-days: 7
       - name: Build verified release assets
         env:
           RELEASE_TAG: ${{ inputs.tag }}
