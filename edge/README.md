@@ -138,6 +138,8 @@ Before dispatch and again before approving the protected job:
 The pipeline checks the complete history of this workflow before mutation.
 Any other upload run for an equal or newer version blocks the request,
 regardless of that run's outcome. Rerunning an upload attempt is prohibited.
+Invalid dispatch versions that could never pass package-version validation
+are ignored; they cannot reserve a version or block later valid uploads.
 This intentionally also blocks an attempt cancelled or failed before POST:
 an unknown outcome must not become an automatic duplicate/overwrite.
 History API failures fail closed. Keep upload-run history; deleting runs or

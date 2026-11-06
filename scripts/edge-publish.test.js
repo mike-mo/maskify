@@ -206,6 +206,20 @@ test('pagination must include every unique workflow run with consistent counts',
   }
 });
 
+test('invalid historical dispatch versions cannot reserve versions or block later valid uploads', () => {
+  const { plan } = createPlan(ROOT, COMMIT, VERSION);
+  const current = { id: 42, event: 'workflow_dispatch', head_branch: 'main', display_title: `Edge upload ${VERSION} ${COMMIT}` };
+  const invalid = ['1.03.0', '01.3.0', '1.3.00', '65536.0.0', '1.65536.0', '1.3.65536',
+    '999999999999999999999999.0.0', '1.3.0-beta', '1.3.0\n'];
+  const history = invalid.map((version, index) => ({
+    id: 100 + index, display_title: `Edge upload ${version} ${COMMIT}`, conclusion: 'failure',
+  }));
+  checkHistory(plan, '42', '1', [current, ...history]);
+  assert.throws(() => checkHistory(plan, '42', '1', [current, ...history, {
+    id: 21, display_title: `Edge upload 1.3.0 ${COMMIT}`, conclusion: 'failure',
+  }]), /already exists/);
+});
+
 test('shared source reader rejects path traversal instead of reading outside the selected checkout', () => {
   for (const file of ['../manifest.json', 'edge/../../manifest.json', 'C:\\private.json']) {
     assert.throws(() => readRepositoryFile(ROOT, file), /Unsafe repository path/);

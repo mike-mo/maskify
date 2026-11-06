@@ -13,6 +13,7 @@ const API = 'https://api.addons.microsoftedge.microsoft.com/v1/';
 const EXTENSION = 'ahlpkipagblmbjceamojfdomdmcmcpgc';
 const isGuid = value => typeof value === 'string' && value.length === 36 &&
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value);
+const isEdgeVersion = value => isVersion(value) && value.split('.').every(part => Number(part) <= 65535);
 const json = value => Buffer.from(JSON.stringify(value, null, 2) + '\n');
 const sha256 = value => createHash('sha256').update(value).digest('hex');
 const MANUAL = [
@@ -26,7 +27,7 @@ const MANUAL = [
 
 function compareVersions(left, right) {
   for (const version of [left, right]) {
-    assert(isVersion(version) && version.split('.').every(part => Number(part) <= 65535),
+    assert(isEdgeVersion(version),
       'Use stable MAJOR.MINOR.PATCH versions with components at most 65535');
   }
   const a = left.split('.').map(Number);
@@ -166,7 +167,7 @@ function checkHistory(plan, currentRun, attempt, runs) {
       continue;
     }
     const match = /^Edge upload (\d+\.\d+\.\d+) ([a-f0-9]{40})$/.exec(run.display_title);
-    if (!match) continue;
+    if (!match || !isEdgeVersion(match[1])) continue;
     assert(compareVersions(plan.version, match[1]) > 0,
       'An equal or newer Edge upload run already exists. Do not retry or overwrite a draft; reconcile in Partner Center');
   }
