@@ -9,6 +9,28 @@ const { assemble } = require('./pages');
 
 const ROOT = path.resolve(__dirname, '..');
 
+test('Pages runtime migration preserves build, artifact and deployment boundaries', () => {
+  const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'pages.yml'), 'utf8')
+    .replace(/\r\n/g, '\n');
+  assert.match(workflow, /push:\n    branches: \[main\]/);
+  assert.match(workflow, /deploy:\n        description: 'Deploy the built site'\n        type: boolean\n        default: false/);
+  assert.match(workflow, /group: pages\n  cancel-in-progress: false/);
+  assert.match(workflow, /contents: read\n  pages: write\n  id-token: write/);
+  const [build, deploy] = workflow.split('\n  deploy:');
+  assert.match(build, /if: github\.ref == 'refs\/heads\/main'/);
+  assert.match(build, /uses: actions\/checkout@v6\n        with:\n          persist-credentials: false/);
+  assert.match(build, /uses: actions\/setup-node@v6\n        with:\n          node-version: '24'\n          package-manager-cache: false/);
+  assert.match(build, /run: node scripts\/pages\.js dist\/pages-source/);
+  assert.match(build, /run: node --test scripts\/pages\.test\.js/);
+  assert.match(build, /uses: actions\/configure-pages@v6/);
+  assert.match(build, /uses: actions\/jekyll-build-pages@v1\n        with:\n          source: \.\/dist\/pages-source\n          destination: \.\/dist\/pages-site/);
+  assert.match(build, /uses: actions\/upload-pages-artifact@v5\n        with:\n          path: \.\/dist\/pages-site\n          include-hidden-files: true/);
+  assert.match(deploy, /if: \(github\.event_name == 'push' \|\| inputs\.deploy\) && github\.ref == 'refs\/heads\/main'/);
+  assert.match(deploy, /needs: build/);
+  assert.match(deploy, /name: github-pages\n      url: \$\{\{ steps\.deploy\.outputs\.page_url \}\}/);
+  assert.match(deploy, /uses: actions\/deploy-pages@v5\n        id: deploy/);
+});
+
 test('assembled Pages preserve public URLs and valid favicon paths', t => {
   const output = fs.mkdtempSync(path.join(os.tmpdir(), 'maskify-pages-'));
   t.after(() => fs.rmSync(output, { recursive: true, force: true }));

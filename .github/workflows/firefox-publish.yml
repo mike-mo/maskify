@@ -36,14 +36,15 @@ jobs:
       commit: ${{ steps.target.outputs.commit }}
       version: ${{ steps.target.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
+          package-manager-cache: false
       - name: Resolve approved immutable source on main
         id: target
         env:
@@ -62,23 +63,19 @@ jobs:
     needs: [resolve, verify]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.sha }}
           path: tooling
           persist-credentials: false
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.resolve.outputs.commit }}
           path: source
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Install trusted publisher dependencies without lifecycle scripts
-        run: npm --prefix tooling/scripts ci --ignore-scripts
-      - uses: actions/download-artifact@v4
+      - uses: ./tooling/.github/actions/setup-publisher
+      - uses: actions/download-artifact@v7
         with:
           name: release-assets
           path: ${{ runner.temp }}/verified-release
@@ -88,7 +85,7 @@ jobs:
           EXPECTED_VERSION: ${{ needs.resolve.outputs.version }}
           VERIFIED_RELEASE_DIRECTORY: ${{ runner.temp }}/verified-release
         run: node tooling/scripts/amo-publish.js plan source "$RUNNER_TEMP/amo-plan" "$SOURCE_SHA" "$EXPECTED_VERSION"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: amo-plan
           path: ${{ runner.temp }}/amo-plan/*
@@ -106,23 +103,19 @@ jobs:
     runs-on: ubuntu-latest
     environment: amo-production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.sha }}
           path: tooling
           persist-credentials: false
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.resolve.outputs.commit }}
           path: source
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: Install trusted publisher dependencies without lifecycle scripts
-        run: npm --prefix tooling/scripts ci --ignore-scripts
-      - uses: actions/download-artifact@v4
+      - uses: ./tooling/.github/actions/setup-publisher
+      - uses: actions/download-artifact@v7
         with:
           name: amo-plan
           path: ${{ runner.temp }}/amo-plan
@@ -145,7 +138,7 @@ jobs:
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
           AMO_RECEIPT: ${{ runner.temp }}/amo-receipt.jsonl
         run: node tooling/scripts/amo-publish.js apply source "$RUNNER_TEMP/amo-plan" "$SOURCE_SHA" "$EXPECTED_VERSION" "$OPERATION" "$CONFIRMATION"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always() && (inputs.operation == 'sync' || inputs.operation == 'publish')
         with:
           name: amo-receipt

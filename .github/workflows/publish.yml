@@ -27,12 +27,13 @@ jobs:
       tag: ${{ steps.target.outputs.tag }}
       commit: ${{ steps.target.outputs.commit }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
+          package-manager-cache: false
       - name: Resolve stable release and exact tag commit
         id: target
         env:
@@ -53,14 +54,15 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ needs.resolve.outputs.commit }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - uses: actions/download-artifact@v4
+          package-manager-cache: false
+      - uses: actions/download-artifact@v7
         with:
           name: release-assets
           path: ${{ runner.temp }}/maskify-release
