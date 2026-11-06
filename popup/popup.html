@@ -4,14 +4,49 @@
   <meta charset="UTF-8" />
   <title>Maskify</title>
   <style>
+    :root {
+      color-scheme: light;
+      --background: #fff;
+      --surface: #f5f5f5;
+      --input-background: #fff;
+      --text: #1a1a1a;
+      --text-secondary: #595959;
+      --border: #ccc;
+      --separator: #e8e8e8;
+      --accent: #0078d4;
+      --button-background: #0078d4;
+      --button-hover: #106ebe;
+      --button-active: #005a9e;
+      --button-text: #fff;
+      --invalid: #d93025;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --background: #1e1e1e;
+        --surface: #2d2d2d;
+        --input-background: #2d2d2d;
+        --text: #e0e0e0;
+        --text-secondary: #aaa;
+        --border: #777;
+        --separator: #444;
+        --accent: #4da6ff;
+        --button-background: #005a9e;
+        --button-hover: #0078d4;
+        --button-active: #004578;
+        --invalid: #ff6b60;
+      }
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       width: 280px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       font-size: 13px;
-      color: #1a1a1a;
-      background: #fff;
+      color: var(--text);
+      background: var(--background);
     }
 
     .header {
@@ -19,7 +54,7 @@
       align-items: center;
       gap: 10px;
       padding: 14px 16px;
-      border-bottom: 1px solid #e8e8e8;
+      border-bottom: 1px solid var(--separator);
     }
 
     .header img {
@@ -38,7 +73,7 @@
     }
 
     .description {
-      color: #555;
+      color: var(--text-secondary);
       line-height: 1.5;
       margin-bottom: 12px;
     }
@@ -53,28 +88,44 @@
       font-weight: 600;
       letter-spacing: 0.3px;
       text-transform: uppercase;
-      color: #888;
+      color: var(--text-secondary);
       margin-bottom: 6px;
     }
 
     .domain-input {
       width: 100%;
       padding: 6px 8px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--border);
       border-radius: 4px;
       font-size: 13px;
       font-family: inherit;
-      color: #1a1a1a;
-      outline: none;
+      color: var(--text);
+      background: var(--input-background);
+      outline: 2px solid transparent;
+      outline-offset: 1px;
     }
 
     .domain-input:focus {
-      border-color: #0078d4;
+      border-color: var(--accent);
+      outline-color: var(--accent);
     }
 
     .domain-input.invalid,
     .domain-input.invalid:focus {
-      border-color: #d93025;
+      border-color: var(--invalid);
+    }
+
+    .domain-input.invalid:focus {
+      outline-color: var(--invalid);
+    }
+
+    input[type="checkbox"] {
+      accent-color: var(--accent);
+    }
+
+    input[type="checkbox"]:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
     .checkbox-label {
@@ -87,8 +138,8 @@
     button {
       width: 100%;
       padding: 8px 16px;
-      background: #0078d4;
-      color: #fff;
+      background: var(--button-background);
+      color: var(--button-text);
       border: none;
       border-radius: 4px;
       font-size: 13px;
@@ -98,21 +149,26 @@
       transition: background 0.1s;
     }
 
-    button:hover  { background: #106ebe; }
-    button:active { background: #005a9e; }
+    button:hover  { background: var(--button-hover); }
+    button:active { background: var(--button-active); }
+
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
 
     .donate-link {
       display: none;
       margin-top: 10px;
       text-align: center;
       font-size: 11px;
-      color: #595959;
+      color: var(--text-secondary);
       text-decoration: none;
     }
 
     .donate-link.visible { display: block; }
 
-    .donate-link:hover { color: #333; }
+    .donate-link:hover { color: var(--text); }
 
     .preview {
       display: flex;
@@ -120,7 +176,7 @@
       gap: 8px;
       margin-bottom: 12px;
       padding: 7px 10px;
-      background: #f5f5f5;
+      background: var(--surface);
       border-radius: 4px;
     }
 
@@ -129,13 +185,13 @@
       font-weight: 600;
       letter-spacing: 0.3px;
       text-transform: uppercase;
-      color: #888;
+      color: var(--text-secondary);
       flex-shrink: 0;
     }
 
     .preview code {
       font-size: 12px;
-      color: #0078d4;
+      color: var(--accent);
       word-break: break-all;
     }
   </style>
