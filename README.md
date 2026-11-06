@@ -32,9 +32,19 @@ In `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**
 and select `dist/firefox/maskify-firefox.zip`. Allow Maskify to run on the site
 using Firefox's extension/site-access controls, then refresh existing tabs.
 Temporary installations disappear when Firefox exits. Permanent installation
-requires Mozilla signing. There is no published AMO listing linked here yet.
+requires Mozilla signing. The initial AMO submission is awaiting review, not
+yet publicly available.
 See [Firefox submission](RELEASING.md#firefox-add-ons-amo) for validation,
 reviewer sources, and the manual store-submission procedure.
+
+AMO listing inputs are tracked in [`amo/listing.json`](amo/listing.json), reusing
+the approved bilingual copy and media in `store-assets/firefox/`. Release and
+reviewer notes are versioned under `amo/versions/`. The manual **Firefox Add-ons**
+GitHub Action defaults to a plan with no AMO requests and supports protected
+listing sync or new-version submission after owner setup. See
+[the publishing procedure](RELEASING.md#github-actions-setup) for API coverage,
+required environment secrets and approval, media exceptions and duplicate-version
+safeguards. Nothing publishes on push or release.
 
 ## Usage
 

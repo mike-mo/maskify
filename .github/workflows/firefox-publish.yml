@@ -1,0 +1,144 @@
+name: Firefox Add-ons
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: 'Full immutable commit SHA already merged into main'
+        required: true
+        type: string
+      version:
+        description: 'Exact manifest version, for example 1.3.0'
+        required: true
+        type: string
+      operation:
+        description: 'Plan only, sync existing listing/version metadata, or submit a NEW version'
+        type: choice
+        options: [plan, sync, publish]
+        default: plan
+      confirmation:
+        description: 'For mutations: maskify:OPERATION:VERSION:FULL_SOURCE_SHA'
+        type: string
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maskify-amo
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    if: github.repository == 'mike-mo/maskify' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.target.outputs.commit }}
+      version: ${{ steps.target.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Resolve approved immutable source on main
+        id: target
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          EXPECTED_VERSION: ${{ inputs.version }}
+        run: node scripts/amo-publish.js resolve .
+
+  verify:
+    needs: resolve
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.resolve.outputs.commit }}
+      tag: v${{ needs.resolve.outputs.version }}
+
+  plan:
+    needs: [resolve, verify]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.commit }}
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install trusted publisher dependencies without lifecycle scripts
+        run: npm --prefix tooling/scripts ci --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+          path: ${{ runner.temp }}/verified-release
+      - name: Build offline payload plan and compare CI-tested packages
+        env:
+          SOURCE_SHA: ${{ needs.resolve.outputs.commit }}
+          EXPECTED_VERSION: ${{ needs.resolve.outputs.version }}
+          VERIFIED_RELEASE_DIRECTORY: ${{ runner.temp }}/verified-release
+        run: node tooling/scripts/amo-publish.js plan source "$RUNNER_TEMP/amo-plan" "$SOURCE_SHA" "$EXPECTED_VERSION"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: amo-plan
+          path: ${{ runner.temp }}/amo-plan/*
+          if-no-files-found: error
+          retention-days: 30
+      - name: Add review instructions
+        run: |
+          echo 'Download amo-plan and review plan.json, both ZIPs, icon and screenshot mappings before approving amo-production.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Plan mode makes no AMO requests. sync/publish are non-atomic and require protected environment approval. See RELEASING.md.' >> "$GITHUB_STEP_SUMMARY"
+
+  apply:
+    needs: [resolve, plan]
+    if: inputs.operation != 'plan'
+    runs-on: ubuntu-latest
+    environment: amo-production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.commit }}
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install trusted publisher dependencies without lifecycle scripts
+        run: npm --prefix tooling/scripts ci --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: amo-plan
+          path: ${{ runner.temp }}/amo-plan
+      - name: Verify reviewed files and apply supported AMO operations
+        env:
+          SOURCE_SHA: ${{ needs.resolve.outputs.commit }}
+          EXPECTED_VERSION: ${{ needs.resolve.outputs.version }}
+          OPERATION: ${{ inputs.operation }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+          AMO_RECEIPT: ${{ runner.temp }}/amo-receipt.jsonl
+        run: node tooling/scripts/amo-publish.js apply source "$RUNNER_TEMP/amo-plan" "$SOURCE_SHA" "$EXPECTED_VERSION" "$OPERATION" "$CONFIRMATION"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: amo-receipt
+          path: ${{ runner.temp }}/amo-receipt.jsonl
+          if-no-files-found: warn
+          retention-days: 90

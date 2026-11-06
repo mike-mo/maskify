@@ -15,7 +15,8 @@
     "firefox:build": "node firefox-package.js",
     "firefox:lint": "node firefox-package.js --lint",
     "test:firefox": "node --test firefox.test.js",
-    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js refresh-store-version.test.js firefox-package.test.js"
+    "amo:plan": "node amo-publish.js plan",
+    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js refresh-store-version.test.js firefox-package.test.js amo-publish.test.js"
   },
   "dependencies": {
     "fflate": "^0.8.3",

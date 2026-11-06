@@ -3,7 +3,6 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { zipSync } = require('fflate');
 
 const ROOT = path.resolve(__dirname, '..');
 const RUNTIME_ENTRIES = [
@@ -36,6 +35,7 @@ function runtimeFiles(root = ROOT) {
 }
 
 function makeArchive(files) {
+  const { zipSync } = require('fflate');
   return Buffer.from(zipSync(Object.fromEntries(files), { level: 6, mtime: new Date(2000, 0, 1) }));
 }
 

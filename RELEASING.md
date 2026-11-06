@@ -2,15 +2,17 @@
 
 ## Scope and approval
 
-The modern workflow supports stable releases starting with **v1.3.0**. It builds
+The **Release artifacts** workflow supports stable releases starting with **v1.3.0**. It builds
 GitHub release assets only. It does not create or move tags, create releases,
 invoke PlasmoHQ/bpp, use `BPP_KEYS`, or submit anything to a browser store.
 Publishing a GitHub release cannot trigger an automated Edge submission.
 
 Store upload is a separate, human-authorized operation in Partner Center.
 Uploading a draft package does not authorize certification, submission, or
-publication. Firefox submission is also manual. Its listing pack is not an
-extension; use the separate unsigned Firefox package described below.
+publication. Firefox has a separate, manually dispatched **Firefox Add-ons**
+workflow with an offline plan and protected approval gate. It can synchronize
+AMO metadata or submit a new version, but is never triggered by a push or GitHub
+release. Its listing pack is not an extension; use the separate Firefox package.
 
 ## Prepare a version
 
@@ -136,11 +138,10 @@ callback APIs. No polyfill, bundling, minification, or remote runtime code is us
 
 The Firefox overlay declares:
 
-- `@maskify.mike-mo`, a **developer-chosen ID**, not a Mozilla-assigned or
-  AMO-verified ID. AMO checks uniqueness on first submission. Keep it unchanged
-  after first signing or users cannot receive updates to the same extension.
-  If this is an update to an existing AMO listing, use that listing's ID before
-  building and update the identity assertions in the package checks.
+- `@maskify.mike-mo`, the **developer-chosen immutable ID** used by the existing
+  AMO listing, add-on 3119745, slug `maskify`. Keep it unchanged for all updates.
+  The owner submitted 1.3.0 manually; do not create another listing or resubmit
+  that version. See the submission receipt in `amo/listing.json`.
 - Desktop Firefox **140.0 or later**, including ESR 140, with no maximum version.
   Android is not enabled or verified.
 - `data_collection_permissions.required: ["none"]`. Page content is processed
@@ -195,15 +196,216 @@ a browser, or store credentials. The minimal source archive supports the build,
 not the full repository test suite. Dependency downloads use the official npm
 registry. Browser tests and linting are performed from the full repository.
 
-### Human submission and signing
+### Repository-driven listing and version content
+
+The initial 1.3.0 submission already reused the approved repository descriptions,
+summaries, icon, screenshots, captions, privacy policy and license. The remaining
+browser-authored choices and notes are now tracked without copying that artwork
+or listing prose into another source:
+
+| Submitted content | Canonical repository input |
+| --- | --- |
+| English/Spanish names and summaries, homepage/support/policy URLs | `store-assets/firefox/en/listing-copy.json` and `es/listing-copy.json`; checked against package locale messages |
+| English/Spanish descriptions | `store-assets/firefox/en/description.md` and `es/description.md`, originally generated from `store-assets.md` |
+| Privacy policy | `store-assets/firefox/privacy-policy.txt` plus `privacy_policy_suffix` in `amo/listing.json`; only English was submitted |
+| Custom license | Root `LICENSE` plus its submitted name in `amo/listing.json` |
+| Icon, ordered screenshots and bilingual captions | Existing `store-assets/firefox/` PNGs and `en/captions.json` / `es/captions.json`; AMO image IDs and approved-image/caption fingerprints in `amo/listing.json` |
+| Category Privacy & Security, tag privacy, non-experimental, no required payment/service/hardware, blank support email, locale mapping | `amo/listing.json` |
+| Public version notes and reviewer instructions | `amo/versions/1.3.0/release-notes.txt` and `reviewer-notes.txt`, captured from the submitted text |
+| Desktop >=140, no Android, extension ID and data declarations | `manifest.firefox.json` |
+| Initial submitted source commit, package/source hashes and AMO version/file IDs | `initial_submission` in `amo/listing.json` |
+
+Listing text is read from the loose approved files, not from stale ZIP copies.
+The publisher normalizes CRLF to LF and trims trailing text whitespace. It does
+not regenerate store packs, change approved art, invent a support email, or
+invent a Spanish privacy policy or Spanish release notes. The English policy
+is composed with the exact submitted published-policy link suffix. The source
+archive contains runtime/build sources, not listing media, and stays a separate
+AMO version attachment.
+
+The initial saved gallery IDs are 443842, 443843 and 443844. These came from the
+owner's successful media-save response and subsequent rendered English/Spanish
+image checks, not a later authenticated API read. Live authenticated preflight
+must still confirm the identity, exact image inventory/order, known captions,
+dimensions and downloadable image bytes before any write.
+
+The owner accepted the developer agreement and chose the public account display
+name in AMO. Account identity, agreement acceptance, account security and API
+credentials are **not listing/package configuration** and are not changed by the
+publisher. Do not add them to the extension manifest or automate profile edits.
+At the initial submission handoff, version 1.3.0 was **Awaiting Review**, not yet
+publicly available. The repository records submission identity, not live review
+status.
+
+### GitHub Actions setup
+
+An owner must perform this setup outside chat:
+
+1. Merge the reviewed workflow/tooling/content into `main`. Enable GitHub Actions
+   for the repository if needed. No AMO mutation occurs just by merging.
+2. In repository **Settings > Environments**, create `amo-production`. Restrict
+   deployment branches to protected `main`, require owner/release-reviewer
+   approval, and prevent self-review if available. Confirm that your GitHub plan
+   supports these protections. Do not enable a production apply run without an
+   effective approval gate.
+3. Signed in as an owner of add-on 3119745, obtain an API issuer/key and secret
+   from [AMO API Credentials](https://addons.mozilla.org/en-US/developers/addon/api/key/).
+   Creating/rotating keys is an owner action, not part of this workflow. AMO
+   credentials act as that account, not as narrowly scoped per-add-on tokens.
+   Never paste them into chat, repo files, inputs, logs or command arguments.
+4. Add environment secrets **`AMO_JWT_ISSUER`** (AMO API key/issuer) and
+   **`AMO_JWT_SECRET`** (AMO API secret). Keep both in `amo-production`, not
+   repository-wide secrets. No GitHub write token or AMO credentials are needed
+   for plan mode. These settings are not automatically created by the repo.
+
+### Plan, synchronize, or submit
+
+Use the **Firefox Add-ons** workflow (`.github/workflows/firefox-publish.yml`)
+on **main**. Every run requires the full immutable 40-character `source_sha`
+already merged into main and the exact `version` in that commit's manifest.
+Branch names, tags, non-main workflow refs, unmerged commits and mismatched
+versions are rejected. The default operation is **plan**.
+
+For example, after replacing `FULL_MERGED_SHA` with the actual approved commit:
+
+```text
+gh workflow run firefox-publish.yml --repo mike-mo/maskify --ref main -f source_sha=FULL_MERGED_SHA -f version=1.3.0 -f operation=plan
+```
+
+The workflow runs existing package/runtime/artwork checks, Firefox 140/latest
+browser checks and Mozilla linting, then compares the trusted plan's package
+and reviewer-source ZIPs byte-for-byte with the exact CI-tested artifacts.
+Download **`amo-plan`** and review `plan.json`, both ZIPs, the icon, and all
+screenshot file/ID/caption/hash mappings. The plan includes every API payload
+and lists manual exceptions. Plan mode makes **no AMO requests**, including no
+validation upload, and requires no production credentials.
+
+For a local, offline plan from a clean checkout, Node 24 and locked dependencies:
+
+```text
+npm --prefix scripts ci --ignore-scripts
+node scripts/amo-publish.js plan . dist/amo-plan FULL_CHECKED_OUT_SHA 1.3.0
+```
+
+The local source must be clean and its HEAD must match that SHA. Local planning
+also works on an unmerged development commit; the production workflow alone
+requires main ancestry. Use a new/empty output directory. Review plan fields
+without committing generated packages or payloads.
+
+**sync** updates the existing listing and the selected existing listed version's
+notes/custom license/desktop compatibility. It does **not** upload or replace
+the extension or its source archive, and can operate on 1.3.0 awaiting review.
+Use it only when the owner authorizes that metadata change. Existing version
+sources must already be present. Initial 1.3.0 additionally requires the exact
+recorded version/file IDs.
+
+```text
+gh workflow run firefox-publish.yml --repo mike-mo/maskify --ref main -f source_sha=FULL_MERGED_SHA -f version=1.3.0 -f operation=sync -f confirmation=maskify:sync:1.3.0:FULL_MERGED_SHA
+```
+
+**publish** submits a **new listed version for review**, not an unlisted build.
+For a real future release, increase `manifest.json` only when there are approved
+changes to distribute, refresh version-only store provenance using the existing
+release procedure where applicable, and add
+`amo/versions/NEW_VERSION/release-notes.txt` and `reviewer-notes.txt`. Notes must
+describe that specific release and current reviewer steps; do not reuse initial
+release notes automatically. Merge, plan and review before authorizing publish.
+Then run with `operation=publish` and
+`confirmation=maskify:publish:NEW_VERSION:FULL_MERGED_SHA`.
+
+The script checks authenticated all-channel version history and refuses an
+existing or non-increasing version, including 1.3.0, and refuses to submit
+another version while a listed version is awaiting review. It uploads the
+exact unsigned package with channel `listed`, polls Mozilla validation, rechecks
+identity/duplicates/media, then creates the version with its **matching source
+archive in the same multipart request**. It applies the custom license, release
+notes and reviewer notes through the separate JSON version endpoint. This
+separation is required because the API cannot accept nested translated JSON
+objects and a source file in one request. Creation initially inherits the
+previous version's license. The source file is never left for a later upload.
+
+Before any mutation, approve `amo-production` only after reviewing that run's
+plan and immutable source. The credential-bearing job executes the **publisher
+from the workflow's trusted main commit**, installs only its locked dependencies
+with lifecycle scripts disabled, treats the selected source checkout as data,
+recomputes/compares the complete plan and files, and rechecks main ancestry.
+Candidate build/test scripts never execute with AMO credentials. Secrets are
+available only to the apply step, not to candidate CI, planning or npm install.
+The GitHub token has only `contents: read`; no workflow modifies tags/releases.
+
+### API coverage, media changes and partial failures
+
+Supported operations use the official [AMO v5 APIs](https://mozilla.github.io/addons-server/topics/api/addons.html):
+listing PATCH for bilingual names/summaries/descriptions, categories, tags,
+homepage/support URLs, blank support email and commercial/experimental flags;
+EULA-policy PATCH for the English privacy-policy body; multipart icon PATCH;
+version PATCH for notes/custom license/desktop compatibility; upload validation
+and multipart version creation with reviewer sources; preview creation and
+bilingual caption/position PATCH. The `support_url` write field is also confirmed
+in Mozilla's [AddonSerializer writable fields](https://github.com/mozilla/addons-server/blob/master/src/olympia/addons/serializers.py).
+The public edit documentation currently omits that field from its field list.
+
+The tooling verifies persisted listing/policy/version/caption fields with
+authenticated `show_source` reads and confirms images remain downloadable.
+AMO transforms image files and resizes icons asynchronously; it exposes no
+original-byte checksum for those uploads. A successful icon request is an
+acknowledged upload, not a byte-identical rendered-icon proof. Inspect the
+finished listing after AMO processes it. Existing preview IDs are immutable
+image identities, and local approved image hashes are checked before syncing.
+
+Existing screenshots are **never blindly reuploaded**, and no DELETE endpoint
+is called. A changed image at an existing ID fails explicitly. For a deliberately
+new image, add an approved PNG and both captions, set its `id`,
+`initial_position`, `uploaded_sha256`, and `initial_caption_sha256` to `null` in
+the mapping, and review the plan. A successful create records the returned ID,
+position, image hash and caption fingerprint in **`amo-receipt`**. Commit those
+values before another sync. If the run failed after creating an image, first
+adopt its receipt ID rather than uploading a duplicate. Missing, extra, reordered
+or unexpectedly recaptioned live images fail before writes; a deliberate
+repo-order change is accepted only from the recorded initial or desired order.
+
+**Image replacement/removal remains an explicit portal operation** because the
+API does not support replacing image bytes and this tooling deliberately does
+not delete previews. Upload/approve the replacement, remove only the intended
+old preview in the Developer Hub, then commit the verified new ID/hash/position
+mapping and captions. Do not guess IDs or silently drop a live screenshot.
+Unexpected caption changes require reconciling the recorded fingerprint or
+canonical caption with the owner before syncing.
+
+AMO updates are **not transactional**. A new version with sources can be created
+before a later metadata request fails, or a partial media update can persist.
+Requests are not automatically retried after ambiguous transport failures.
+Every acknowledged mutation is journaled to the always-uploaded `amo-receipt`
+artifact (90 days); plan artifacts are retained for 30 days. Inspect the live
+version and receipt after any failure. A repeated publish refuses duplicate
+versions. Once the source attachment is confirmed, use an explicitly authorized
+**sync** run to finish metadata instead of submitting another version. If a
+failure occurred before its response/receipt was received, inspect AMO manually
+first. Never bump a version merely to get a failed workflow to turn green.
+
+Account agreements/security/profile display name, Mozilla review/signing,
+reviewer decisions and eventual public availability cannot be synchronized from
+these repo files. The workflow reports the API's final file status and does not
+claim that a submitted or awaiting-review version is published.
+Credentials have not been configured or exercised as part of implementation;
+mutating API behavior is covered by offline request/response tests. The first
+authorized production run must check AMO's actual responses and rendered result.
+
+Authentication reference: [AMO external JWT authentication](https://mozilla.github.io/addons-server/topics/api/auth.html).
+The publisher signs unique short-lived HS256 tokens in memory, sends them only
+to the fixed AMO API origin, and refuses redirects. API errors are surfaced;
+credentials are redacted and never stored in plan or receipt artifacts.
+
+### Manual fallback and signing
 
 1. Sign in to the [AMO Developer Hub](https://addons.mozilla.org/developers/)
    using the owner's Mozilla account, accept its developer agreement, and
    complete any account-security requirements. No AMO API keys are needed for
    this manual process.
-2. Choose **Submit a New Add-on**, then **On this site** for a publicly listed
-   add-on. If a listing already exists, upload a new version on that listing
-   instead, with its exact existing ID and a higher version. Do not upload
+2. Open the existing [Maskify developer listing](https://addons.mozilla.org/en-US/developers/addon/maskify/edit)
+   and upload a new version only when authorized, with the exact existing ID
+   and a higher version. Do not create another listing or reupload 1.3.0.
+   Do not upload
    `maskify.zip` (Chromium) or `maskify-firefox-assets.zip` (listing artwork).
 3. Upload `maskify-firefox.zip`, examine AMO's own validation results, then
    attach `maskify-firefox-source.zip` in the source-code step. Supply Node 24 /
@@ -215,8 +417,10 @@ registry. Browser tests and linting are performed from the full repository.
    Chromium and are not Firefox-verification evidence. Its historical upload
    warning is superseded by this document. Link the
    [privacy policy](https://mike-mo.github.io/maskify/privacy.html), support
-   issues, and homepage. Select the license matching the repository's custom
-   personal/non-commercial terms, not an incompatible open-source license.
+   issues, and homepage. Use `amo/listing.json` for listing choices and the
+   version-specific notes under `amo/versions/`. Select the license matching
+   the repository's custom personal/non-commercial terms, not an incompatible
+   open-source license.
 5. In reviewer notes explain that no login is needed: open a normal HTTP(S)
    page with fictional email addresses, grant site access, click **Mask Emails**
    or press **Alt+Shift+M**, and verify text, title, email links, and fields.
@@ -228,9 +432,9 @@ registry. Browser tests and linting are performed from the full repository.
    result from AMO when available and verify a normal permanent installation.
 
 The local ZIP is **unsigned** and cannot be permanently installed in ordinary
-release Firefox. Temporary installation is not signing, store approval, proof
-that the ID is available, or publication. This repository does not hold AMO
-credentials and its workflows do not submit to Mozilla.
+release Firefox. Temporary installation is not signing, store approval or
+publication. The repository never stores AMO credentials. Only the separately
+authorized protected workflow or owner-operated Developer Hub can submit.
 
 Authoritative references:
 [MV3 background differences](https://extensionworkshop.com/documentation/develop/manifest-v3-migration-guide/),
