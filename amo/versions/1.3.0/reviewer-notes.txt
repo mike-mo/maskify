@@ -1,0 +1,10 @@
+Initial Firefox release of Maskify 1.3.0. Desktop Firefox 140 or later only; Android is not supported. No Maskify account or external service is required. Page processing is local. Preferences and a masking-action count use browser-managed storage.sync; no developer telemetry or external data endpoint. The manifest declares data_collection_permissions.required: ["none"].
+
+Testing: Open a normal HTTP(S) page containing fictional email addresses, grant the extension site access, and click the toolbar icon then Mask Emails, or press Alt+Shift+M. Verify replacements in page text, the tab title, mailto links, form values and placeholders. Repeated addresses receive consistent replacements within that masking action. Reloading restores the original page. Newly added content may require another activation. Firefox internal pages, AMO and other restricted domains cannot be modified. The interface supports English and Spanish.
+
+Build: Firefox manifest is generated from the Chromium manifest and manifest.firefox.json overlay. No minification, bundling or remote runtime code. Matching reviewer sources are prepared for attachment. With Node.js 24 LTS and npm 11, extract the source archive, then run from its root:
+npm --prefix scripts ci --ignore-scripts
+npm --prefix scripts run firefox:build -- dist/firefox
+The generated dist/firefox/maskify-firefox.zip must match the submitted ZIP byte-for-byte. Detailed instructions are included in RELEASING.md in the source archive.
+
+Known validation warnings: two UNSAFE_VAR_ASSIGNMENT warnings concern innerHTML labels using static bundled English/Spanish messages with strong markup, not page-supplied content. The third warning concerns the Android data-consent minimum version; this is a desktop-only submission with no gecko_android declaration.

@@ -1,0 +1,5 @@
+Initial Firefox release of Maskify.
+
+Replace email addresses on the current page before screen sharing or recording. Supports page text, tab titles, email links, and form fields, with configurable replacement formats and English/Spanish interface text.
+
+Requires desktop Firefox 140 or later. Activate from the toolbar or with Alt+Shift+M. Review the page before sharing; names, images, and other personal details are not redacted.

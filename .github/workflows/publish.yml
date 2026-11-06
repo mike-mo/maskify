@@ -1,4 +1,4 @@
-name: Release artifacts
+name: 'GitHub release: Attach packages'
 
 on:
   release:
@@ -6,12 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing stable release tag (blank selects GitHub stable latest)'
-        type: string
-        required: false
-  workflow_call:
-    inputs:
-      tag:
+        description: 'Existing stable GitHub release tag, v1.3.0+ (blank: latest stable)'
         type: string
         required: false
 

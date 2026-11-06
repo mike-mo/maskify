@@ -1,4 +1,4 @@
-name: CI
+name: 'Check: Test and build packages'
 
 on:
   pull_request:
@@ -18,7 +18,36 @@ permissions:
   contents: read
 
 jobs:
+  firefox:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['140.0', 'latest']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+      - name: Install locked dependencies
+        run: npm --prefix scripts ci --ignore-scripts
+      - uses: browser-actions/setup-firefox@v1
+        if: hashFiles('manifest.firefox.json') != ''
+        id: firefox
+        with:
+          firefox-version: ${{ matrix.version }}
+      - name: Test unsigned package in Firefox
+        if: hashFiles('manifest.firefox.json') != ''
+        env:
+          FIREFOX_BINARY: ${{ steps.firefox.outputs.firefox-path }}
+        run: npm --prefix scripts run test:firefox
+
   check:
+    needs: firefox
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +66,19 @@ jobs:
         run: npx playwright install chromium --with-deps
       - name: Test runtime, approved artwork, store packs, and release safety
         run: npm --prefix scripts test
+      - name: Validate Firefox package with Mozilla tooling
+        if: hashFiles('manifest.firefox.json') != ''
+        run: npm --prefix scripts run firefox:lint
+      - name: Build listing packs and gallery from shared sources
+        if: hashFiles('store-artwork/approved.json') != ''
+        run: npm --prefix scripts run stores
+      - uses: actions/upload-artifact@v4
+        if: hashFiles('store-artwork/approved.json') != ''
+        with:
+          name: store-listings
+          path: dist/store-assets/
+          if-no-files-found: error
+          retention-days: 7
       - name: Build verified release assets
         env:
           RELEASE_TAG: ${{ inputs.tag }}

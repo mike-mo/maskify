@@ -10,14 +10,22 @@
     "stores": "node store-assets.js",
     "stores:preview": "node store-assets.js --preview",
     "stores:check": "node store-assets.js --check",
-    "stores:version": "node refresh-store-version.js",
+    "stores:capture": "node store-assets.js --capture",
     "release:build": "node release-assets.js build",
     "chrome:build": "node chrome-package.js build",
     "chrome:check": "node chrome-package.js check",
-    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js refresh-store-version.test.js chrome-package.test.js"
+    "firefox:build": "node firefox-package.js",
+    "firefox:lint": "node firefox-package.js --lint",
+    "test:firefox": "node --test firefox.test.js",
+    "amo:plan": "node amo-publish.js plan",
+    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js firefox-package.test.js amo-publish.test.js chrome-package.test.js"
   },
   "dependencies": {
     "fflate": "^0.8.3",
     "playwright": "^1.59.1"
+  },
+  "devDependencies": {
+    "selenium-webdriver": "4.38.0",
+    "web-ext": "10.8.0"
   }
 }

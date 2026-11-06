@@ -4,10 +4,12 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { execFileSync } = require('node:child_process');
 const { test } = require('node:test');
 const { unzipSync } = require('fflate');
 const { buildPackage, checkPackage } = require('./chrome-package');
-const { runtimeFiles, readCanonical } = require('./release-assets');
+const { runtimeFiles, readCanonical } = require('./extension-package');
+const { sourceHashes } = require('./store-assets');
 
 const ROOT = path.resolve(__dirname, '..');
 const ICON = 'icons/maskify128x128.png';
@@ -24,7 +26,7 @@ test('Chrome ZIP is deterministic, root-level, runtime-only, with only the appro
   const files = unzipSync(bytes);
   assert.deepEqual(Object.keys(files), runtimeFiles());
   for (const [file, data] of Object.entries(files)) {
-    const source = file === ICON ? path.join(ROOT, 'store-assets', 'chrome', 'icon-128.png')
+    const source = file === ICON ? path.join(ROOT, 'store-artwork', 'chrome-icon-128.png')
       : path.join(ROOT, ...file.split('/'));
     assert(Buffer.from(data).equals(readCanonical(source)), file);
   }
@@ -43,7 +45,7 @@ test('Chrome ZIP is deterministic, root-level, runtime-only, with only the appro
 
 test('Chrome packaging rejects an altered icon or Firefox-specific manifest without changing source files', t => {
   const root = temp(t);
-  for (const file of [...runtimeFiles(), 'store-assets/chrome/icon-128.png', 'store-assets/chrome/asset-inventory.json']) {
+  for (const file of Object.keys(sourceHashes(ROOT))) {
     const target = path.join(root, ...file.split('/'));
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.copyFileSync(path.join(ROOT, ...file.split('/')), target);
@@ -55,8 +57,19 @@ test('Chrome packaging rejects an altered icon or Firefox-specific manifest with
   fs.writeFileSync(manifestPath, JSON.stringify(manifest));
   assert.throws(() => buildPackage(root), /Firefox manifest/);
   fs.writeFileSync(manifestPath, original);
-  fs.appendFileSync(path.join(root, 'store-assets', 'chrome', 'icon-128.png'), 'changed');
-  assert.throws(() => buildPackage(root), /differs from approved/);
+  fs.appendFileSync(path.join(root, 'store-artwork', 'chrome-icon-128.png'), 'changed');
+  assert.throws(() => buildPackage(root), /approved artwork bytes differ/);
+});
+
+test('Chrome CLI resolves output from the repository root and refuses to overwrite an existing ZIP', t => {
+  const directory = temp(t);
+  const file = path.join(directory, 'chrome.zip');
+  const relative = path.relative(ROOT, file);
+  const cli = path.join(__dirname, 'chrome-package.js');
+  execFileSync(process.execPath, [cli, 'build', relative], { cwd: __dirname });
+  assert(fs.readFileSync(file).equals(buildPackage()));
+  assert.throws(() => execFileSync(process.execPath, [cli, 'build', file], { stdio: 'pipe' }), /Command failed/);
+  assert(fs.readFileSync(file).equals(buildPackage()));
 });
 
 test('Chrome verification rejects tampered packages before extraction or launching a browser', t => {

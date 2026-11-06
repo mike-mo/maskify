@@ -6,8 +6,9 @@ const os = require('node:os');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { unzipSync } = require('fflate');
-const { runtimeFiles, readCanonical, sha256 } = require('./release-assets');
-const { makeArchive } = require('./store-assets');
+const { runtimeFiles, readCanonical, makeArchive } = require('./extension-package');
+const { sha256 } = require('./release-assets');
+const { buildStoreFiles } = require('./store-assets');
 
 const ROOT = path.resolve(__dirname, '..');
 const ICON = 'icons/maskify128x128.png';
@@ -26,13 +27,7 @@ function buildPackage(root = ROOT) {
     const description = manifest.description.replace(/__MSG_(\w+)__/g, (_, key) => messages[key].message);
     assert(description.length > 0 && description.length <= 132, `${locale}: Chrome description exceeds 132 characters`);
   }
-  const directory = path.join(root, 'store-assets', 'chrome');
-  const icon = fs.readFileSync(path.join(directory, 'icon-128.png'));
-  const inventory = JSON.parse(readCanonical(path.join(directory, 'asset-inventory.json')));
-  const approved = inventory.files.find(file => file.file === 'icon-128.png');
-  assert(approved, 'Missing approved Chrome icon inventory');
-  assert.equal(sha256(icon), approved.sha256, 'Chrome icon differs from approved store artwork');
-  files.set(ICON, icon);
+  files.set(ICON, buildStoreFiles(root, 'chrome').get('icon-128.png'));
   return makeArchive(files);
 }
 
@@ -69,12 +64,13 @@ if (require.main === module) {
     const [command, file, ...extra] = process.argv.slice(2);
     assert(file && extra.length === 0 && ['build', 'check'].includes(command),
       'Use build <new-output.zip> or check <output.zip>');
+    const target = path.resolve(ROOT, file);
     if (command === 'build') {
       const bytes = buildPackage();
-      fs.writeFileSync(path.resolve(file), bytes, { flag: 'wx' });
-      console.log(`Built ${path.resolve(file)} (${bytes.length} bytes). SHA256 ${sha256(bytes)}`);
+      fs.writeFileSync(target, bytes, { flag: 'wx' });
+      console.log(`Built ${target} (${bytes.length} bytes). SHA256 ${sha256(bytes)}`);
     } else {
-      checkPackage(path.resolve(file), { executablePath: process.env.MASKIFY_CHROME_EXECUTABLE });
+      checkPackage(target, { executablePath: process.env.MASKIFY_CHROME_EXECUTABLE });
     }
   } catch (error) {
     console.error(error.message);

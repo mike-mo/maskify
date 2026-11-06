@@ -12,9 +12,10 @@ npm --prefix scripts run chrome:build -- maskify-chrome.zip
 npm --prefix scripts run chrome:check -- maskify-chrome.zip
 ```
 
-The output path is relative to `scripts` when using `npm --prefix scripts run`.
-These commands therefore create `scripts/maskify-chrome.zip`. To write elsewhere,
-pass an absolute path to an existing output directory. The builder refuses to
+Relative output paths resolve from the repository root, including when npm
+runs the command from `scripts`, matching the Firefox builder. These commands
+create `maskify-chrome.zip` at the repository root. Absolute paths are used
+unchanged; the parent output directory must already exist. The builder refuses to
 overwrite an existing file. Retain the SHA-256 printed by build/check with the
 source commit and version. Rebuilding the same inputs produces identical bytes,
 including on Windows (runtime text is normalized to LF).
@@ -26,9 +27,12 @@ packs, Git files, and dependencies. The version is taken from `manifest.json`;
 no version is invented or incremented by packaging.
 
 The only difference from the Edge runtime is the approved
-`store-assets/chrome/icon-128.png` copied to `icons/maskify128x128.png` **inside
+`store-artwork/chrome-icon-128.png` copied to `icons/maskify128x128.png` **inside
 the ZIP**. It provides Chrome's 96 x 96 artwork safe area with transparent
-padding. The existing manifest, Edge icon, release workflow, and Firefox work
+padding. The shared in-memory store builder verifies the canonical artwork
+approval and runtime freshness checks before providing this icon. No generated
+store folder, committed inventory copy, or stale listing ZIP is read. The
+existing manifest, Edge icon, release workflow, and Firefox work
 are not modified. Firefox-specific manifest settings cause a build failure
 rather than being silently shipped to Chrome.
 
@@ -67,12 +71,14 @@ is performed by these commands.
    **`maskify-chrome.zip`**, not `maskify-chrome-assets.zip`. For updates, the
    manifest version must exceed the version already uploaded to that item.
    The current source version may be used for a first Chrome listing.
-3. Use `store-assets/chrome/en` and `store-assets/chrome/es` for the English and
+3. Run `npm --prefix scripts run stores` to generate the listing pack under
+   `dist/store-assets`, or download the **store-listings** CI artifact.
+   Use `dist/store-assets/chrome/en` and `dist/store-assets/chrome/es` for the English and
    Spanish descriptions and screenshots. Each locale has three approved
    1280 x 800 PNGs. Use `icon-128.png` for the listing icon. Supply the included
    440 x 280 promotional tile and, optionally, the 1400 x 560 marquee.
    Google's current image guide calls promotional images optional, despite the
-   older listing pack's statement that the small tile is required. Supplying
+   generated listing guide's statement that the small tile is required. Supplying
    the existing tile satisfies either case; no artwork regeneration is needed.
 4. Choose an appropriate current dashboard category (for example Productivity)
    and language, support/homepage URLs, visibility, distribution, and pricing
@@ -82,7 +88,7 @@ is performed by these commands.
    Provide the public policy URL:
    <https://mike-mo.github.io/maskify/privacy.html>.
 6. Supply the existing reviewer instructions from
-   `store-assets/chrome/reviewer-notes.txt`. No Maskify account is needed.
+   `dist/store-assets/chrome/reviewer-notes.txt`. No Maskify account is needed.
    Explain that masking is user-triggered, repeat activations may be needed for
    newly loaded content, and users must review the page before sharing.
 7. Review all dashboard warnings and certifications before explicitly submitting
@@ -107,8 +113,10 @@ Chrome reviews permissions for minimum necessary access; using the Tabs API
 alone does not establish that the broad `tabs` permission is required.
 
 **Remote code:** No. Scripts and name data are bundled in the extension.
-The popup's donation link opens an external page only when the user follows it;
-it is not remote code loaded into the extension.
+The popup's donation link opens Buy Me a Coffee, a third-party website with
+its own privacy policy, only when the user follows it. Maskify does not send
+page content, detected addresses, or saved settings through this link. It is
+not remote code loaded into the extension.
 
 **Data use:** Page content and detected email addresses are processed in the
 browser, not saved to extension storage or sent to the developer. Preferences

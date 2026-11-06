@@ -1,18 +1,19 @@
 'use strict';
 
 let _lastFire = 0;
+const extensionApi = globalThis.browser || globalThis.chrome;
 
-chrome.commands.onCommand.addListener(async (command) => {
+extensionApi.commands.onCommand.addListener(async (command) => {
   if (command !== 'mask-page') return;
 
   const now = Date.now();
   if (now - _lastFire < 75) return;
   _lastFire = now;
 
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const [tab] = await extensionApi.tabs.query({ active: true, currentWindow: true });
   if (!tab?.id) return;
 
-  const settings = await chrome.storage.sync.get({
+  const settings = await extensionApi.storage.sync.get({
     domain: '',
     addNumber: true,
     addLastInitial: false,
@@ -23,13 +24,13 @@ chrome.commands.onCommand.addListener(async (command) => {
   const domain = settings.domain || 'example.com';
 
   try {
-    await chrome.tabs.sendMessage(tab.id, {
+    await extensionApi.tabs.sendMessage(tab.id, {
       domain,
       addNumber: settings.addNumber,
       addLastInitial: settings.addLastInitial,
       showAsterisk: settings.showAsterisk,
     });
-    chrome.storage.sync.set({ maskCount: settings.maskCount + 1 });
+    extensionApi.storage.sync.set({ maskCount: settings.maskCount + 1 });
   } catch {
     // Content script not injected — user needs to refresh the page
   }

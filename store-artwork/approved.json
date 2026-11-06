@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "capture_browser": "Chromium",
+  "manifest_version_excluded": true,
+  "migration": {
+    "from_commit": "d6fcf4f9d6cae1420b8a32a67edde707a74672af",
+    "legacy_inventory_sha256": {
+      "edge": "5f216684bfeea0f33f3e48b436e4bb5220469a7fc78df1c738b9c18c62917c19",
+      "chrome": "a94cb3f83a12b57eb3e113e73349091bb0b20ca31af244c5a7293962081cbb83",
+      "firefox": "827fecd17aeceefa05c78b4f1cc5b59605cb491b9d57da7297ce72f677b80539"
+    }
+  },
+  "sources": {
+    "_locales/en/messages.json": "cc45f5555e85d624242cc9708d18ea655bd53ab12e8c1ece604bb1887f9a83af",
+    "_locales/es/messages.json": "750292ec215758fca62bbbcd496ef015a39136d67079019a132920774a88ad82",
+    "background.js": "55d09d6233863bef24c99deb7de3827caa4f729db082366952a5c3d5dd8541d2",
+    "content-scripts/content.js": "0cbef588f021f0bd7702a91c714e56bdd25772739d4928f1367cb989133d5033",
+    "data/domain-utils.js": "15d4afd0c4afbc8d5d92bd0d42dbd72b6b6397ff8156e62cc6b653b4c8ab566a",
+    "data/names-en.js": "cf0131bbf3b5b58bf143fb046afdd630873183a81e370b53ab608792038581f6",
+    "data/names-es.js": "81578922822dd967af86ba9b4b3fbf3a99fb4f1fad9c2cfbab9b4d15faf49494",
+    "icons/maskify.svg": "d548d9162a3c7f4946452cb2c345eff7fdb42f810f66c9b7e9dcf02167d84744",
+    "icons/maskify128x128.png": "6615647ea7efcc7851dec80c00bfaadd273d2e87715830ed069418b074384187",
+    "icons/maskify16x16.png": "bec82c9284578c014bb109c84f3e05ab11bd18344ed75adf0c6958c22f6773f7",
+    "icons/maskify300x300.png": "df154463d225812daba54366362804e4b7eb11073eb538dd02cef8e577e02578",
+    "icons/maskify32x32.png": "f51a62fec827d3aabb76a6d722f0f5568b543dd5d5c4d5bc399031fa6025db9f",
+    "icons/maskify48x48.png": "2cc45bd9ba40c8fc371cb8d94cc3e316493bd7565862db8ff805234bd058a16d",
+    "manifest.json": "779e012e0067c9b39a088eb8cbf08f1fe60ea016d28146bb87051c874f0661e0",
+    "popup/popup.html": "a8ff63a75b3af263d71185735cc7977b356ed267ecaa41347f2d3d4f3d697ff3",
+    "popup/popup.js": "896fd34789999cd0b85b19ce49f22e215e4c6ff8b2fb6cc3d68f0382b331acf2",
+    "screenshots/en/01-result.png": "532a5406230bc7786f8ebe4e8306205aff3fba7a367ee050bb22cadbf4e4b58a",
+    "screenshots/en/02-coverage.png": "37226c20b8323cf8bcacaae8a17f56076a9ae46d50782dcd1fc75cc650c6a691",
+    "screenshots/en/03-controls.png": "5314772c5fff5e003076989e0fd2af7b182c09d96aa5d548b72a4b1cbe561aaf",
+    "screenshots/es/01-result.png": "00593f501dc3542c634f9ceec3585937779686110e2e014a795e99f2c9681aba",
+    "screenshots/es/02-coverage.png": "57f972ebc41a015a5ef5256d7968e6df6910efcb0f812126a972f6bc18215d36",
+    "screenshots/es/03-controls.png": "5ce8bd1aca738c2ae93a611abcfd89f04a8eb651ee3ab8ca3742d4d7bf80731a",
+    "scripts/assets/Manrope.ttf": "d0639be45d0af36e798172419d7bd173c4bd4f29e2b76cbb69db1d11bf8b0a40",
+    "scripts/composition.css": "b0b06af022b9be887ebc8a1de946c9dcb93fcae3cc1543c39c1526c7dbaa6bee",
+    "scripts/copy.json": "81873280f39239112f42a8981088a4a41d0eed78934ba41f42f775e29e58d3e7",
+    "scripts/demo.css": "5327946872251e9d20da4eb778a43356013579c412c3760744a7e60762f062ba",
+    "scripts/screenshot.js": "249752147cae8509bfde0203469cf0ccce5c2dc3a0b75b07a9e120c831bfb6e9",
+    "scripts/store-compositions.css": "58bf29c33c98839a5f06c51c1ac0c0525cd5d7bd3c6a73812e5eeca8bf9d0779",
+    "scripts/store-templates.js": "eec132fceeff65168a7fe78c3cd7b437dbbe76e10b19c450c81227e31006d204",
+    "scripts/templates.js": "40fed473e65ad8be753835fbed4e7910783c895f1f0c65fb2c1bfc1f23ffa269"
+  },
+  "files": [
+    {
+      "file": "icons/maskify128x128.png",
+      "bytes": 3676,
+      "sha256": "6615647ea7efcc7851dec80c00bfaadd273d2e87715830ed069418b074384187"
+    },
+    {
+      "file": "icons/maskify300x300.png",
+      "bytes": 9865,
+      "sha256": "df154463d225812daba54366362804e4b7eb11073eb538dd02cef8e577e02578"
+    },
+    {
+      "file": "screenshots/en/01-result.png",
+      "bytes": 119663,
+      "sha256": "532a5406230bc7786f8ebe4e8306205aff3fba7a367ee050bb22cadbf4e4b58a"
+    },
+    {
+      "file": "screenshots/en/02-coverage.png",
+      "bytes": 115370,
+      "sha256": "37226c20b8323cf8bcacaae8a17f56076a9ae46d50782dcd1fc75cc650c6a691"
+    },
+    {
+      "file": "screenshots/en/03-controls.png",
+      "bytes": 103777,
+      "sha256": "5314772c5fff5e003076989e0fd2af7b182c09d96aa5d548b72a4b1cbe561aaf"
+    },
+    {
+      "file": "screenshots/es/01-result.png",
+      "bytes": 130089,
+      "sha256": "00593f501dc3542c634f9ceec3585937779686110e2e014a795e99f2c9681aba"
+    },
+    {
+      "file": "screenshots/es/02-coverage.png",
+      "bytes": 130971,
+      "sha256": "57f972ebc41a015a5ef5256d7968e6df6910efcb0f812126a972f6bc18215d36"
+    },
+    {
+      "file": "screenshots/es/03-controls.png",
+      "bytes": 113237,
+      "sha256": "5ce8bd1aca738c2ae93a611abcfd89f04a8eb651ee3ab8ca3742d4d7bf80731a"
+    },
+    {
+      "file": "store-artwork/chrome-icon-128.png",
+      "bytes": 3840,
+      "sha256": "5d262278c2ab37e247267bd30a44de47b08d2492f35f7a85d56dc2b9d8b0e284"
+    },
+    {
+      "file": "store-artwork/firefox-01-result.png",
+      "bytes": 188489,
+      "sha256": "b52424965c4267f113d27ea925830bb8772e18ffa6fc0459e7ebb4c1ea9dbdee"
+    },
+    {
+      "file": "store-artwork/firefox-02-coverage.png",
+      "bytes": 160178,
+      "sha256": "2d7f4123c33dd3818a12ee1dd02e71864e41cfc13a34c7966b71f156e3ee0dc4"
+    },
+    {
+      "file": "store-artwork/firefox-03-controls.png",
+      "bytes": 105982,
+      "sha256": "7290c02597955e66f5d3325e19c814e000e1b92eecb8e75df2bf39b0725a3280"
+    },
+    {
+      "file": "store-artwork/promo-marquee-1400x560.png",
+      "bytes": 25803,
+      "sha256": "d046e2e5522d69303c898215370d99e8da0006fca75ae774478d19a7440ab1b1"
+    },
+    {
+      "file": "store-artwork/promo-small-440x280.png",
+      "bytes": 10693,
+      "sha256": "ce56429d400605b04265bd45f821df3a2bed0b816592a5e5ab5694ec61b315c0"
+    }
+  ]
+}
