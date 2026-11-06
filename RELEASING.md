@@ -20,7 +20,7 @@ release. Its listing pack is not an extension; use the separate Firefox package.
 | --- | --- | --- | --- |
 | **Check: Test and build packages** (`ci.yml`) | Push, pull request, or reused by the other workflows for an exact ref | Shared regression/browser/lint checks, `release-assets`, and generated `store-listings` gallery/packs | None |
 | **GitHub release: Attach packages** (`publish.yml`) | Published GitHub release, or manual existing stable tag | Resolve the immutable tag commit, reuse checks, verify and attach the resulting assets | GitHub release assets only; never store submission |
-| **Firefox store: Plan or publish** (`firefox-publish.yml`) | Manual, workflow on main, exact approved SHA/version | Default offline `amo-plan`; explicit protected sync or new-version submission, with `amo-receipt` | Only an authorized sync/publish can write to AMO |
+| **Firefox store: Plan or publish** (`firefox-publish.yml`) | Manual, workflow on main, exact approved SHA/version | Default offline `amo-plan`; protected read-only credential check, sync or new-version submission | `auth-check` reads AMO only; authorized sync/publish can write, with `amo-receipt` |
 
 The old `screenshots.yml` was only a second entry point to `publish.yml`; it has
 been removed. Prior run history can still show the old workflow names. Release
@@ -351,6 +351,31 @@ Download **`amo-plan`** and review `plan.json`, both ZIPs, the icon, and all
 screenshot file/ID/caption/hash mappings. The plan includes every API payload
 and lists manual exceptions. Plan mode makes **no AMO requests**, including no
 validation upload, and requires no production credentials.
+
+To test newly entered or rotated credentials, dispatch **auth-check**, not sync:
+
+```text
+gh workflow run firefox-publish.yml --repo mike-mo/maskify --ref main -f source_sha=FULL_MERGED_SHA -f version=1.3.0 -f operation=auth-check
+```
+
+This builds and verifies the same offline plan first, then waits for your
+`amo-production` approval in that run's GitHub Actions page. Approve only after
+checking the operation is **auth-check** and the source SHA/version are intended.
+The protected step uses a GET-only transport to read Maskify's add-on identity
+and its recorded initial version's developer-only reviewer-source metadata.
+It requires the exact add-on GUID/slug/ID, version/file IDs and a nonempty source
+field, so a publicly readable listing alone cannot count as success. It does
+not download the source URL, upload a validation package, synchronize metadata,
+create a version or sign/publish anything. Success logs only the verified add-on
+ID/slug and read-access result; API bodies, account information, source URLs and
+JWTs are not printed or saved. Errors expose HTTP status only (or a generic
+network/response error). No mutation receipt is created.
+
+An offline **plan** does not test credentials. An **auth-check** success confirms
+authenticated source read access, not write permission or the entire live
+listing/media preflight. Those checks still run before separately authorized
+sync/publish operations. A failed check is not permission to try a mutation,
+rotate credentials automatically or relax environment protections.
 
 For a local, offline plan from a clean checkout, Node 24 and locked dependencies:
 
