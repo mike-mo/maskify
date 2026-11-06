@@ -42,7 +42,7 @@ const TEXT_FILES = [
   ...LANGS.flatMap(lang => ['description.txt', 'description.md', 'listing-copy.json', 'captions.json'].map(file => `${lang}/${file}`)),
 ];
 const LISTING_SOURCES = [
-  'store-assets.md', 'privacy.html', 'LICENSE', 'scripts/store-assets.js',
+  'LICENSE', 'scripts/store-assets.js',
   'scripts/store-gallery.css', 'scripts/extension-package.js', 'scripts/package-lock.json',
   'scripts/assets/Manrope-OFL.txt',
 ];
@@ -50,6 +50,14 @@ const LISTING_SOURCES = [
 const diskPath = (root, file) => path.join(root, ...file.split('/'));
 const hash = data => createHash('sha256').update(data).digest('hex');
 const json = value => Buffer.from(JSON.stringify(value, null, 2) + '\n');
+
+function listingPaths(root = ROOT) {
+  const current = fs.existsSync(diskPath(root, 'docs/store-assets.md'));
+  const legacy = fs.existsSync(diskPath(root, 'store-assets.md'));
+  assert.notEqual(current, legacy, 'Expected exactly one canonical store-copy layout');
+  return current ? { copy: 'docs/store-assets.md', policy: 'web/privacy.html' }
+    : { copy: 'store-assets.md', policy: 'privacy.html' };
+}
 
 function artworkSources(root = ROOT) {
   const files = [...new Set([
@@ -71,8 +79,10 @@ function artworkSources(root = ROOT) {
 }
 
 function sourceHashes(root = ROOT) {
+  const listing = listingPaths(root);
   return Object.fromEntries([...new Set([
-    ...LISTING_SOURCES, ...Object.keys(artworkSources(root)), ...imageSpecs(root).map(artworkFile), APPROVAL,
+    ...LISTING_SOURCES, listing.copy, listing.policy,
+    ...Object.keys(artworkSources(root)), ...imageSpecs(root).map(artworkFile), APPROVAL,
   ])].sort().map(file => [file, hash(readCanonical(diskPath(root, file)))]));
 }
 
@@ -111,7 +121,7 @@ function plainText(markdown) {
 }
 
 function policyText(root = ROOT) {
-  const html = readCanonical(path.join(root, 'privacy.html')).toString('utf8');
+  const html = readCanonical(diskPath(root, listingPaths(root).policy)).toString('utf8');
   const body = html.match(/<body>([\s\S]*?)<\/body>/)?.[1];
   assert(body, 'Privacy policy must have a body');
   const blocks = [...body.matchAll(/<(h1|h2|p)>([\s\S]*?)<\/\1>/g)];
@@ -129,7 +139,7 @@ function policyText(root = ROOT) {
 }
 
 function copyFiles(store, root = ROOT) {
-  const markdown = readCanonical(path.join(root, 'store-assets.md')).toString('utf8');
+  const markdown = readCanonical(diskPath(root, listingPaths(root).copy)).toString('utf8');
   const copy = JSON.parse(readCanonical(path.join(root, 'scripts', 'copy.json')));
   const files = new Map([
     ['UPLOAD.md', Buffer.from(uploadGuide(store))],
@@ -506,6 +516,6 @@ if (require.main === module) {
 module.exports = {
   STORES, LANGS, TEXT_FILES, imageSpecs, section, plainText, pngInfo, validateImage,
   validateChromePadding, copyFiles, makeArchive, check, previewRoutes,
-  policyText, artworkFile, artworkSources, sourceHashes, verifyArtwork, writeArtworkApproval,
+  policyText, listingPaths, artworkFile, artworkSources, sourceHashes, verifyArtwork, writeArtworkApproval,
   buildStoreFiles, buildStoreAssets, writeStoreAssets,
 };

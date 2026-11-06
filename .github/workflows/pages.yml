@@ -1,0 +1,52 @@
+name: 'Pages: Deploy site'
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy after GitHub Pages is configured for Actions'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Assemble Pages source
+        run: node scripts/pages.js dist/pages-source
+      - name: Check legacy URLs and site assets
+        run: node --test scripts/pages.test.js
+      - uses: actions/configure-pages@v5
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./dist/pages-source
+          destination: ./dist/pages-site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist/pages-site
+  deploy:
+    if: inputs.deploy && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deploy

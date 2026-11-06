@@ -11,7 +11,7 @@ Store upload is a separate, human-authorized operation.
 Uploading a draft package does not authorize certification, submission, or
 publication. Edge has a manually dispatched **Edge store: Plan, status or draft upload**
 workflow with an offline plan and protected draft-only upload. Certification
-and publication stay manual in Partner Center; see [Edge setup and operation](edge/README.md).
+and publication stay manual in Partner Center; see [Edge setup and operation](../edge/README.md).
 Firefox has a separate, manually dispatched **Firefox store: Plan or publish**
 workflow with an offline plan and protected approval gate. It can synchronize
 AMO metadata or submit a new version, but is never triggered by a push or GitHub
@@ -34,7 +34,7 @@ workflow and the same packaging helpers, not separate capture pipelines.
 No current workflow captures or approves new artwork. The listing-artifact step
 is gated on the canonical artwork record, so running checks for an older ref
 does not invoke that ref's historical artwork-regeneration command.
-Firefox setup, smoke tests and linting also require `manifest.firefox.json` in
+Firefox setup, smoke tests and linting also require `scripts/manifest.firefox.json` in
 the selected checkout. Historical release retries without Firefox packaging
 still run their own regression tests and release builder, without calling
 missing Firefox npm scripts.
@@ -43,13 +43,13 @@ missing Firefox npm scripts.
 
 | Maintained source | Generated output |
 | --- | --- |
-| `store-assets.md` listing sections and certification notes | Each store's English/Spanish Markdown/plain descriptions and generic reviewer notes |
+| `docs/store-assets.md` listing sections and certification notes | Each store's English/Spanish Markdown/plain descriptions and generic reviewer notes |
 | `_locales/en/messages.json`, `_locales/es/messages.json` and shared public-link constants in `scripts/store-assets.js` | Localized name, summary and listing links |
 | `scripts/copy.json` | Caption files and screenshot/demo composition text |
-| `privacy.html`, root `LICENSE` | Shared plain-text policy and license copies |
+| `web/privacy.html`, root `LICENSE` | Shared plain-text policy and license copies |
 | `icons/`, `screenshots/en/`, `screenshots/es/` | Reused production icons and localized Edge/Chrome screenshots |
 | Unique approved `store-artwork/` PNGs and `approved.json` | Padded Chrome icon, shared promos, Firefox gallery, per-store inventories |
-| `amo/listing.json`, `amo/versions/VERSION/` and `manifest.firefox.json` | AMO-specific choices, version payloads and Firefox package metadata |
+| `amo/listing.json`, `amo/versions/VERSION/` and `scripts/manifest.firefox.json` | AMO-specific choices, version payloads and Firefox package metadata |
 | `edge/product.json` | Owner-confirmed Edge Partner Center identity in offline plans and protected draft uploads |
 
 `npm --prefix scripts run stores` deterministically builds **`dist/store-assets/`**:
@@ -202,7 +202,7 @@ when npm runs the command from `scripts/`; absolute paths are used unchanged.
 `dist/` is local output, not source to commit.
 
 The root `manifest.json` remains Chromium MV3 with `background.service_worker`.
-`manifest.firefox.json` replaces that section with `background.scripts` for a
+`scripts/manifest.firefox.json` replaces that section with `background.scripts` for a
 non-persistent Firefox MV3 event page. Runtime files are shared unchanged between
 packages. The background chooses Firefox's promise-based `browser` namespace or
 Chromium's `chrome` namespace. The popup/content scripts retain Firefox-supported
@@ -278,13 +278,13 @@ or listing prose into another source:
 | Submitted content | Canonical repository input |
 | --- | --- |
 | English/Spanish names and summaries, homepage/support/policy URLs | Package locale messages and shared public-link constants in `scripts/store-assets.js` |
-| English/Spanish descriptions | Listing sections in `store-assets.md` |
-| Privacy policy | Plain text derived from `privacy.html` plus `privacy_policy_suffix` in `amo/listing.json`; only English was submitted |
+| English/Spanish descriptions | Listing sections in `docs/store-assets.md` |
+| Privacy policy | Plain text derived from `web/privacy.html` plus `privacy_policy_suffix` in `amo/listing.json`; only English was submitted |
 | Custom license | Root `LICENSE` plus its submitted name in `amo/listing.json` |
 | Icon, ordered screenshots and bilingual captions | `icons/maskify128x128.png`, unique `store-artwork/firefox-*.png`, and shared `scripts/copy.json`; AMO image IDs and approved-image/caption fingerprints in `amo/listing.json` |
 | Category Privacy & Security, tag privacy, non-experimental, no required payment/service/hardware, blank support email, locale mapping | `amo/listing.json` |
 | Public version notes and reviewer instructions | `amo/versions/1.3.0/release-notes.txt` and `reviewer-notes.txt`, captured from the submitted text |
-| Desktop >=140, no Android, extension ID and data declarations | `manifest.firefox.json` |
+| Desktop >=140, no Android, extension ID and data declarations | `scripts/manifest.firefox.json` |
 | Initial submitted source commit, package/source hashes and AMO version/file IDs | `initial_submission` in `amo/listing.json` |
 
 Listing text is built from canonical shared sources, not from generated loose

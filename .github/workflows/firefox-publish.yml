@@ -97,7 +97,7 @@ jobs:
       - name: Add review instructions
         run: |
           echo 'Download amo-plan and review plan.json, both ZIPs, icon and screenshot mappings before approving amo-production.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Plan mode makes no AMO requests. auth-check uses GET only. All authenticated operations require protected environment approval. See RELEASING.md.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Plan mode makes no AMO requests. auth-check uses GET only. All authenticated operations require protected environment approval. See docs/RELEASING.md.' >> "$GITHUB_STEP_SUMMARY"
 
   apply:
     name: Protected AMO operation

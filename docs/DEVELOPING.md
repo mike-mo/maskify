@@ -1,9 +1,9 @@
 # Developing Maskify
 
-For installation and user-facing behavior, see [README.md](README.md).
+For installation and user-facing behavior, see [README.md](../README.md).
 [RELEASING.md](RELEASING.md) is the reference for package builds, workflow
 responsibilities, canonical source/output mapping and publishing approvals.
-The [Edge draft-publishing guide](edge/README.md) covers offline plans, protected
+The [Edge draft-publishing guide](../edge/README.md) covers offline plans, protected
 draft uploads, read-only status checks and owner-only production setup.
 The [approved store copy](store-assets.md) contains the bilingual listings,
 search terms, certification notes and screenshot creative brief.
@@ -48,7 +48,7 @@ The automated browser checks exercise the actual extension in English and
 Spanish, including title-only addresses, shared replacements, format options,
 repeated activations, and titles that should stay unchanged.
 
-For manual checks, open [testpage.html](testpage.html) after loading the
+For manual checks, open [testpage.html](../web/testpage.html) after loading the
 extension. In Chrome/Edge, enable **Allow access to file URLs** in the extension
 details if opening the page as a local file. It covers text, links, forms,
 repeated addresses, email formats, non-email `@` symbols and the browser tab
@@ -60,9 +60,23 @@ masking, saved settings and registered shortcut-command checks. Those use an
 isolated profile, not your personal profile. The guide covers `FIREFOX_BINARY`,
 geckodriver, the matching Spanish language pack and known validation warnings.
 
+## GitHub Pages migration
+
+The canonical policy and test page live in `web/`. Until the Pages source is
+switched from the `main` branch root to GitHub Actions, keep the root copies in
+sync. `node --test scripts/pages.test.js` checks their contents and icon paths.
+The Pages workflow can build its Jekyll artifact without deploying it.
+
+After this workflow is available on `main`, inspect its build-only artifact,
+then coordinate the Pages settings switch to GitHub Actions and run the workflow
+with deployment enabled. Verify the policy, test page, home page, icon gallery
+and screenshot gallery at their existing URLs. Only after that verification,
+remove the root page copies and enable automatic deployments on `main` pushes.
+Until automatic deployment is enabled, site updates require a manual workflow run.
+
 ## Store screenshots
 
-The [screenshot gallery](screenshots/index.html) contains three 1280 x 800 PNGs
+The [screenshot gallery](../screenshots/index.html) contains three 1280 x 800 PNGs
 in each of English and Spanish: the before/after result, masking coverage and
 format controls. Final images are tracked under `screenshots/en/` and
 `screenshots/es/`. The [creative brief](store-assets.md#screenshot-creative-brief)
@@ -89,7 +103,7 @@ Generated replacement names vary between runs.
 Editable sources are `scripts/templates.js`, `scripts/demo.css`,
 `scripts/composition.css` and `scripts/copy.json`.
 [Manrope](https://github.com/google/fonts/tree/main/ofl/manrope) is distributed
-under the [SIL Open Font License](scripts/assets/Manrope-OFL.txt). The font and
+under the [SIL Open Font License](../scripts/assets/Manrope-OFL.txt). The font and
 capture-only sources are not included in extension runtime packages.
 
 The generator checks masking behavior, localization, preview wrapping, image
@@ -102,14 +116,14 @@ use; see [the release procedure](RELEASING.md#create-and-package-the-official-re
 ## Brand assets
 
 Maskify uses one icon: a blue envelope with a dark circular asterisk seal.
-Its editable source is [icons/maskify.svg](icons/maskify.svg).
+Its editable source is [icons/maskify.svg](../icons/maskify.svg).
 The 16-, 32-, 48- and 128-pixel PNGs at `icons/maskify<size>x<size>.png`
 serve the toolbar, popup, toast, page favicons and store screenshots.
 A 64-pixel export supports high-DPI previews. Use
-[icons/maskify300x300.png](icons/maskify300x300.png) as the logo for both language
+[icons/maskify300x300.png](../icons/maskify300x300.png) as the logo for both language
 listings in the Edge store.
 
-The [icon preview](icons/index.html) shows the artwork on light and dark
+The [icon preview](../icons/index.html) shows the artwork on light and dark
 toolbars. With dependencies installed, run
 `npm --prefix scripts run icons` to regenerate every PNG and the preview
 from the canonical SVG. This updates production files directly.
