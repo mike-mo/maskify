@@ -27,17 +27,19 @@ Install the published version from [Microsoft Edge Add-ons](https://microsoftedg
 
 ### Firefox
 
-The initial AMO submission was **awaiting review at last verification**; public
-availability has not been confirmed. The Firefox badge links to the
+The initial AMO submission is **awaiting review at time of writing**; public
+availability is pending. The Firefox badge links to the
 [publication tracker](https://github.com/mike-mo/maskify/issues/38), not a public
 install page.
 
-For testing on desktop Firefox 140 or later, follow the
-[Firefox package build instructions](RELEASING.md#package-and-verify-locally).
-In `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on** and
-select `dist/firefox/maskify-firefox.zip`. Allow site access and refresh existing
-tabs. Temporary installs disappear when Firefox exits; permanent installation
-requires Mozilla signing.
+For testing on desktop Firefox 140 or later:
+
+1. Follow the [Firefox package build instructions](RELEASING.md#package-and-verify-locally).
+2. Open `about:debugging#/runtime/this-firefox` and choose **Load Temporary Add-on**.
+3. Select `dist/firefox/maskify-firefox.zip`.
+4. Allow site access and refresh existing tabs.
+
+Temporary installs disappear when Firefox exits; permanent installation requires Mozilla signing.
 
 ## Usage
 
