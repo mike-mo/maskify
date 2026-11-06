@@ -60,19 +60,13 @@ masking, saved settings and registered shortcut-command checks. Those use an
 isolated profile, not your personal profile. The guide covers `FIREFOX_BINARY`,
 geckodriver, the matching Spanish language pack and known validation warnings.
 
-## GitHub Pages migration
+## GitHub Pages
 
-The canonical policy and test page live in `web/`. Until the Pages source is
-switched from the `main` branch root to GitHub Actions, keep the root copies in
-sync. `node --test scripts/pages.test.js` checks their contents and icon paths.
-The Pages workflow can build its Jekyll artifact without deploying it.
-
-After this workflow is available on `main`, inspect its build-only artifact,
-then coordinate the Pages settings switch to GitHub Actions and run the workflow
-with deployment enabled. Verify the policy, test page, home page, icon gallery
-and screenshot gallery at their existing URLs. Only after that verification,
-remove the root page copies and enable automatic deployments on `main` pushes.
-Until automatic deployment is enabled, site updates require a manual workflow run.
+The canonical policy and test page live in `web/`. The Pages workflow assembles
+them at the public site root, alongside the icon and screenshot galleries, and
+deploys on pushes to `main`. `node --test scripts/pages.test.js` checks page and
+gallery asset paths. The workflow can also be run manually to build an artifact,
+with deployment enabled explicitly when needed.
 
 ## Store screenshots
 

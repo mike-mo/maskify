@@ -10,18 +10,9 @@ const ROOT = path.resolve(__dirname, '..');
 function assemble(root, output) {
   assert(!fs.existsSync(output) || fs.readdirSync(output).length === 0, 'Pages output must be empty');
   const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: root }).toString().split('\0').filter(Boolean);
-  const pendingMoves = [
-    'docs/CHROME.md', 'docs/DEVELOPING.md', 'docs/RELEASING.md', 'docs/store-assets.md',
-    'web/privacy.html', 'web/testpage.html', 'scripts/manifest.firefox.json',
-  ];
-  const movedPaths = new Set(['CHROME.md', 'DEVELOPING.md', 'RELEASING.md', 'store-assets.md',
-    'manifest.firefox.json']);
-  for (const file of new Set([...tracked, ...pendingMoves])) {
+  for (const file of tracked) {
     const source = path.join(root, ...file.split('/'));
-    if (!fs.existsSync(source)) {
-      assert(movedPaths.has(file), `Missing Pages source: ${file}`);
-      continue;
-    }
+    assert(fs.existsSync(source), `Missing Pages source: ${file}`);
     const target = path.join(output, ...file.split('/'));
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.copyFileSync(source, target);
