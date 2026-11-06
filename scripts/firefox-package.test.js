@@ -47,6 +47,7 @@ test('Firefox packages are deterministic and the reviewer source rebuilds identi
   for (const [file, bytes] of first) assert(bytes.equals(second.get(file)), file);
   const source = temp(t);
   const archive = unzipSync(first.get('maskify-firefox-source.zip'));
+  assert(archive['DEVELOPING.md'], 'Reviewer sources must retain the README development-guide link');
   for (const [file, bytes] of Object.entries(archive)) {
     assert(!/node_modules|^\.git\//.test(file), file);
     const target = path.join(source, ...file.split('/'));

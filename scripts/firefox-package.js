@@ -10,7 +10,7 @@ const { runtimeFiles, readCanonical, makeArchive } = require('./extension-packag
 
 const ROOT = path.resolve(__dirname, '..');
 const SOURCE_FILES = [
-  'manifest.firefox.json', 'LICENSE', 'README.md', 'RELEASING.md',
+  'manifest.firefox.json', 'LICENSE', 'README.md', 'DEVELOPING.md', 'RELEASING.md',
   'scripts/extension-package.js', 'scripts/firefox-package.js',
   'scripts/package.json', 'scripts/package-lock.json',
 ];
