@@ -188,6 +188,32 @@ test('a concurrent external tag move is detected after upload and never reported
   assert.equal(JSON.parse(server.assets.get('release-provenance.json')).commit, COMMIT);
 });
 
+test('publisher setup is shared from trusted tooling without changing historical release bootstrapping', () => {
+  const action = fs.readFileSync(path.join(ROOT, '.github', 'actions', 'setup-publisher', 'action.yml'), 'utf8');
+  assert.match(action, /using: composite/);
+  assert.match(action, /uses: actions\/setup-node@v6/);
+  assert.match(action, /node-version: '24'/);
+  assert.match(action, /package-manager-cache: false/);
+  assert.match(action, /shell: bash/);
+  assert.match(action, /run: npm --prefix tooling\/scripts ci --ignore-scripts/);
+  assert.doesNotMatch(action, /secrets\.|actions\/checkout|npm --prefix source|node source\//);
+  for (const file of ['firefox-publish.yml', 'edge-publish.yml']) {
+    const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', file), 'utf8');
+    for (const job of workflow.split(/\n  (?:plan|apply):\r?\n/).slice(1)) {
+      assert.match(job, /ref: \$\{\{ github\.sha \}\}\r?\n          path: tooling/);
+      assert.match(job, /ref: \$\{\{ needs\.resolve\.outputs\.commit \}\}\r?\n          path: source/);
+      assert.equal((job.match(/uses: \.\/tooling\/\.github\/actions\/setup-publisher/g) || []).length, 1);
+      assert(job.indexOf('path: tooling') < job.indexOf('uses: ./tooling/.github/actions/setup-publisher'));
+      assert.doesNotMatch(job, /uses: actions\/setup-node|npm --prefix tooling\/scripts ci/);
+    }
+  }
+  for (const file of ['ci.yml', 'publish.yml']) {
+    const workflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', file), 'utf8');
+    assert.doesNotMatch(workflow, /uses: \.\/.*actions\//,
+      'Historical exact-tag checkouts may not contain local actions');
+  }
+});
+
 test('only one workflow handles published releases, with reused checks and no store submission or recapture', () => {
   const workflow = name => fs.readFileSync(path.join(ROOT, '.github', 'workflows', name), 'utf8');
   const publish = workflow('publish.yml');
@@ -203,7 +229,7 @@ test('only one workflow handles published releases, with reused checks and no st
     'name: Test unsigned package in Firefox',
     'name: Validate Firefox package with Mozilla tooling',
   ]) {
-    assert(ci.replace(/\r\n/g, '\n').includes(`${step}\n        if: hashFiles('manifest.firefox.json') != ''`),
+    assert(ci.replace(/\r\n/g, '\n').includes(`${step}\n        if: hashFiles('scripts/manifest.firefox.json', 'manifest.firefox.json') != ''`),
       `${step}: historical release refs without Firefox packaging must skip Firefox-specific steps`);
   }
   const [defaults, resolve, verify, upload] = publish.split(/\n  (?:resolve|verify|upload):\r?\n/);

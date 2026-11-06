@@ -44,10 +44,10 @@ enmascarar correos, ocultar direcciones de correo, compartir pantalla, grabar la
 
 ## Certification Notes
 
-Maskify replaces email addresses on the current page with made-up addresses when the user activates it. Page processing happens in the browser; page content is not sent to the developer or analytics services. Preferences and a masking-action count are saved in browser sync storage, with syncing handled by the browser. See [the privacy policy](privacy.html) for details.
+Maskify replaces email addresses on the current page with made-up addresses when the user activates it. Page processing happens in the browser; page content is not sent to the developer or analytics services. Preferences and a masking-action count are saved in browser sync storage, with syncing handled by the browser. See [the privacy policy](https://mike-mo.github.io/maskify/privacy.html) for details.
 
 How to test:
-1. Install the extension and open a web page containing email addresses. The repository's `testpage.html` provides examples; enable file URL access if opening it as a local file.
+1. Install the extension and open a web page containing email addresses. The repository's `web/testpage.html` provides examples; enable file URL access if opening it as a local file.
 2. Click the Maskify icon in the toolbar to open the popup.
 3. Click **Mask Emails**. A notification in the top-right corner shows how many different addresses were masked.
 4. Check page text, the tab title, email-link destinations, and form values or placeholders. Repeated occurrences of an address should receive the same replacement during that action.

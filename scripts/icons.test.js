@@ -44,8 +44,8 @@ test('runtime icons and release packaging use only the current production export
 test('the popup, toast, favicons, and screenshot gallery reference production icons', () => {
   const production = [16, 32, 48, 128].map(size => `icons/${filename(size)}`);
   for (const file of [
-    ['popup', 'popup.html'], ['content-scripts', 'content.js'], ['privacy.html'],
-    ['testpage.html'], ['screenshots', 'index.html'],
+    ['popup', 'popup.html'], ['content-scripts', 'content.js'], ['web', 'privacy.html'],
+    ['web', 'testpage.html'], ['screenshots', 'index.html'],
   ]) {
     const source = fs.readFileSync(path.join(ROOT, ...file), 'utf8');
     const references = source.match(/icons\/[^"'\s<>]+\.png/g) || [];

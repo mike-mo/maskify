@@ -19,7 +19,8 @@ for (const locale of ['en', 'es']) {
       ['/', ['text/html; charset=utf-8', Buffer.from(
         `<!doctype html><html lang="${locale}"><head><title>Maskify test</title><link rel="icon" href="data:,"></head><body></body></html>`
       )]],
-      [`/manual?lang=${locale}`, ['text/html; charset=utf-8', path.join(ROOT, 'testpage.html')]],
+      [`/manual?lang=${locale}`, ['text/html; charset=utf-8', path.join(ROOT, 'web', 'testpage.html')]],
+      ['/icons/maskify.svg', ['image/svg+xml', path.join(ROOT, 'icons', 'maskify.svg')]],
       ...[16, 32].map(size => [
         `/icons/maskify${size}x${size}.png`, ['image/png', path.join(ROOT, 'icons', `maskify${size}x${size}.png`)],
       ]),

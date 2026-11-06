@@ -1,0 +1,12 @@
+name: Set up trusted publisher
+description: Set up Node.js and install locked dependencies from the trusted tooling checkout.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+        package-manager-cache: false
+    - name: Install trusted publisher dependencies without lifecycle scripts
+      shell: bash
+      run: npm --prefix tooling/scripts ci --ignore-scripts

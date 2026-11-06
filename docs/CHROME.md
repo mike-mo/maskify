@@ -82,7 +82,7 @@ is performed by these commands.
    the existing tile satisfies either case; no artwork regeneration is needed.
 4. Choose an appropriate current dashboard category (for example Productivity)
    and language, support/homepage URLs, visibility, distribution, and pricing
-   consistent with the repository's custom [license](LICENSE). Do not label
+   consistent with the repository's custom [license](../LICENSE). Do not label
    the license MIT or imply commercial use is unrestricted.
 5. Complete Privacy practices using the actual package and the guidance below.
    Provide the public policy URL:
