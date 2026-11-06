@@ -198,6 +198,14 @@ test('only one workflow handles published releases, with reused checks and no st
   assert.match(ci, /name: store-listings/);
   assert.match(ci, /path: dist\/store-assets\//);
   assert.equal((ci.match(/if: hashFiles\('store-artwork\/approved\.json'\) != ''/g) || []).length, 2);
+  for (const step of [
+    'uses: browser-actions/setup-firefox@v1',
+    'name: Test unsigned package in Firefox',
+    'name: Validate Firefox package with Mozilla tooling',
+  ]) {
+    assert(ci.replace(/\r\n/g, '\n').includes(`${step}\n        if: hashFiles('manifest.firefox.json') != ''`),
+      `${step}: historical release refs without Firefox packaging must skip Firefox-specific steps`);
+  }
   const [defaults, resolve, verify, upload] = publish.split(/\n  (?:resolve|verify|upload):\r?\n/);
   assert.match(defaults, /\npermissions:\r?\n  contents: read\r?\n/);
   for (const job of [resolve, upload]) {

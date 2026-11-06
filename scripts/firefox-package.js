@@ -76,7 +76,7 @@ if (require.main === module) {
           fs.rmSync(directory, { recursive: true, force: true });
         }
       } else {
-        console.log(writeFirefox(path.resolve(output)).join('\n'));
+        console.log(writeFirefox(path.resolve(ROOT, output)).join('\n'));
       }
     } catch (error) {
       console.error(error);

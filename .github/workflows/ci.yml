@@ -36,10 +36,12 @@ jobs:
       - name: Install locked dependencies
         run: npm --prefix scripts ci --ignore-scripts
       - uses: browser-actions/setup-firefox@v1
+        if: hashFiles('manifest.firefox.json') != ''
         id: firefox
         with:
           firefox-version: ${{ matrix.version }}
       - name: Test unsigned package in Firefox
+        if: hashFiles('manifest.firefox.json') != ''
         env:
           FIREFOX_BINARY: ${{ steps.firefox.outputs.firefox-path }}
         run: npm --prefix scripts run test:firefox
@@ -65,6 +67,7 @@ jobs:
       - name: Test runtime, approved artwork, store packs, and release safety
         run: npm --prefix scripts test
       - name: Validate Firefox package with Mozilla tooling
+        if: hashFiles('manifest.firefox.json') != ''
         run: npm --prefix scripts run firefox:lint
       - name: Build listing packs and gallery from shared sources
         if: hashFiles('store-artwork/approved.json') != ''

@@ -30,6 +30,10 @@ workflow and the same packaging helpers, not separate capture pipelines.
 No current workflow captures or approves new artwork. The listing-artifact step
 is gated on the canonical artwork record, so running checks for an older ref
 does not invoke that ref's historical artwork-regeneration command.
+Firefox setup, smoke tests and linting also require `manifest.firefox.json` in
+the selected checkout. Historical release retries without Firefox packaging
+still run their own regression tests and release builder, without calling
+missing Firefox npm scripts.
 
 ## Canonical sources and generated listings
 
@@ -179,6 +183,8 @@ npm --prefix scripts run test:firefox
 Choose a new or empty output directory. `firefox:build` creates
 `maskify-firefox.zip` and `maskify-firefox-source.zip`. It does not sign, upload,
 contact AMO, change the Chromium manifest, or regenerate approved artwork.
+Relative output paths are resolved from the package's repository root, including
+when npm runs the command from `scripts/`; absolute paths are used unchanged.
 `dist/` is local output, not source to commit.
 
 The root `manifest.json` remains Chromium MV3 with `background.service_worker`.
@@ -347,7 +353,11 @@ requires main ancestry. Use a new/empty output directory. Review plan fields
 without committing generated packages or payloads.
 
 **sync** updates the existing listing and the selected existing listed version's
-notes/custom license/desktop compatibility. It does **not** upload or replace
+notes/custom license/desktop compatibility. It does not reset
+the compatibility range to AMO defaults: the version PATCH includes the
+generated manifest's explicit Firefox minimum and maximum (`*` when unbounded),
+and readback verifies both bounds and the desktop-only platform set.
+It does **not** upload or replace
 the extension or its source archive, and can operate on 1.3.0 awaiting review.
 Use it only when the owner authorizes that metadata change. Existing version
 sources must already be present. Initial 1.3.0 additionally requires the exact

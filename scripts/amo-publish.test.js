@@ -120,6 +120,7 @@ function apiFixture(plan, { version = '1.3.0', status = 'public', existingSource
       item.approval_notes = payload.approval_notes;
       item.release_notes = clone(payload.release_notes);
       item.license = { is_custom: true, ...clone(payload.custom_license) };
+      item.compatibility = clone(payload.compatibility);
       return clone(item);
     }
     if (method === 'PATCH' && endpoint === addonPath) {
@@ -160,6 +161,7 @@ test('offline plan uses canonical bilingual copy, policy, license, ordered media
   const { plan, files } = createPlan(ROOT, COMMIT, '1.3.0');
   assert.deepEqual(plan.addon, ADDON);
   assert.equal(plan.channel, 'listed');
+  assert.deepEqual(plan.version_payload.compatibility, { firefox: { min: '140.0', max: '*' } });
   assert.deepEqual(Object.keys(plan.listing.name), ['en-US', 'es-ES']);
   assert.deepEqual(plan.listing.categories, { firefox: ['privacy-security'] });
   assert.deepEqual(plan.listing.tags, ['privacy']);
@@ -301,6 +303,28 @@ test('sync modifies bilingual metadata and existing captions, not package bytes 
   assert(!api.mutations.some(call => call.payload?.has?.('source') || call.payload?.has?.('upload')));
   assert.equal(api.receipts.at(-1).stage, 'complete');
   assert.equal(api.imageChecks.length, 6);
+  assert.deepEqual(api.versions[0].compatibility, { firefox: { min: '140.0', max: '*' } });
+});
+
+test('readback rejects changed Firefox minimum, maximum or platform instead of reporting success', async () => {
+  const bundle = createPlan(ROOT, COMMIT, '1.3.0');
+  for (const compatibility of [
+    { firefox: { min: '109.0', max: '*' } },
+    { firefox: { min: '140.0', max: '150.0' } },
+    { firefox: { min: '140.0', max: '*' }, android: { min: '140.0', max: '*' } },
+  ]) {
+    const api = apiFixture(bundle.plan);
+    const request = async (...args) => {
+      const result = await api.request(...args);
+      if (args[0] === 'PATCH' && args[1].startsWith(`${addonPath}versions/`)) {
+        api.versions[0].compatibility = clone(compatibility);
+      }
+      return result;
+    };
+    await assert.rejects(applyPlan(bundle, 'sync', `maskify:sync:1.3.0:${COMMIT}`, request, api),
+      /did not persist Firefox compatibility bounds/);
+    assert(!api.receipts.some(event => event.stage === 'complete'));
+  }
 });
 
 test('all duplicate, identity, media drift, and missing-source failures happen before mutations', async () => {
@@ -335,6 +359,7 @@ test('publish uploads matched packages/sources, polls validation, rechecks dupli
   assert.equal(api.receipts[0].stage, 'uploaded');
   assert.equal(api.receipts[1].stage, 'version-created-with-sources');
   assert.equal(api.receipts.at(-1).version_id, 7000000);
+  assert.deepEqual(api.versions.at(-1).compatibility, { firefox: { min: '140.0', max: '*' } });
 });
 
 test('awaiting review, downgrade and failed validation block new submissions', async t => {

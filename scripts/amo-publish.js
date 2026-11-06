@@ -131,7 +131,10 @@ function createPlan(root, commit, version) {
     'en-US': listingFiles.get('privacy-policy.txt').toString('utf8').trimEnd() + config.privacy_policy_suffix,
   } };
   const versionPayload = {
-    compatibility: ['firefox'],
+    compatibility: { firefox: {
+      min: firefoxManifest.browser_specific_settings.gecko.strict_min_version,
+      max: firefoxManifest.browser_specific_settings.gecko.strict_max_version || '*',
+    } },
     custom_license: {
       name: { 'en-US': config.custom_license.name },
       text: { 'en-US': text(root, config.custom_license.text_file) },
@@ -434,7 +437,7 @@ async function applyPlan({ plan, files }, mode, confirmation, request, {
   assert(finalVersion.source, 'Submitted version is missing reviewer sources');
   for (const [field, expected] of Object.entries(plan.version_payload)) {
     if (field === 'compatibility') {
-      assert.deepEqual(Object.keys(finalVersion.compatibility), ['firefox']);
+      assert.deepEqual(finalVersion.compatibility, expected, 'AMO did not persist Firefox compatibility bounds');
     } else if (field === 'custom_license') {
       assert.equal(finalVersion.license.is_custom, true);
       assert.deepEqual(finalVersion.license.name, expected.name);

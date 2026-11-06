@@ -62,6 +62,22 @@ test('Firefox packages are deterministic and the reviewer source rebuilds identi
     env: { ...process.env, NODE_PATH: path.join(__dirname, 'node_modules') },
   });
   assert(Buffer.from(result).equals(first.get('maskify-firefox.zip')));
+  const command = ['--prefix', 'scripts', 'run', 'firefox:build', '--', 'dist/firefox'];
+  const options = {
+    cwd: source, env: { ...process.env, NODE_PATH: path.join(__dirname, 'node_modules') },
+  };
+  if (process.platform === 'win32') {
+    execFileSync(process.env.ComSpec, ['/d', '/s', '/c', `npm ${command.join(' ')}`], options);
+  } else execFileSync('npm', command, options);
+  const built = path.join(source, 'dist', 'firefox');
+  for (const [file, bytes] of first) assert(fs.readFileSync(path.join(built, file)).equals(bytes), file);
+  assert(!fs.existsSync(path.join(source, 'scripts', 'dist')), 'npm must not put output inside scripts/');
+  const directOutput = path.join(source, 'dist', 'direct');
+  execFileSync(process.execPath, [path.join(source, 'scripts', 'firefox-package.js'), directOutput], {
+    ...options, cwd: temp(t),
+  });
+  assert(fs.readFileSync(path.join(directOutput, 'maskify-firefox.zip')).equals(first.get('maskify-firefox.zip')),
+    'Absolute CLI output paths must remain unchanged');
   const output = temp(t);
   writeFirefox(output);
   assert.throws(() => writeFirefox(output), /output must be empty/);
