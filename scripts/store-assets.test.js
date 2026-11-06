@@ -4,18 +4,105 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { test } = require('node:test');
+const { pathToFileURL } = require('node:url');
+const { test, after } = require('node:test');
 const { unzipSync } = require('fflate');
 const { chromium } = require('playwright');
 const { startServer } = require('./server');
 const {
   STORES, imageSpecs, plainText, section, validateImage, validateChromePadding, makeArchive, check, previewRoutes,
+  buildStoreAssets, buildStoreFiles, writeStoreAssets, verifyArtwork, sourceHashes, artworkFile, policyText,
 } = require('./store-assets');
 const { promoHtml, amoHtml } = require('./store-templates');
 const { captureSourceImages } = require('./screenshot');
 const copy = require('./copy');
 
-const OUT = path.resolve(__dirname, '..', 'store-assets');
+const ROOT = path.resolve(__dirname, '..');
+const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'maskify-store-build-'));
+after(() => fs.rmSync(OUT, { recursive: true, force: true }));
+writeStoreAssets(ROOT, OUT);
+
+function sourceFixture(t) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'maskify-store-source-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  for (const file of Object.keys(sourceHashes(ROOT))) {
+    const target = path.join(root, ...file.split('/'));
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.copyFileSync(path.join(ROOT, ...file.split('/')), target);
+  }
+  return root;
+}
+
+test('store builds use canonical sources without committed copies, browsers, or artwork recapture', t => {
+  t.mock.method(chromium, 'launch', () => { throw new Error('Artifact builds must not start a browser'); });
+  assert.equal(fs.existsSync(path.join(ROOT, 'store-assets')), false);
+  const first = buildStoreAssets();
+  const second = buildStoreAssets();
+  assert(first.get('scripts/assets/Manrope-OFL.txt').toString('utf8').includes('SIL OPEN FONT LICENSE'));
+  assert.deepEqual([...first.keys()], [...second.keys()]);
+  for (const [file, bytes] of first) assert(bytes.equals(second.get(file)), file);
+  assert.equal(new Set(imageSpecs().map(artworkFile)).size, 14, '22 store images have 14 shared source images');
+  for (const store of STORES) {
+    const files = buildStoreFiles(ROOT, store.id);
+    for (const spec of imageSpecs().filter(spec => spec.store === store.id)) {
+      assert(files.get(spec.file).equals(fs.readFileSync(path.join(ROOT, ...artworkFile(spec).split('/')))));
+    }
+  }
+});
+
+test('version-only builds preserve approved images without rebaselining source checks', t => {
+  const root = sourceFixture(t);
+  const approval = fs.readFileSync(path.join(root, 'store-artwork', 'approved.json'));
+  const manifest = path.join(root, 'manifest.json');
+  const value = JSON.parse(fs.readFileSync(manifest));
+  value.version = '1.3.1';
+  fs.writeFileSync(manifest, JSON.stringify(value, null, 2).replace(/\n/g, '\r\n'));
+  const changed = buildStoreAssets(root);
+  for (const spec of imageSpecs(root)) {
+    assert(changed.get(`${spec.store}/${spec.file}`).equals(fs.readFileSync(path.join(OUT, spec.store, ...spec.file.split('/')))));
+  }
+  assert(fs.readFileSync(path.join(root, 'store-artwork', 'approved.json')).equals(approval));
+  value.permissions.push('history');
+  fs.writeFileSync(manifest, JSON.stringify(value));
+  assert.throws(() => buildStoreAssets(root), /Artwork source inputs changed/);
+});
+
+test('all runtime inputs, added files and modified approved image bytes fail closed', t => {
+  const root = sourceFixture(t);
+  for (const file of ['background.js', 'data/names-en.js', 'data/domain-utils.js', 'icons/maskify32x32.png']) {
+    const target = path.join(root, ...file.split('/'));
+    const before = fs.readFileSync(target);
+    fs.appendFileSync(target, 'changed');
+    assert.throws(() => verifyArtwork(root), /Artwork source inputs changed/, file);
+    fs.writeFileSync(target, before);
+  }
+  const added = path.join(root, 'data', 'unexpected.js');
+  fs.writeFileSync(added, 'unapproved');
+  assert.throws(() => verifyArtwork(root), /Artwork source inputs changed/);
+  fs.unlinkSync(added);
+  const removed = path.join(root, 'data', 'names-en.js');
+  const original = fs.readFileSync(removed);
+  fs.unlinkSync(removed);
+  assert.throws(() => verifyArtwork(root), /Artwork source inputs changed/);
+  fs.writeFileSync(removed, original);
+  fs.appendFileSync(path.join(root, 'store-artwork', 'firefox-01-result.png'), 'changed');
+  assert.throws(() => verifyArtwork(root), /approved artwork bytes differ/);
+});
+
+test('shared privacy text is derived from canonical HTML and unsupported markup fails explicitly', t => {
+  const root = sourceFixture(t);
+  const canonical = policyText(root);
+  assert(canonical.includes('Optional donation links'));
+  assert(canonical.includes('Buy Me a Coffee, a third-party website that processes data under its own privacy policy.'));
+  assert(canonical.includes('Maskify does not send page content, detected email addresses, or saved settings through this link.'));
+  const policy = path.join(root, 'privacy.html');
+  fs.writeFileSync(policy, fs.readFileSync(policy, 'utf8').replace('</body>', '<p>Policy update.</p></body>'));
+  for (const store of STORES) {
+    assert(buildStoreFiles(root, store.id).get('privacy-policy.txt').toString('utf8').endsWith('Policy update.\n'));
+  }
+  fs.writeFileSync(policy, fs.readFileSync(policy, 'utf8').replace('</body>', '<script>unsupported()</script></body>'));
+  assert.throws(() => policyText(root), /Unsupported privacy policy structure/);
+});
 
 test('each store has its exact required graphics and localized or shared screenshot set', () => {
   const specs = imageSpecs();
@@ -89,7 +176,7 @@ test('ZIP output is reproducible and preserves filenames, Unicode, and binary by
 });
 
 test('saved store packs have matching source copies, exact image formats, and complete ZIPs', async () => {
-  await check();
+  await check(OUT);
 });
 
 test('unexpected artwork cannot hide in an otherwise valid asset ZIP', async t => {
@@ -100,7 +187,7 @@ test('unexpected artwork cannot hide in an otherwise valid asset ZIP', async t =
   const entries = new Map(Object.entries(unzipSync(fs.readFileSync(file))));
   entries.set('unexpected.png', Buffer.from('retired artwork'));
   fs.writeFileSync(file, makeArchive(entries));
-  await assert.rejects(check(root), /unexpected ZIP member/);
+  await assert.rejects(check(root), /generated bytes differ/);
 });
 
 test('source capture rejects unsupported locales and densities before starting a browser', async () => {
@@ -109,7 +196,7 @@ test('source capture rejects unsupported locales and densities before starting a
 });
 
 test('the gallery loads every image, stays responsive, and serves the complete downloads', async t => {
-  const server = await startServer(previewRoutes());
+  const server = await startServer(previewRoutes(OUT));
   let browser;
   t.after(async () => {
     try {
@@ -142,5 +229,11 @@ test('the gallery loads every image, stays responsive, and serves the complete d
       assert((await response.body()).equals(fs.readFileSync(path.join(OUT, new URL(link).pathname.slice(1)))));
     }
   }
+  await page.goto(pathToFileURL(path.join(OUT, 'index.html')).href);
+  await page.evaluate(() => { for (const image of document.images) image.loading = 'eager'; });
+  await page.waitForFunction(() => [...document.images].every(image => image.complete && image.naturalWidth > 0));
+  await page.evaluate(() => document.fonts.ready);
+  assert(await page.evaluate(() => [...document.fonts].some(font => font.family === 'Manrope' && font.status === 'loaded')),
+    'Downloaded gallery must include its local font and stylesheet');
   assert.deepEqual(errors, []);
 });

@@ -1,8 +1,8 @@
 # Maskify
 
-[![Edge Add-ons](https://img.shields.io/badge/Edge_Add--ons-available-0078D4?logo=microsoftedge&logoColor=white)](https://microsoftedge.microsoft.com/addons/detail/ahlpkipagblmbjceamojfdomdmcmcpgc) [![GitHub release](https://img.shields.io/github/v/release/mike-mo/maskify?logo=github)](https://github.com/mike-mo/maskify/releases) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?logo=googlechrome) [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mikemo)
+[![Edge Add-ons](https://img.shields.io/badge/Edge_Add--ons-available-0078D4?logo=microsoftedge&logoColor=white)](https://microsoftedge.microsoft.com/addons/detail/ahlpkipagblmbjceamojfdomdmcmcpgc) [![Firefox: AMO pending](https://img.shields.io/badge/Firefox-AMO_pending-FF7139?logo=firefoxbrowser&logoColor=white)](https://github.com/mike-mo/maskify/issues/38) [![GitHub release](https://img.shields.io/github/v/release/mike-mo/maskify?logo=github)](https://github.com/mike-mo/maskify/releases) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?logo=googlechrome) [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mikemo)
 
-A Chrome and Edge extension that replaces email addresses on the current page with made-up ones for screen sharing and recordings.
+A Chrome, Edge, and Firefox extension that replaces email addresses on the current page with made-up ones for screen sharing and recordings.
 
 If Maskify has been useful to you, consider [buying me a coffee ☕](https://buymeacoffee.com/mikemo) or [donating via Stripe](https://donate.stripe.com/3cIeVd8iSbCo2VGeKxenS01) to help keep the project going.
 
@@ -16,10 +16,30 @@ Maskify replaces email addresses in page text, the current tab's title, email li
 
 ## Installation
 
+Install the published version from [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/ahlpkipagblmbjceamojfdomdmcmcpgc).
+
+### Chrome and Edge (unpacked)
+
 1. Clone or download this repository.
 2. Open Chrome or Edge and navigate to the extensions page (`chrome://extensions` or `edge://extensions`).
 3. Enable **Developer mode**.
 4. Click **Load unpacked** and select the root folder of this repository.
+
+### Firefox
+
+The initial AMO submission is **awaiting review at time of writing**; public
+availability is pending. The Firefox badge links to the
+[publication tracker](https://github.com/mike-mo/maskify/issues/38), not a public
+install page.
+
+For testing on desktop Firefox 140 or later:
+
+1. Follow the [Firefox package build instructions](RELEASING.md#package-and-verify-locally).
+2. Open `about:debugging#/runtime/this-firefox` and choose **Load Temporary Add-on**.
+3. Select `dist/firefox/maskify-firefox.zip`.
+4. Allow site access and refresh existing tabs.
+
+Temporary installs disappear when Firefox exits; permanent installation requires Mozilla signing.
 
 ## Usage
 
@@ -34,149 +54,26 @@ The popup has a few options for controlling how replacements look:
 
 The preview shows the address format as you change the options. Clicking **Mask Emails** masks addresses on the current page using that format and saves your preferences for next time.
 
+The interface follows your browser language, using English or Spanish.
+
 If you loaded or reloaded the extension while a tab was open, refresh that tab before using Maskify.
 
 Masking runs when you activate it. If the page loads more content afterward, run Maskify again and review the result.
 
 Maskify changes email-link destinations and form values on the page. Check forms before submitting them. It does not redact names or other personal details, and it cannot mask email addresses inside images.
 
-## How it works
+Replacement addresses are placeholders, not real mailboxes or email aliases.
+`example.com` is reserved for documentation by [RFC 2606](https://www.rfc-editor.org/rfc/rfc2606).
 
-The popup or keyboard shortcut sends a message to the content script in the active tab. The script uses a `TreeWalker` to replace email addresses in page text, then checks anchor `href` attributes, input and textarea values and placeholders, and `document.title`. This includes email links whose visible label is not an address.
+## Documentation
 
-Each different address found during an action gets a randomly generated replacement. Names come from an English or Spanish list based on the browser language. The script adds any enabled formatting options: a random number, an underscore and random initial, and the `***` marker. It uses your chosen domain or the `example.com` default.
+| Guide | Contents |
+| --- | --- |
+| [Development](DEVELOPING.md) | How masking works, tests, screenshot capture, icons and listing previews |
+| [Releasing](RELEASING.md) | Workflow responsibilities, package builds, generated store artifacts and publishing approvals |
+| [Store copy](store-assets.md) | Approved English/Spanish descriptions, search terms, certification notes and creative brief |
 
-Repeated addresses share a replacement within that action. The mapping is not saved across pages or reloads. Already-maskified addresses are left unchanged on later activations, including those in the tab title.
-
-`example.com` is reserved for documentation and examples by [RFC 2606](https://www.rfc-editor.org/rfc/rfc2606). Choosing a different domain changes the replacement text; it does not create a mailbox or email alias.
-
-## Testing
-
-Open `testpage.html` after loading the extension. If you open it as a local file, enable **Allow access to file URLs** in the extension's details first. The page covers text, links, forms, repeated addresses, email formats, non-email `@` symbols, and the browser tab title.
-
-With the screenshot dependencies installed as described below, run `npm --prefix scripts test` for automated checks. The browser tests exercise the actual extension in English and Spanish, including title-only addresses, shared replacements, format options, repeated activations, and titles that should stay unchanged.
-
-## Store description
-
-Full store assets (listings in English and Spanish, search terms, certification notes) are in [store-assets.md](store-assets.md).
-
-**Maskify: Hide email addresses before you share.**
-
-Maskify replaces email addresses on the current page with made-up ones for screen sharing and recordings.
-
-Open Maskify and click **Mask Emails**, or press **Alt+Shift+M**. It replaces addresses in page text, the current tab's title, email links, and form fields. Repeated addresses get the same replacement during that action.
-
-**Features**
-
-- 🌐 Choose a domain for the maskified addresses, or keep the `example.com` default.
-- ⚙️ Add a random number, a random initial, or the `***` marker. A preview shows the format as you change the options.
-- 💾 Click **Mask Emails** to apply your chosen format and save your preferences for next time.
-- 🗣️ The interface uses English or Spanish based on your browser language.
-- 🔒 **Privacy:** Maskify processes page content in your browser and does not send it to its developer or to analytics services.
-
-Review the page before sharing. Maskify does not redact names or other personal details, and it cannot mask email addresses inside images. It also changes email-link destinations and form values, so check forms before submitting them.
-
-## Store screenshots
-
-The [screenshot gallery](screenshots/index.html) contains three 1280 x 800 PNGs in
-each of English and Spanish: the before/after result, masking coverage, and format
-controls. Final images are tracked under `screenshots/en/` and `screenshots/es/`.
-The [creative brief](store-assets.md#screenshot-creative-brief) explains the copy and
-compositions.
-
-To regenerate with Node.js 20 or later:
-
-```text
-cd scripts
-npm ci
-npx playwright install chromium
-npm run screenshot
-npm test
-npm run preview
-```
-
-The preview command prints a loopback-only gallery URL. Select an image to open
-the full-size PNG. The gallery also works as a local HTML file.
-
-The generator launches the actual unpacked extension in an isolated Chromium
-profile. It serves fictional demo content and the bundled Manrope font locally,
-captures real masking and the real localized popup at high resolution, and
-composes the final PNGs. It does not depend on the published test page or use your
-normal browser profile. Set `MASKIFY_HEADED=1` to watch the capture browser.
-Generated replacement names vary between runs.
-
-Editable sources are in `scripts/templates.js`, `scripts/demo.css`,
-`scripts/composition.css`, and `scripts/copy.js`.
-[Manrope](https://github.com/google/fonts/tree/main/ofl/manrope) is distributed under the
-[SIL Open Font License](scripts/assets/Manrope-OFL.txt). The font and capture-only
-sources are not included in the extension's release package.
-
-The generator checks masking behavior, localization, preview wrapping, image
-dimensions, clipping, and separation between composition blocks. `npm test` also
-covers release asset selection, including older tags that produce `popup.png`
-and `testpage.png`. Modern releases package the committed, approved localized
-set without recapturing images. English images are also attached for optional
-release-note use. See [the release procedure](RELEASING.md) for version checks,
-CI gates, retry behavior, and the separate manual store-upload step.
-
-## Brand assets
-
-Maskify uses one icon: a blue envelope with a dark circular asterisk seal.
-Its editable source is [`icons/maskify.svg`](icons/maskify.svg).
-The 16-, 32-, 48-, and 128-pixel PNGs at `icons/maskify<size>x<size>.png`
-serve the toolbar, popup, toast, page favicons, and store screenshots.
-A 64-pixel export supports high-DPI previews. Use
-[`icons/maskify300x300.png`](icons/maskify300x300.png) as the logo for both
-language listings in the Edge store.
-
-The [icon preview](icons/index.html) shows the current artwork on light and
-dark toolbars. With the screenshot dependencies installed, run
-`npm --prefix scripts run icons` to regenerate every PNG and the preview
-from the canonical SVG. This updates the production files directly.
-Use `npm --prefix scripts run icons -- --check` to verify saved exports, or
-`npm --prefix scripts run icons:preview` to serve the preview locally.
-Verification checks the SVG and all PNG bytes against `icons/asset-inventory.json`,
-along with dimensions, transparent margins, coverage, and gallery behavior.
-Explicit regeneration updates this inventory with the artwork for review;
-release checks never rerender or rebaseline approved exports.
-The renderer is `scripts/icons.js`; preview styles are in `icons/gallery.css`.
-After changing the artwork, run `npm --prefix scripts run screenshot` to
-refresh both localized store screenshot sets.
-
-Merging artwork updates changes the repository and its GitHub Pages site,
-not an already published extension or its store listing. Publish a new version
-to distribute updated runtime icons. Separately update each store language's
-logo, screenshots, and description using the files and copy in this repository.
-Replace or remove any optional promotional tiles that contain older branding.
-Historical commits and versioned releases retain the assets they shipped with.
-
-## Browser store packs
-
-The [store asset gallery](store-assets/index.html) contains downloadable packs
-for Edge Add-ons, the Chrome Web Store, and Firefox Add-ons. Each ZIP includes
-the store's icon, screenshot files, approved English and Spanish listing copy,
-captions, privacy policy, license, and upload instructions.
-
-Edge and Chrome reuse the approved localized screenshots. Their promotional
-tiles use only the icon and wordmark, so one design works in both languages.
-Chrome's icon has the store's transparent clear space. Firefox has a separate
-shared gallery with localized captions and no added editorial headlines.
-
-Run `npm --prefix scripts run stores` to regenerate the packs,
-`npm --prefix scripts run stores:check` to verify them, or
-`npm --prefix scripts run stores:preview` to serve the gallery locally.
-The generator captures real UI for Firefox's image layouts without overwriting
-the approved screenshots in `screenshots/en` and `screenshots/es`.
-After changing the extension or its branding, regenerate icons and screenshots
-before rebuilding the store packs.
-
-For a version-only manifest change, preserve the approved images and use the
-guarded metadata refresh described in [RELEASING.md](RELEASING.md) instead.
-
-These are listing assets, not signed extension packages. The current
-Chromium-only background service worker needs a Firefox-compatible replacement
-and browser verification before a Firefox submission. Generating these files
-does not publish or update any listing.
+See the [screenshot gallery](screenshots/index.html) for examples.
 
 ## Privacy
 

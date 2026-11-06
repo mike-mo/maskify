@@ -1,4 +1,5 @@
 maskify.zip
+dist/
 scripts/node_modules/
 screenshots/**/*.png
 !screenshots/**/01-result.png
