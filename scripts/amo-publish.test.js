@@ -10,7 +10,7 @@ const { test } = require('node:test');
 const { unzipSync } = require('fflate');
 const {
   ADDON, createPlan, writePlan, verifyPlan, verifySources, jwt, client, imageAvailable,
-  preflight, applyPlan, resolveCommit, verifyCheckout,
+  authCheck, preflight, applyPlan, resolveCommit, verifyCheckout,
 } = require('./amo-publish');
 const { buildFirefox } = require('./firefox-package');
 const { makeArchive } = require('./extension-package');
@@ -279,6 +279,71 @@ test('transport errors fail explicitly without retries or leaking API secrets', 
   assert.equal(calls, 1);
 });
 
+test('auth check uses only GET and returns no privileged response fields', async () => {
+  const { plan } = createPlan(ROOT, COMMIT, '1.3.0');
+  const api = apiFixture(plan);
+  assert.deepEqual(await authCheck(plan, api.request), {
+    authenticated_source_read: true, addon_id: ADDON.id, slug: ADDON.slug,
+  });
+  assert.deepEqual(api.calls.map(call => [call.method, call.endpoint]), [
+    ['GET', `${addonPath}?show_source=true`],
+    ['GET', `${addonPath}versions/6671610/?show_source=true`],
+  ]);
+  assert.equal(api.mutations.length, 0);
+  assert.equal(api.imageChecks.length, 0);
+  assert.equal(api.receipts.length, 0);
+});
+
+test('auth check rejects wrong identity and missing authenticated source access', async () => {
+  const { plan } = createPlan(ROOT, COMMIT, '1.3.0');
+  for (const change of [
+    api => { api.addon.guid = 'wrong'; },
+    api => { api.versions[0].file.id = 1; },
+    api => { api.versions[0].source = null; },
+  ]) {
+    const api = apiFixture(plan);
+    change(api);
+    await assert.rejects(authCheck(plan, api.request), /identity check failed|read access was not confirmed/);
+    assert.equal(api.mutations.length, 0);
+  }
+});
+
+test('read-only transport blocks writes before network and never logs response bodies or network details', async () => {
+  let calls = 0;
+  const request = client({
+    issuer: 'test-issuer', secret: 'test-secret', readOnly: true,
+    fetchImpl: async () => {
+      calls++;
+      return new Response('private response test-secret', { status: 401 });
+    },
+  });
+  for (const method of ['POST', 'PATCH', 'PUT', 'DELETE']) {
+    await assert.rejects(request(method, addonPath, {}), /permits GET/);
+  }
+  await assert.rejects(request('GET', addonPath, {}), /permits GET/);
+  assert.equal(calls, 0);
+  await assert.rejects(request('GET', addonPath), { message: 'AMO read-only check: HTTP 401' });
+  assert.equal(calls, 1);
+  for (const status of [403, 404, 429, 500]) {
+    const failure = client({
+      issuer: 'test-issuer', secret: 'test-secret', readOnly: true,
+      fetchImpl: async () => new Response('private response test-secret', { status }),
+    });
+    await assert.rejects(failure('GET', addonPath), { message: `AMO read-only check: HTTP ${status}` });
+  }
+  const network = client({
+    issuer: 'test-issuer', secret: 'test-secret', readOnly: true,
+    fetchImpl: async () => { throw new Error('test-secret private network detail'); },
+  });
+  await assert.rejects(network('GET', addonPath),
+    { message: 'AMO read-only request failed (network, redirect or timeout)' });
+  const invalid = client({
+    issuer: 'test-issuer', secret: 'test-secret', readOnly: true,
+    fetchImpl: async () => new Response('private response test-secret'),
+  });
+  await assert.rejects(invalid('GET', addonPath), { message: 'AMO read-only check returned invalid JSON' });
+});
+
 test('image preflight validates immutable IDs, URLs and downloaded image bytes without authorization', async () => {
   const image = fs.readFileSync(path.join(ROOT, 'store-artwork', 'firefox-01-result.png'));
   let calls = 0;
@@ -507,11 +572,15 @@ test('workflow is manual, main-only, credential-isolated, approval-gated and val
   assert.doesNotMatch(workflow, /contents: write|id-token: write|secrets: inherit/);
   const [beforeApply, apply] = workflow.split('\n  apply:');
   assert(!beforeApply.includes('secrets.'));
-  assert.equal((apply.match(/secrets\./g) || []).length, 2);
+  assert.equal((apply.match(/secrets\./g) || []).length, 4);
+  assert.match(workflow, /options: \[plan, auth-check, sync, publish\]/);
+  assert.match(apply, /if: inputs\.operation == 'auth-check'/);
+  assert.match(apply, /node tooling\/scripts\/amo-publish\.js auth-check source/);
+  assert.match(apply, /if: inputs\.operation == 'sync' \|\| inputs\.operation == 'publish'/);
   assert.match(apply, /node tooling\/scripts\/amo-publish\.js apply source/);
   assert.doesNotMatch(apply, /node source\/|npm --prefix source/);
   assert.match(apply, /ci --ignore-scripts/);
-  assert.match(apply, /if: always\(\)/);
+  assert.match(apply, /if: always\(\) && \(inputs\.operation == 'sync' \|\| inputs\.operation == 'publish'\)/);
   assert.equal((workflow.match(/uses: actions\/checkout@/g) || []).length,
     (workflow.match(/persist-credentials: false/g) || []).length);
 });

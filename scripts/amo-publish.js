@@ -238,9 +238,11 @@ function jwt(issuer, secret, now = Math.floor(Date.now() / 1000)) {
   return `${unsigned}.${createHmac('sha256', secret).update(unsigned).digest('base64url')}`;
 }
 
-function client({ issuer, secret, fetchImpl = fetch } = {}) {
+function client({ issuer, secret, fetchImpl = fetch, readOnly = false } = {}) {
   jwt(issuer, secret);
   return async (method, endpoint, payload) => {
+    assert(!readOnly || (method === 'GET' && payload === undefined),
+      'Read-only AMO check permits GET requests without a body only');
     assert(/^(GET|POST|PATCH)$/.test(method), 'Unsupported AMO operation');
     assert(typeof endpoint === 'string' && /^addons\/(?:addon\/3119745\/|upload\/)/.test(endpoint) &&
       !endpoint.includes('..') && !endpoint.includes('\\'), 'Refusing unexpected API endpoint');
@@ -251,15 +253,29 @@ function client({ issuer, secret, fetchImpl = fetch } = {}) {
       headers['Content-Type'] = 'application/json';
       body = JSON.stringify(payload);
     }
-    const response = await fetchImpl(API + endpoint, {
-      method, headers, body, redirect: 'error', signal: AbortSignal.timeout(60_000),
-    });
-    const result = await response.text();
+    let response, result;
+    try {
+      response = await fetchImpl(API + endpoint, {
+        method, headers, body, redirect: 'error', signal: AbortSignal.timeout(60_000),
+      });
+      result = await response.text();
+    } catch (error) {
+      if (readOnly) throw new Error('AMO read-only request failed (network, redirect or timeout)');
+      throw error;
+    }
     if (!response.ok) {
+      if (readOnly) throw new Error(`AMO read-only check: HTTP ${response.status}`);
       const safe = result.slice(0, 2000).replaceAll(issuer, '[redacted]').replaceAll(secret, '[redacted]');
       throw new Error(`AMO ${method} ${endpoint}: HTTP ${response.status}: ${safe}`);
     }
     assert(result, `AMO ${method} ${endpoint}: empty response`);
+    if (readOnly) {
+      try {
+        return JSON.parse(result);
+      } catch {
+        throw new Error('AMO read-only check returned invalid JSON');
+      }
+    }
     return JSON.parse(result);
   };
 }
@@ -279,6 +295,20 @@ async function imageAvailable(url, id, fetchImpl = fetch) {
 }
 
 const addonPath = `addons/addon/${ADDON.id}/`;
+
+async function authCheck(plan, request) {
+  const addon = await request('GET', `${addonPath}?show_source=true`);
+  assert(addon.id === ADDON.id && addon.guid === ADDON.guid &&
+    addon.slug === ADDON.slug && addon.type === 'extension', 'AMO read-only identity check failed');
+  const initial = plan.initial_submission;
+  const version = await request('GET', `${addonPath}versions/${initial.version_id}/?show_source=true`);
+  assert(version.id === initial.version_id && version.version === initial.version &&
+    version.file?.id === initial.file_id && version.channel === 'listed',
+  'AMO read-only version identity check failed');
+  assert(typeof version.source === 'string' && version.source.length > 0,
+    'AMO authenticated reviewer-source read access was not confirmed');
+  return { authenticated_source_read: true, addon_id: ADDON.id, slug: ADDON.slug };
+}
 
 async function preflight(plan, mode, request, checkImage = imageAvailable) {
   assert(['sync', 'publish'].includes(mode), 'Choose sync or publish');
@@ -479,10 +509,19 @@ async function main() {
     verifyCheckout(root, commit);
     const plan = writePlan(root, path.resolve(output), commit, version, process.env.VERIFIED_RELEASE_DIRECTORY);
     console.log(JSON.stringify(plan, null, 2));
-  } else if (command === 'apply') {
+  } else if (command === 'auth-check' || command === 'apply') {
     verifyCheckout(root, commit);
     resolveCommit(root, commit, version);
     const verified = verifyPlan(root, path.resolve(output), commit, version);
+    if (command === 'auth-check') {
+      assert(mode === undefined && confirmation === undefined, 'Auth check accepts no mutation arguments');
+      const request = client({
+        issuer: process.env.AMO_JWT_ISSUER, secret: process.env.AMO_JWT_SECRET, readOnly: true,
+      });
+      const result = await authCheck(verified.plan, request);
+      console.log(`AMO authenticated source read verified for ${result.slug} (${result.addon_id}). No mutations performed.`);
+      return;
+    }
     const receiptPath = process.env.AMO_RECEIPT;
     assert(receiptPath, 'Set AMO_RECEIPT to a durable mutation journal before applying');
     fs.writeFileSync(receiptPath, '', { flag: 'wx' });
@@ -496,7 +535,7 @@ async function main() {
     });
     console.log('AMO API operations completed. Review/signing/public availability remain controlled by Mozilla.');
   } else {
-    throw new Error('Use resolve <root>, plan <root> <empty-output> <sha> <version>, or apply <root> <plan-directory> <sha> <version> <sync|publish> <confirmation>');
+    throw new Error('Use resolve <root>, plan <root> <empty-output> <sha> <version>, auth-check <root> <plan-directory> <sha> <version>, or apply <root> <plan-directory> <sha> <version> <sync|publish> <confirmation>');
   }
 }
 
@@ -507,6 +546,6 @@ if (require.main === module) main().catch(error => {
 
 module.exports = {
   ADDON, API, createPlan, writePlan, verifyPlan, verifySources, jwt, client, imageAvailable,
-  preflight, applyPlan, resolveCommit,
+  authCheck, preflight, applyPlan, resolveCommit,
   verifyCheckout,
 };

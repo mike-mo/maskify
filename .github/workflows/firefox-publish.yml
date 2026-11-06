@@ -12,9 +12,9 @@ on:
         required: true
         type: string
       operation:
-        description: 'plan: no AMO requests; sync: existing metadata; publish: new version for review'
+        description: 'plan: offline; auth-check: read-only credentials; sync: metadata; publish: new version'
         type: choice
-        options: [plan, sync, publish]
+        options: [plan, auth-check, sync, publish]
         default: plan
       confirmation:
         description: 'For mutations: maskify:OPERATION:VERSION:FULL_SOURCE_SHA'
@@ -97,9 +97,10 @@ jobs:
       - name: Add review instructions
         run: |
           echo 'Download amo-plan and review plan.json, both ZIPs, icon and screenshot mappings before approving amo-production.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Plan mode makes no AMO requests. sync/publish are non-atomic and require protected environment approval. See RELEASING.md.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Plan mode makes no AMO requests. auth-check uses GET only. All authenticated operations require protected environment approval. See RELEASING.md.' >> "$GITHUB_STEP_SUMMARY"
 
   apply:
+    name: Protected AMO operation
     needs: [resolve, plan]
     if: inputs.operation != 'plan'
     runs-on: ubuntu-latest
@@ -125,7 +126,16 @@ jobs:
         with:
           name: amo-plan
           path: ${{ runner.temp }}/amo-plan
+      - name: Check credentials and Maskify source read access without mutations
+        if: inputs.operation == 'auth-check'
+        env:
+          SOURCE_SHA: ${{ needs.resolve.outputs.commit }}
+          EXPECTED_VERSION: ${{ needs.resolve.outputs.version }}
+          AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
+          AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+        run: node tooling/scripts/amo-publish.js auth-check source "$RUNNER_TEMP/amo-plan" "$SOURCE_SHA" "$EXPECTED_VERSION"
       - name: Verify reviewed files and apply supported AMO operations
+        if: inputs.operation == 'sync' || inputs.operation == 'publish'
         env:
           SOURCE_SHA: ${{ needs.resolve.outputs.commit }}
           EXPECTED_VERSION: ${{ needs.resolve.outputs.version }}
@@ -136,7 +146,7 @@ jobs:
           AMO_RECEIPT: ${{ runner.temp }}/amo-receipt.jsonl
         run: node tooling/scripts/amo-publish.js apply source "$RUNNER_TEMP/amo-plan" "$SOURCE_SHA" "$EXPECTED_VERSION" "$OPERATION" "$CONFIRMATION"
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && (inputs.operation == 'sync' || inputs.operation == 'publish')
         with:
           name: amo-receipt
           path: ${{ runner.temp }}/amo-receipt.jsonl
