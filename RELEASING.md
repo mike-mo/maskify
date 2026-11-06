@@ -303,11 +303,15 @@ An owner must perform this setup outside chat:
 
 1. Merge the reviewed workflow/tooling/content into `main`. Enable GitHub Actions
    for the repository if needed. No AMO mutation occurs just by merging.
-2. In repository **Settings > Environments**, create `amo-production`. Restrict
-   deployment branches to protected `main`, require owner/release-reviewer
-   approval, and prevent self-review if available. Confirm that your GitHub plan
-   supports these protections. Do not enable a production apply run without an
-   effective approval gate.
+2. In repository **Settings > Environments**, configure `amo-production` with
+   **Selected branches and tags**, allowing only the **branch** `main` (no tag
+   rules). Disable administrator bypass and require a designated owner/release
+   reviewer. Choose the reviewer policy explicitly: a sole maintainer who
+   dispatches and approves runs needs self-review allowed; preventing self-review
+   requires another eligible reviewer. Do not grant access or choose reviewers
+   implicitly. Confirm these controls are supported and read back the saved
+   settings. Do not add credentials or enable a production apply run until an
+   effective approval gate is configured.
 3. Signed in as an owner of add-on 3119745, obtain an API issuer/key and secret
    from [AMO API Credentials](https://addons.mozilla.org/en-US/developers/addon/api/key/).
    Creating/rotating keys is an owner action, not part of this workflow. AMO
@@ -317,6 +321,14 @@ An owner must perform this setup outside chat:
    **`AMO_JWT_SECRET`** (AMO API secret). Keep both in `amo-production`, not
    repository-wide secrets. No GitHub write token or AMO credentials are needed
    for plan mode. These settings are not automatically created by the repo.
+
+Environment approval, branch restrictions and disabled administrator bypass are
+server-enforced settings, not properties established by the workflow YAML.
+The YAML separately limits dispatch to main and checks immutable main ancestry,
+version agreement and exact artifacts. Main's required GitHub Actions checks
+are `check`, `firefox (140.0)` and `firefox (latest)`, with up-to-date branches
+required and no ruleset bypass actors. Existing conversation-resolution,
+Copilot-review and force-push/deletion protections remain separate.
 
 ### Plan, synchronize, or submit
 
