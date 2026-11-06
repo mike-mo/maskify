@@ -10,16 +10,29 @@ const { runtimeFiles, readCanonical, makeArchive } = require('./extension-packag
 
 const ROOT = path.resolve(__dirname, '..');
 const SOURCE_FILES = [
+  'scripts/manifest.firefox.json', 'LICENSE', 'README.md', 'docs/DEVELOPING.md', 'docs/RELEASING.md',
+  'docs/CHROME.md', 'docs/store-assets.md',
+  'scripts/extension-package.js', 'scripts/firefox-package.js',
+  'scripts/package.json', 'scripts/package-lock.json',
+];
+const LEGACY_SOURCE_FILES = [
   'manifest.firefox.json', 'LICENSE', 'README.md', 'DEVELOPING.md', 'RELEASING.md',
   'scripts/extension-package.js', 'scripts/firefox-package.js',
   'scripts/package.json', 'scripts/package-lock.json',
 ];
 const diskPath = (root, file) => path.join(root, ...file.split('/'));
 
+function sourceFiles(root) {
+  const current = fs.existsSync(diskPath(root, 'scripts/manifest.firefox.json'));
+  const legacy = fs.existsSync(diskPath(root, 'manifest.firefox.json'));
+  assert.notEqual(current, legacy, 'Expected exactly one Firefox manifest overlay');
+  return current ? SOURCE_FILES : LEGACY_SOURCE_FILES;
+}
+
 function firefoxFiles(root = ROOT) {
   const files = new Map(runtimeFiles(root).map(file => [file, readCanonical(diskPath(root, file))]));
   const manifest = JSON.parse(files.get('manifest.json'));
-  const overlay = JSON.parse(readCanonical(path.join(root, 'manifest.firefox.json')));
+  const overlay = JSON.parse(readCanonical(diskPath(root, sourceFiles(root)[0])));
   assert.deepEqual(Object.keys(overlay).sort(), ['background', 'browser_specific_settings'],
     'Firefox overlay may change only background and browser-specific settings');
   const gecko = overlay.browser_specific_settings.gecko;
@@ -36,7 +49,7 @@ function buildFirefox(root = ROOT) {
   const runtime = firefoxFiles(root);
   const source = new Map([
     ...runtimeFiles(root).map(file => [file, readCanonical(diskPath(root, file))]),
-    ...SOURCE_FILES.map(file => [file, readCanonical(diskPath(root, file))]),
+    ...sourceFiles(root).map(file => [file, readCanonical(diskPath(root, file))]),
   ].sort(([left], [right]) => left.localeCompare(right, 'en')));
   return new Map([
     ['maskify-firefox.zip', makeArchive(runtime)],

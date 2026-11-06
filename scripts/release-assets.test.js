@@ -203,7 +203,7 @@ test('only one workflow handles published releases, with reused checks and no st
     'name: Test unsigned package in Firefox',
     'name: Validate Firefox package with Mozilla tooling',
   ]) {
-    assert(ci.replace(/\r\n/g, '\n').includes(`${step}\n        if: hashFiles('manifest.firefox.json') != ''`),
+    assert(ci.replace(/\r\n/g, '\n').includes(`${step}\n        if: hashFiles('scripts/manifest.firefox.json', 'manifest.firefox.json') != ''`),
       `${step}: historical release refs without Firefox packaging must skip Firefox-specific steps`);
   }
   const [defaults, resolve, verify, upload] = publish.split(/\n  (?:resolve|verify|upload):\r?\n/);

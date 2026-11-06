@@ -17,7 +17,7 @@
   "is_experimental": false,
   "requires_payment": false,
   "support_email": null,
-  "privacy_policy_file": "privacy.html",
+  "privacy_policy_file": "web/privacy.html",
   "privacy_policy_suffix": "\n\nPublished policy: https://mike-mo.github.io/maskify/privacy.html",
   "custom_license": {
     "name": "Maskify personal, non-commercial license",

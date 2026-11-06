@@ -36,7 +36,9 @@ function verifySources(files) {
   const runtime = unzipSync(files.get('maskify-firefox.zip'));
   const source = unzipSync(files.get('maskify-firefox-source.zip'));
   const original = JSON.parse(Buffer.from(source['manifest.json']));
-  const overlay = JSON.parse(Buffer.from(source['manifest.firefox.json']));
+  const overlays = ['scripts/manifest.firefox.json', 'manifest.firefox.json'].filter(file => source[file]);
+  assert.equal(overlays.length, 1, 'Reviewer sources must contain exactly one Firefox manifest overlay');
+  const overlay = JSON.parse(Buffer.from(source[overlays[0]]));
   assert.deepEqual(JSON.parse(Buffer.from(runtime['manifest.json'])), { ...original, ...overlay },
     'Reviewer sources do not generate the submitted Firefox manifest');
   for (const [file, bytes] of Object.entries(runtime)) {
@@ -47,7 +49,7 @@ function verifySources(files) {
 
 function createPlan(root, commit, version) {
   const { unzipSync } = require('fflate');
-  const { buildStoreFiles } = require('./store-assets');
+  const { buildStoreFiles, listingPaths } = require('./store-assets');
   assert(isSha(commit), 'Use the full immutable 40-character source commit SHA');
   assert(isVersion(version), 'Use the exact stable MAJOR.MINOR.PATCH version');
   const config = JSON.parse(read(root, 'amo/listing.json'));
@@ -59,7 +61,7 @@ function createPlan(root, commit, version) {
   assert.equal(config.default_locale, 'en-US');
   assert.deepEqual(Object.keys(config.locales), LOCALES, 'Both submitted locales must be present in order');
   assert.deepEqual(config.locales, { 'en-US': 'en', 'es-ES': 'es' });
-  assert.equal(config.privacy_policy_file, 'privacy.html', 'Policy must use the shared canonical HTML source');
+  assert.equal(config.privacy_policy_file, listingPaths(root).policy, 'Policy must use the shared canonical HTML source');
   assert.deepEqual(Object.keys(config.categories), ['firefox'], 'Only desktop Firefox is supported');
   assert(config.categories.firefox.length && config.categories.firefox.every(value => typeof value === 'string'));
   assert(config.tags.length && config.tags.every(value => typeof value === 'string'));

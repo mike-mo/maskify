@@ -95,13 +95,28 @@ test('shared privacy text is derived from canonical HTML and unsupported markup 
   assert(canonical.includes('Optional donation links'));
   assert(canonical.includes('Buy Me a Coffee, a third-party website that processes data under its own privacy policy.'));
   assert(canonical.includes('Maskify does not send page content, detected email addresses, or saved settings through this link.'));
-  const policy = path.join(root, 'privacy.html');
+  const policy = path.join(root, 'web', 'privacy.html');
   fs.writeFileSync(policy, fs.readFileSync(policy, 'utf8').replace('</body>', '<p>Policy update.</p></body>'));
   for (const store of STORES) {
     assert(buildStoreFiles(root, store.id).get('privacy-policy.txt').toString('utf8').endsWith('Policy update.\n'));
   }
   fs.writeFileSync(policy, fs.readFileSync(policy, 'utf8').replace('</body>', '<script>unsupported()</script></body>'));
   assert.throws(() => policyText(root), /Unsupported privacy policy structure/);
+});
+
+test('trusted listing builds support historical paths and reject ambiguous layouts', t => {
+  const root = sourceFixture(t);
+  const policy = policyText(root);
+  fs.renameSync(path.join(root, 'docs', 'store-assets.md'), path.join(root, 'store-assets.md'));
+  fs.renameSync(path.join(root, 'web', 'privacy.html'), path.join(root, 'privacy.html'));
+  const hashes = sourceHashes(root);
+  assert(hashes['store-assets.md']);
+  assert(hashes['privacy.html']);
+  assert(!hashes['docs/store-assets.md']);
+  assert.equal(policyText(root), policy);
+  assert(buildStoreFiles(root, 'edge').has('privacy-policy.txt'));
+  fs.copyFileSync(path.join(root, 'store-assets.md'), path.join(root, 'docs', 'store-assets.md'));
+  assert.throws(() => sourceHashes(root), /exactly one canonical store-copy layout/);
 });
 
 test('each store has its exact required graphics and localized or shared screenshot set', () => {

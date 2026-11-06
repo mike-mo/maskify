@@ -22,14 +22,14 @@ The `edge-plan` artifact contains:
 | `plan.json` | Exact source SHA/version, product identity, file sizes/hashes and explicit manual exceptions |
 | `maskify.zip` | Actual extension package, byte-identical to the shared CI-validated release package |
 | `maskify-edge-assets.zip` | Generated English/Spanish listing copy, approved artwork, policy, license and upload guide, not an extension |
-| `reviewer-notes.txt` | Shared certification instructions generated from `store-assets.md`, for manual final submission |
+| `reviewer-notes.txt` | Shared certification instructions generated from `docs/store-assets.md`, for manual final submission |
 
 Repository files remain the source of truth. Long descriptions, localized
 images/captions, search terms, public links and certification instructions come
-from the shared sources documented in [RELEASING.md](../RELEASING.md).
+from the shared sources documented in [RELEASING.md](../docs/RELEASING.md).
 Properties, availability, markets, category, permission justifications, data
 declarations and account settings require owner review in Partner Center.
-Search-term and other submission references in `store-assets.md` still apply
+Search-term and other submission references in `docs/store-assets.md` still apply
 even where the generated pack has no corresponding API field.
 
 The documented Edge API cannot update listing metadata. Apply and verify

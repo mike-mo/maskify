@@ -38,7 +38,7 @@ install page.
 
 For testing on desktop Firefox 140 or later:
 
-1. Follow the [Firefox package build instructions](RELEASING.md#package-and-verify-locally).
+1. Follow the [Firefox package build instructions](docs/RELEASING.md#package-and-verify-locally).
 2. Open `about:debugging#/runtime/this-firefox` and choose **Load Temporary Add-on**.
 3. Select `dist/firefox/maskify-firefox.zip`.
 4. Allow site access and refresh existing tabs.
@@ -62,6 +62,8 @@ The interface follows your browser language, using English or Spanish.
 
 If you loaded or reloaded the extension while a tab was open, refresh that tab before using Maskify.
 
+Try the [test page](https://mike-mo.github.io/maskify/testpage.html) with the extension installed and activated to check masking.
+
 Masking runs when you activate it. If the page loads more content afterward, run Maskify again and review the result.
 
 Maskify changes email-link destinations and form values on the page. Check forms before submitting them. It does not redact names or other personal details, and it cannot mask email addresses inside images.
@@ -73,14 +75,14 @@ Replacement addresses are placeholders, not real mailboxes or email aliases.
 
 | Guide | Contents |
 | --- | --- |
-| [Development](DEVELOPING.md) | How masking works, tests, screenshot capture, icons and listing previews |
-| [Releasing](RELEASING.md) | Workflow responsibilities, package builds, generated store artifacts and publishing approvals |
-| [Store copy](store-assets.md) | Approved English/Spanish descriptions, search terms, certification notes and creative brief |
+| [Development](docs/DEVELOPING.md) | How masking works, tests, screenshot capture, icons and listing previews |
+| [Releasing](docs/RELEASING.md) | Workflow responsibilities, package builds, generated store artifacts and publishing approvals |
+| [Store copy](docs/store-assets.md) | Approved English/Spanish descriptions, search terms, certification notes and creative brief |
 
 See the [screenshot gallery](screenshots/index.html) for examples.
 
 For a Chrome Web Store **extension ZIP**, follow the
-[Chrome packaging and submission guide](CHROME.md). Run
+[Chrome packaging and submission guide](docs/CHROME.md). Run
 `npm --prefix scripts run chrome:build -- maskify-chrome.zip`, then
 `npm --prefix scripts run chrome:check -- maskify-chrome.zip`.
 This uses the approved Chrome-specific padded icon without changing Edge's
@@ -88,7 +90,7 @@ package. The separate `maskify-chrome-assets.zip` is listing material only.
 
 ## Privacy
 
-Maskify processes page content in your browser. It saves preferences and a masking-action count in browser sync storage. Your browser handles any syncing across devices. See the [privacy policy](privacy.html) for details.
+Maskify processes page content in your browser. It saves preferences and a masking-action count in browser sync storage. Your browser handles any syncing across devices. See the [privacy policy](https://mike-mo.github.io/maskify/privacy.html) for details.
 
 ## License
 
