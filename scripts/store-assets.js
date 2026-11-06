@@ -44,6 +44,7 @@ const TEXT_FILES = [
 const LISTING_SOURCES = [
   'store-assets.md', 'privacy.html', 'LICENSE', 'scripts/store-assets.js',
   'scripts/store-gallery.css', 'scripts/extension-package.js', 'scripts/package-lock.json',
+  'scripts/assets/Manrope-OFL.txt',
 ];
 
 const diskPath = (root, file) => path.join(root, ...file.split('/'));
@@ -311,7 +312,7 @@ function buildStoreAssets(root = ROOT) {
     output.set(`maskify-${store.id}-assets.zip`, makeArchive(files));
   }
   output.set('index.html', Buffer.from(galleryHtml(STORES, imageSpecs(root))));
-  for (const file of ['scripts/store-gallery.css', 'scripts/assets/Manrope.ttf']) {
+  for (const file of ['scripts/store-gallery.css', 'scripts/assets/Manrope.ttf', 'scripts/assets/Manrope-OFL.txt']) {
     output.set(file, readCanonical(diskPath(root, file)));
   }
   return output;
@@ -409,6 +410,7 @@ function previewRoutes(output = OUT) {
     ...files.map(file => [`/${file}`, [`${types[path.extname(file)]}${/\.(html|md|txt|json)$/.test(file) ? '; charset=utf-8' : ''}`, diskPath(output, file)]]),
     ['/scripts/store-gallery.css', ['text/css', path.join(output, 'scripts', 'store-gallery.css')]],
     ['/scripts/assets/Manrope.ttf', ['font/ttf', path.join(output, 'scripts', 'assets', 'Manrope.ttf')]],
+    ['/scripts/assets/Manrope-OFL.txt', ['text/plain; charset=utf-8', path.join(output, 'scripts', 'assets', 'Manrope-OFL.txt')]],
   ]);
 }
 

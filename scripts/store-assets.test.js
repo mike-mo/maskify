@@ -38,6 +38,7 @@ test('store builds use canonical sources without committed copies, browsers, or 
   assert.equal(fs.existsSync(path.join(ROOT, 'store-assets')), false);
   const first = buildStoreAssets();
   const second = buildStoreAssets();
+  assert(first.get('scripts/assets/Manrope-OFL.txt').toString('utf8').includes('SIL OPEN FONT LICENSE'));
   assert.deepEqual([...first.keys()], [...second.keys()]);
   for (const [file, bytes] of first) assert(bytes.equals(second.get(file)), file);
   assert.equal(new Set(imageSpecs().map(artworkFile)).size, 14, '22 store images have 14 shared source images');
