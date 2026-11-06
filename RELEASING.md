@@ -76,6 +76,13 @@ The canonical policy currently uses headings, paragraphs and inline
 emphasis/code/links; unsupported markup fails explicitly rather than silently
 losing content in the plain-text conversion.
 
+Chrome Web Store upload is also separate and human-authorized. Build the
+Chrome-specific extension ZIP using [CHROME.md](CHROME.md), from the approved
+release checkout. It reuses the release runtime allowlist and deterministic ZIP
+writer, but substitutes the approved padded Chrome icon. The release workflow's
+`maskify.zip` remains unchanged for Edge; `maskify-chrome-assets.zip` remains a
+listing pack, not an extension. No Chrome store upload is automated.
+
 ## Prepare a version
 
 1. Start from the approved commit. Change only `manifest.json`'s `version`.

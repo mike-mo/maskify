@@ -12,11 +12,13 @@
     "stores:check": "node store-assets.js --check",
     "stores:capture": "node store-assets.js --capture",
     "release:build": "node release-assets.js build",
+    "chrome:build": "node chrome-package.js build",
+    "chrome:check": "node chrome-package.js check",
     "firefox:build": "node firefox-package.js",
     "firefox:lint": "node firefox-package.js --lint",
     "test:firefox": "node --test firefox.test.js",
     "amo:plan": "node amo-publish.js plan",
-    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js firefox-package.test.js amo-publish.test.js"
+    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js firefox-package.test.js amo-publish.test.js chrome-package.test.js"
   },
   "dependencies": {
     "fflate": "^0.8.3",
