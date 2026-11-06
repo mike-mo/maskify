@@ -579,7 +579,7 @@ test('workflow is manual, main-only, credential-isolated, approval-gated and val
   assert.match(apply, /if: inputs\.operation == 'sync' \|\| inputs\.operation == 'publish'/);
   assert.match(apply, /node tooling\/scripts\/amo-publish\.js apply source/);
   assert.doesNotMatch(apply, /node source\/|npm --prefix source/);
-  assert.match(apply, /ci --ignore-scripts/);
+  assert.match(apply, /uses: \.\/tooling\/\.github\/actions\/setup-publisher/);
   assert.match(apply, /if: always\(\) && \(inputs\.operation == 'sync' \|\| inputs\.operation == 'publish'\)/);
   assert.equal((workflow.match(/uses: actions\/checkout@/g) || []).length,
     (workflow.match(/persist-credentials: false/g) || []).length);

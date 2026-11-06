@@ -24,11 +24,11 @@ jobs:
       matrix:
         version: ['140.0', 'latest']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: npm
@@ -50,11 +50,11 @@ jobs:
     needs: firefox
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref || github.sha }}
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: npm
@@ -72,7 +72,7 @@ jobs:
       - name: Build listing packs and gallery from shared sources
         if: hashFiles('store-artwork/approved.json') != ''
         run: npm --prefix scripts run stores
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: hashFiles('store-artwork/approved.json') != ''
         with:
           name: store-listings
@@ -83,7 +83,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ inputs.tag }}
         run: node scripts/release-assets.js build "$RUNNER_TEMP/maskify-release"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: release-assets
           path: ${{ runner.temp }}/maskify-release/*

@@ -39,6 +39,35 @@ the selected checkout. Historical release retries without Firefox packaging
 still run their own regression tests and release builder, without calling
 missing Firefox npm scripts.
 
+### Shared workflow setup
+
+The store plan and protected-operation jobs use the same
+`.github/actions/setup-publisher` composite action from the trusted `tooling`
+checkout at the workflow's `github.sha`. It selects Node.js 24, disables automatic
+npm caching, and installs `tooling/scripts` locked dependencies with lifecycle
+scripts disabled. Candidate `source` checkouts never supply this action.
+Checkouts, artifact transfers, environment approvals, permissions, credentials,
+and store-specific operations remain explicit in each workflow.
+
+CI is already the reusable test/package workflow for all three destinations.
+CI and GitHub release attachment keep their Node setup inline because historical
+exact-tag checkouts may predate repository-local actions. All jobs use GitHub-hosted
+`ubuntu-latest`; the Node 24 actions require runner 2.327.1 or later.
+Checkout's 2.329.0 requirement for authenticated Git in Docker is not applicable:
+credentials are not persisted; the Pages Jekyll Docker action does not need
+authenticated Git commands.
+Upload v6 and download v7 retain the v4 artifact backend and named-download
+layout, so release/plan paths, immutable uploads and retention remain unchanged.
+
+Pages uses configure-pages v6 and deploy-pages v5 on Node 24, and
+upload-pages-artifact v5, whose nested upload-artifact v7 also declares Node 24.
+The uploader retains the `github-pages` name, tar-in-ZIP format and one-day
+retention. `include-hidden-files: true` preserves the old v3 archive behavior
+(excluding `.git` and `.github`); v4 would exclude dotfiles and still nest a
+Node 20 action. Jekyll remains the Docker-based jekyll-build-pages v1.
+Manual Pages runs still build without deploying unless `deploy` is selected;
+push deployment remains limited to main and the `github-pages` environment.
+
 ## Canonical sources and generated listings
 
 | Maintained source | Generated output |
