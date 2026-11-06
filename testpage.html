@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Maskify Test Page</title>
+  <title>Maskify test page | support@acme.com</title>
   <link rel="icon" type="image/png" sizes="32x32" href="icons/maskify32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="icons/maskify16x16.png">
   <style>
@@ -17,8 +17,8 @@
 </head>
 <body>
 
-  <h1 data-i18n="h1">Maskify Test Page</h1>
-  <p data-i18n="intro">Click the Maskify button in the extension popup, then verify each scenario below matches its expected result.</p>
+  <h1 data-i18n="h1">Maskify test page</h1>
+  <p data-i18n="intro">Click Mask Emails in the popup or press Alt+Shift+M, then check each result below. The examples assume the default settings.</p>
 
   <!-- ═══════════════════════════════════════════════ -->
   <h2 data-i18n="h2_1">1. Plain Text (no link)</h2>
@@ -33,7 +33,7 @@
   <h2 data-i18n="h2_2">2. Tabular Data and Consistent Mapping</h2>
 
   <div class="scenario">
-    <div class="label" data-i18n="label2">Emails inside a table — including a person listed twice</div>
+    <div class="label" data-i18n="label2">Emails inside a table, including a person listed twice</div>
     <table>
       <thead><tr><th data-i18n="thDepartment">Department</th><th data-i18n="thName">Name</th><th data-i18n="thEmail">Email</th></tr></thead>
       <tbody>
@@ -42,14 +42,14 @@
         <tr><td>IT Liaison</td><td>Carol</td><td>carol@acme.com</td></tr>
       </tbody>
     </table>
-    <div class="expected" data-i18n="expected2">Expected: both Carol rows show the same masked address; Dave gets a different one</div>
+    <div class="expected" data-i18n="expected2">Expected: both Carol rows show the same maskified address; Dave's address is also masked</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
   <h2 data-i18n="h2_3">3. Mailto Links</h2>
 
   <div class="scenario">
-    <div class="label" data-i18n="label3a">Standard mailto href — display text matches href</div>
+    <div class="label" data-i18n="label3a">Standard mailto link with matching display text</div>
     <p><a href="mailto:info@example.org">info@example.org</a></p>
     <div class="expected" data-i18n="expected3a">Expected: both the visible text and the href= value are replaced with the same masked address</div>
   </div>
@@ -86,7 +86,7 @@
   <div class="scenario">
     <div class="label" data-i18n="label6">Input with email as placeholder and value</div>
     <p><input type="text" value="prefilled@domain.com" placeholder="your@email.com" style="width:250px;padding:4px;"></p>
-    <div class="expected" data-i18n="expected6">Expected: both the value= and placeholder= attributes are replaced</div>
+    <div class="expected" data-i18n="expected6">Expected: the field's current value and placeholder are replaced</div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
@@ -115,28 +115,35 @@ Thanks</textarea></p>
       </select>
       <span style="margin-left:12px;color:#555;font-size:0.9rem;"><span data-i18n="valueLabel">value:</span> <code id="selectValue">alice@team.com</code></span>
     </p>
-    <div class="expected" data-i18n="expected8">Expected: visible option labels are replaced with masked addresses; the value= attribute is not replaced — confirm by selecting an option and checking the value shown to the right of the dropdown</div>
+    <div class="expected" data-i18n="expected8">Expected: visible option labels are masked, but the value= attributes stay unchanged. Select an option and check the value shown beside the dropdown.</div>
+  </div>
+
+  <h2 data-i18n="h2_9">9. Browser tab title</h2>
+
+  <div class="scenario">
+    <div class="label" data-i18n="label9">The same address appears in the tab title and scenario 1</div>
+    <div class="expected" data-i18n="expected9">Expected: the address in the browser tab title gets the same replacement as the address in scenario 1. The rest of the title stays unchanged.</div>
   </div>
 
   <script>
   const TESTPAGE_T = (function () {
     const T = {
       en: {
-        pageTitle:     'Maskify Test Page',
-        h1:            'Maskify Test Page',
-        intro:         'Click the Maskify button in the extension popup, then verify each scenario below matches its expected result.',
+        pageTitle:     'Maskify test page | support@acme.com',
+        h1:            'Maskify test page',
+        intro:         'Click Mask Emails in the popup or press Alt+Shift+M, then check each result below. The examples assume the default settings.',
         h2_1:          '1. Plain Text (no link)',
         label1:        'Single email in a sentence',
         scenario1Text: 'For questions, contact support@acme.com directly.',
         expected1:     'Expected: email replaced with a masked address like <code>alice23***@example.com</code>',
         h2_2:          '2. Tabular Data and Consistent Mapping',
-        label2:        'Emails inside a table — including a person listed twice',
+        label2:        'Emails inside a table, including a person listed twice',
         thDepartment:  'Department',
         thName:        'Name',
         thEmail:       'Email',
-        expected2:     'Expected: both Carol rows show the same masked address; Dave gets a different one',
+        expected2:     'Expected: both Carol rows show the same maskified address; Dave\'s address is also masked',
         h2_3:          '3. Mailto Links',
-        label3a:       'Standard mailto href — display text matches href',
+        label3a:       'Standard mailto link with matching display text',
         expected3a:    'Expected: both the visible text and the href= value are replaced with the same masked address',
         label3b:       'Mailto href with a different display label',
         contactBilling:'Contact Billing',
@@ -150,7 +157,7 @@ Thanks</textarea></p>
         expected5:     'Expected: neither @support nor the shell snippet is treated as an email address',
         h2_6:          '6. Email in an Input Field',
         label6:        'Input with email as placeholder and value',
-        expected6:     'Expected: both the value= and placeholder= attributes are replaced',
+        expected6:     'Expected: the field\'s current value and placeholder are replaced',
         h2_7:          '7. Email in a Textarea',
         label7:        'Textarea with prefilled email content',
         textareaContent: 'Hi team,\n\nPlease CC billing@acme.com and forward all receipts to receipts@finance.acme.com.\n\nThanks',
@@ -158,24 +165,27 @@ Thanks</textarea></p>
         h2_8:          '8. Email in a Select Dropdown',
         label8:        'Select with email addresses as option values and labels',
         valueLabel:    'value:',
-        expected8:     'Expected: visible option labels are replaced with masked addresses; the value= attribute is not replaced — confirm by selecting an option and checking the value shown to the right of the dropdown',
+        expected8:     'Expected: visible option labels are masked, but the value= attributes stay unchanged. Select an option and check the value shown beside the dropdown.',
+        h2_9:          '9. Browser tab title',
+        label9:        'The same address appears in the tab title and scenario 1',
+        expected9:     'Expected: the address in the browser tab title gets the same replacement as the address in scenario 1. The rest of the title stays unchanged.',
         badgeBefore:   'Before',
         badgeAfter:    'After ✓',
       },
       es: {
-        pageTitle:     'Página de prueba de Maskify',
+        pageTitle:     'Página de prueba de Maskify | support@acme.com',
         h1:            'Página de prueba de Maskify',
-        intro:         'Haz clic en el botón de Maskify en el popup de la extensión y comprueba que cada escenario coincide con el resultado esperado.',
+        intro:         'Abre Maskify y pulsa Enmascarar correos, o usa Alt+Shift+M. Después, comprueba los resultados. Los ejemplos usan las opciones predeterminadas.',
         h2_1:          '1. Texto sin formato (sin enlace)',
         label1:        'Un correo en una oración',
         scenario1Text: 'Para consultas, contacta a support@acme.com directamente.',
         expected1:     'Esperado: correo reemplazado con una dirección enmascarada como <code>alicia23***@example.com</code>',
         h2_2:          '2. Datos tabulares y mapeo consistente',
-        label2:        'Correos en una tabla, incluyendo una persona listada dos veces',
+        label2:        'Correos en una tabla con una persona que aparece dos veces',
         thDepartment:  'Departamento',
         thName:        'Nombre',
         thEmail:       'Correo',
-        expected2:     'Esperado: ambas filas de Carol muestran la misma dirección enmascarada; Dave recibe una diferente',
+        expected2:     'Esperado: ambas filas de Carol muestran la misma dirección enmascarada; el correo de Dave también se enmascara',
         h2_3:          '3. Enlaces mailto',
         label3a:       'Enlace mailto estándar: el texto visible coincide con el href',
         expected3a:    'Esperado: tanto el texto visible como el valor href= son reemplazados con la misma dirección enmascarada',
@@ -191,7 +201,7 @@ Thanks</textarea></p>
         expected5:     'Esperado: ni @support ni el fragmento de shell se tratan como una dirección de correo',
         h2_6:          '6. Correo en un campo de texto',
         label6:        'Campo con correo como marcador y valor',
-        expected6:     'Esperado: tanto el atributo value= como placeholder= son reemplazados',
+        expected6:     'Esperado: cambian el valor actual del campo y el texto de ejemplo',
         h2_7:          '7. Correo en un área de texto',
         label7:        'Área de texto con correos predefinidos',
         textareaContent: 'Hola equipo,\n\nPor favor copia billing@acme.com y reenvía todos los recibos a receipts@finance.acme.com.\n\nGracias',
@@ -199,7 +209,10 @@ Thanks</textarea></p>
         h2_8:          '8. Correo en un menú desplegable',
         label8:        'Menú desplegable con correos como valores y etiquetas',
         valueLabel:    'valor:',
-        expected8:     'Esperado: las etiquetas visibles de las opciones son reemplazadas con direcciones enmascaradas; el atributo value= no se reemplaza — confirma seleccionando una opción y verificando el valor mostrado a la derecha del menú',
+        expected8:     'Esperado: las etiquetas visibles se enmascaran, pero los atributos value= no cambian. Selecciona una opción y comprueba el valor que aparece junto al menú.',
+        h2_9:          '9. Título de la pestaña',
+        label9:        'La misma dirección aparece en el título de la pestaña y en el escenario 1',
+        expected9:     'Esperado: la dirección del título de la pestaña recibe el mismo reemplazo que la del escenario 1. El resto del título no cambia.',
         badgeBefore:   'Antes',
         badgeAfter:    'Después ✓',
       },

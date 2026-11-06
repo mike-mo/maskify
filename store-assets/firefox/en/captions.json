@@ -1,0 +1,5 @@
+{
+  "screenshots/01-result.png": "Hide email addresses before you share. Replace email addresses on the page with made-up ones. The rest stays readable.",
+  "screenshots/02-coverage.png": "Email links and form fields, too. Choose Mask Emails to replace addresses in all three places.",
+  "screenshots/03-controls.png": "Choose the replacement format. Set a domain and choose whether to add a number or a random initial."
+}

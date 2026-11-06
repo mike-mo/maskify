@@ -74,6 +74,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       if (textarea.value) textarea.value = replace(textarea.value);
       if (textarea.placeholder) textarea.placeholder = replace(textarea.placeholder);
     });
+
+    const title = document.title;
+    const maskedTitle = replace(title);
+    if (maskedTitle !== title) document.title = maskedTitle;
   }
 
   function showToast(count) {

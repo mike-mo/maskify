@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "source": {
+    "file": "maskify.svg",
+    "sha256": "d548d9162a3c7f4946452cb2c345eff7fdb42f810f66c9b7e9dcf02167d84744"
+  },
+  "exports": {
+    "maskify16x16.png": {
+      "bytes": 535,
+      "sha256": "bec82c9284578c014bb109c84f3e05ab11bd18344ed75adf0c6958c22f6773f7"
+    },
+    "maskify32x32.png": {
+      "bytes": 1008,
+      "sha256": "f51a62fec827d3aabb76a6d722f0f5568b543dd5d5c4d5bc399031fa6025db9f"
+    },
+    "maskify48x48.png": {
+      "bytes": 1578,
+      "sha256": "2cc45bd9ba40c8fc371cb8d94cc3e316493bd7565862db8ff805234bd058a16d"
+    },
+    "maskify64x64.png": {
+      "bytes": 1906,
+      "sha256": "fb51bcd96d6c085d950389e5600fbe86acf1cfd19b01a831fa4f9f2f64731ded"
+    },
+    "maskify128x128.png": {
+      "bytes": 3676,
+      "sha256": "6615647ea7efcc7851dec80c00bfaadd273d2e87715830ed069418b074384187"
+    },
+    "maskify300x300.png": {
+      "bytes": 9865,
+      "sha256": "df154463d225812daba54366362804e4b7eb11073eb538dd02cef8e577e02578"
+    }
+  }
+}

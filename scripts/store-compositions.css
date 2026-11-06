@@ -1,0 +1,37 @@
+@font-face {
+  font-family: Manrope;
+  src: url("/assets/Manrope.ttf") format("truetype");
+  font-weight: 200 800;
+  font-display: block;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: transparent; }
+body { font-family: Manrope, sans-serif; }
+.asset { position: relative; overflow: hidden; }
+.promo { display: grid; place-items: center; background: #063e67; color: #fff; }
+.lockup { display: flex; align-items: center; }
+.brand-mark { display: block; flex-shrink: 0; }
+.wordmark { font-weight: 800; line-height: 1.1; }
+.promo-small .lockup { flex-direction: column; gap: 12px; }
+.promo-small .brand-mark { width: 156px; height: 156px; }
+.promo-small .wordmark { font-size: 52px; letter-spacing: -2px; }
+.promo-marquee .lockup { gap: 64px; }
+.promo-marquee .brand-mark { width: 320px; height: 320px; }
+.promo-marquee .wordmark { font-size: 120px; letter-spacing: -5px; }
+.amo { display: flex; flex-direction: column; padding: 112px; background: #f4f9fc; color: #102f42; }
+.amo-brand { display: flex; align-items: center; gap: 28px; height: 112px; flex-shrink: 0; }
+.amo-brand span { font-size: 64px; font-weight: 750; letter-spacing: -2px; }
+.amo-content { flex: 1; min-height: 0; margin-top: 80px; }
+.source { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.native-ui { display: block; max-width: 100%; max-height: 100%; object-fit: contain; }
+.amo-result .amo-content { display: grid; grid-template-rows: minmax(0, 1fr) 80px minmax(0, 1fr); gap: 36px; }
+.amo-result .native-ui { border: 3px solid #d4e3ec; border-radius: 24px; }
+.amo-result .masked .native-ui { border-color: #0078d4; border-width: 6px; }
+.flow-arrow { width: 64px; height: 64px; align-self: center; justify-self: center; fill: none; stroke: #0078d4; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.amo-coverage .amo-content { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 48px; align-items: center; }
+.amo-coverage .source { align-items: flex-start; }
+.amo-coverage .native-ui { width: 100%; border: 3px solid #d4e3ec; border-radius: 24px; }
+.amo-controls .amo-content { display: flex; align-items: center; justify-content: center; }
+.amo-controls .source { height: 100%; width: 100%; }
+.amo-controls .native-ui { border-radius: 24px; border: 3px solid #b9d2e3; box-shadow: 0 24px 64px #16496b18; }

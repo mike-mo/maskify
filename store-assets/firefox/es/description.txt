@@ -1,0 +1,14 @@
+Oculta las direcciones de correo antes de compartir.
+
+Maskify cambia las direcciones de correo de la página por otras inventadas para compartir o grabar la pantalla.
+
+Abre Maskify y pulsa Enmascarar correos, o usa Alt+Shift+M. Sustituye direcciones en el texto, el título de la pestaña actual, los enlaces de correo y los campos de formulario. La misma dirección recibe el mismo reemplazo durante esa acción.
+
+Funciones:
+- 🌐 Elige un dominio para las direcciones sustituidas o conserva el predeterminado example.com.
+- ⚙️ Agrega un número aleatorio, una inicial aleatoria o el marcador ***. La vista previa muestra el formato mientras cambias las opciones.
+- 💾 Pulsa Enmascarar correos para aplicar el formato elegido y guardar tus preferencias para la próxima vez.
+- 🗣️ La interfaz usa inglés o español según el idioma del navegador.
+- 🔒 Privacidad: Maskify procesa el contenido de la página en tu navegador y no lo envía a su desarrollador ni a servicios de analítica.
+
+Revisa la página antes de compartirla. Maskify no oculta nombres ni otros datos personales, y no puede sustituir direcciones de correo dentro de imágenes. También cambia los destinos de los enlaces de correo y los valores de los formularios, así que revisa los campos antes de enviar un formulario.

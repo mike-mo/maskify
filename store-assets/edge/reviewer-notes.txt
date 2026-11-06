@@ -1,0 +1,24 @@
+Maskify replaces email addresses on the current page with made-up addresses when the user activates it. Page processing happens in the browser; page content is not sent to the developer or analytics services. Preferences and a masking-action count are saved in browser sync storage, with syncing handled by the browser. See the privacy policy (https://mike-mo.github.io/maskify/privacy.html) for details.
+
+How to test:
+1. Install the extension and open a web page containing email addresses. The repository's testpage.html provides examples; enable file URL access if opening it as a local file.
+2. Click the Maskify icon in the toolbar to open the popup.
+3. Click Mask Emails. A notification in the top-right corner shows how many different addresses were masked.
+4. Check page text, the tab title, email-link destinations, and form values or placeholders. Repeated occurrences of an address should receive the same replacement during that action.
+5. Activate masking again. Already-maskified addresses should stay unchanged. Newly added addresses can be masked in a later action; the mapping is not a persistent identity map across actions or page loads.
+6. Check Alt+Shift+M, which uses the same masking action with the saved preferences.
+
+Permissions:
+- tabs: the extension uses the Tabs API to identify the active tab and send it the masking command.
+- storage: saves the chosen domain, formatting options, and masking-action count in browser sync storage.
+
+Localization: The interface automatically uses English or Spanish based on the browser's language setting. No additional configuration is needed.
+
+Format options in the popup:
+- Domain for the maskified addresses (defaults to example.com, reserved for documentation under RFC 2606)
+- Optional random number, random initial, and *** marker
+- Preview of the format as options change
+
+Clicking Mask Emails masks addresses on the current page and saves the preferences. Closing the popup without clicking the button does not save changes. The keyboard shortcut uses the previously saved preferences.
+
+No Maskify account is required. Masking does not depend on an external service.

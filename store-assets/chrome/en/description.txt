@@ -1,0 +1,14 @@
+Hide email addresses before you share.
+
+Maskify replaces email addresses on the current page with made-up ones for screen sharing and recordings.
+
+Open Maskify and click Mask Emails, or press Alt+Shift+M. It replaces addresses in page text, the current tab's title, email links, and form fields. Repeated addresses get the same replacement during that action.
+
+Features:
+- 🌐 Choose a domain for the maskified addresses, or keep the example.com default.
+- ⚙️ Add a random number, a random initial, or the *** marker. A preview shows the format as you change the options.
+- 💾 Click Mask Emails to apply your chosen format and save your preferences for next time.
+- 🗣️ The interface uses English or Spanish based on your browser language.
+- 🔒 Privacy: Maskify processes page content in your browser and does not send it to its developer or to analytics services.
+
+Review the page before sharing. Maskify does not redact names or other personal details, and it cannot mask email addresses inside images. It also changes email-link destinations and form values, so check forms before submitting them.

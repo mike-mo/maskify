@@ -1,0 +1,36 @@
+@font-face {
+  font-family: Manrope;
+  src: url("/assets/Manrope.ttf") format("truetype");
+  font-weight: 200 800;
+  font-display: block;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; padding: 24px; font-family: Manrope, sans-serif; color: #193342; background: #edf4f8; }
+main { width: 1120px; }
+.surface { background: #fff; border: 1px solid #dae5ec; border-radius: 10px; overflow: hidden; }
+.workspace { padding: 16px 20px; background: #f7fafc; border-bottom: 1px solid #e4ecf1; color: #526b7b; font-size: 13px; font-weight: 650; }
+.directory { width: 550px; }
+.directory header { display: flex; justify-content: space-between; align-items: center; padding: 19px 20px 12px; }
+h1 { margin: 0; font-size: 21px; letter-spacing: -0.5px; }
+.directory header span { color: #637582; font-size: 12px; }
+table { border-collapse: collapse; width: calc(100% - 40px); margin: 0 20px 18px; table-layout: fixed; font-size: 14px; }
+th { text-align: left; color: #607582; font-size: 12px; padding: 12px 4px 10px; font-weight: 600; }
+td { padding: 15px 4px; border-top: 1px solid #e6edf2; }
+th:first-child { width: 23%; }
+th:nth-child(2) { width: 27%; }
+.directory-email { color: #0067ae; font-weight: 600; white-space: nowrap; }
+.coverage { display: flex; gap: 24px; margin-top: 30px; }
+.contact { width: 344px; height: 282px; flex-shrink: 0; }
+.contact h2 { font-size: 19px; margin: 20px 20px 16px; line-height: 1.3; letter-spacing: -0.3px; }
+.field-label { display: block; color: #69808e; margin: 0 20px 4px; font-size: 11px; }
+.contact > strong { display: block; margin: 0 20px; font-size: 15px; }
+.contact p { margin: 16px 20px 0; font-size: 13px; line-height: 1.65; }
+.address { display: inline-block; color: #006db8; font-size: 14px; font-weight: 650; line-height: 1.7; white-space: nowrap; }
+a.address { margin: 10px 20px; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.contact-person { display: flex; align-items: center; gap: 10px; margin: 14px 20px; font-size: 13px; }
+.avatar { background: #e6f4fa; color: #21647d; border-radius: 50%; width: 32px; height: 32px; display: grid; place-items: center; font-size: 11px; }
+label { display: block; margin: 15px 20px 6px; font-size: 12px; font-weight: 650; }
+input, textarea { display: block; margin: 0 20px; padding: 10px; border: 1px solid #bdd4e3; border-radius: 5px; background: #f7fbfe; width: calc(100% - 40px); font-family: inherit; font-size: 13px; color: #0067ae; }
+input { height: 39px; }
+textarea { height: 87px; line-height: 1.6; resize: none; }

@@ -1,3 +1,6 @@
 maskify.zip
 scripts/node_modules/
 screenshots/**/*.png
+!screenshots/**/01-result.png
+!screenshots/**/02-coverage.png
+!screenshots/**/03-controls.png

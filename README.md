@@ -2,17 +2,17 @@
 
 [![Edge Add-ons](https://img.shields.io/badge/Edge_Add--ons-available-0078D4?logo=microsoftedge&logoColor=white)](https://microsoftedge.microsoft.com/addons/detail/ahlpkipagblmbjceamojfdomdmcmcpgc) [![GitHub release](https://img.shields.io/github/v/release/mike-mo/maskify?logo=github)](https://github.com/mike-mo/maskify/releases) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?logo=googlechrome) [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mikemo)
 
-A Chrome and Edge extension that protects user privacy by replacing real email addresses on web pages with randomly generated replacements.
+A Chrome and Edge extension that replaces email addresses on the current page with made-up ones for screen sharing and recordings.
 
 If Maskify has been useful to you, consider [buying me a coffee ☕](https://buymeacoffee.com/mikemo) or [donating via Stripe](https://donate.stripe.com/3cIeVd8iSbCo2VGeKxenS01) to help keep the project going.
 
-## What It Does
+## What it does
 
-When you click the Maskify button, the extension scans the current page and replaces every email address it finds with a realistic-looking replacement like `alice7***@example.com`. The same real address always maps to the same masked address within a session, so the page stays consistent and readable. A brief confirmation toast appears in the top-right corner showing how many addresses were masked.
+Click **Mask Emails** in the popup to replace email addresses on the current page with made-up ones, such as `alice7***@example.com`. Repeated addresses get the same replacement during that action. A notification in the top-right corner shows how many different addresses were replaced.
 
-The domain used for masked addresses defaults to `example.com` but can be changed to any domain you choose directly from the popup.
+Replacements use `example.com` by default. You can choose a different domain in the popup.
 
-Maskify catches emails in visible text, `mailto:` links, and input field values (including prefilled forms and placeholder text).
+Maskify replaces email addresses in page text, the current tab's title, email links, and form fields, including filled-in values and placeholders.
 
 ## Installation
 
@@ -23,53 +23,164 @@ Maskify catches emails in visible text, `mailto:` links, and input field values 
 
 ## Usage
 
-Navigate to any page with email addresses, click the Maskify icon in the toolbar, then click **Mask Emails**. A confirmation toast will appear in the top-right corner showing how many addresses were replaced.
+Open a web page, click the Maskify icon in the toolbar, then click **Mask Emails**. You can also press **Alt+Shift+M** to mask the current page using your saved preferences.
 
 The popup has a few options for controlling how replacements look:
 
-- **Domain**: type any domain to use instead of `example.com`, or leave it blank for the default
+- **Domain**: choose a domain for the addresses, or leave it blank to use `example.com`
 - **Add number**: appends a random number to the name (e.g. `alice7`)
-- **Add last initial**: appends an underscore and a random letter (e.g. `alice_r`)
-- **Mark replacements with \*\*\***: adds a visible marker to signal that the address is protected and should not be contacted
+- **Add random initial**: appends an underscore and a random letter (e.g. `alice_r`)
+- **Mark replacements with \*\*\***: adds `***` so you can recognize the maskified addresses
 
-A live preview updates as you change the settings so you can see the format before masking. All settings are saved and restored the next time you open the popup.
+The preview shows the address format as you change the options. Clicking **Mask Emails** masks addresses on the current page using that format and saves your preferences for next time.
 
-Note: if the extension was loaded or reloaded while a tab was already open, refresh that tab first.
+If you loaded or reloaded the extension while a tab was open, refresh that tab before using Maskify.
 
-## How It Works
+Masking runs when you activate it. If the page loads more content afterward, run Maskify again and review the result.
 
-Clicking the button sends a message from the popup to the content script running in the active tab. The content script runs three passes: a TreeWalker over all text nodes, a pass over anchor `href` attributes (to catch `mailto:` links whose display text isn't an email address), and a pass over input field values and placeholders. Each unique email processed in a masking run is mapped to a generated replacement like `alice7***@example.com`, using a name drawn from a locale-aware list (English or Spanish, chosen automatically based on the browser's language setting) plus any enabled formatting options, such as an optional random number, an underscore and last initial, and the optional `***` marker. The replacement domain defaults to `example.com` unless you choose another domain in the popup. Already-masked replacements are not re-masked on later clicks, so repeated activations preserve existing masked addresses instead of generating a completely new set each time.
+Maskify changes email-link destinations and form values on the page. Check forms before submitting them. It does not redact names or other personal details, and it cannot mask email addresses inside images.
 
-`example.com` is an internet domain permanently reserved for use in documentation and examples by [RFC 2606](https://www.rfc-editor.org/rfc/rfc2606), so masked addresses using it can never belong to a real person or organization.
+## How it works
+
+The popup or keyboard shortcut sends a message to the content script in the active tab. The script uses a `TreeWalker` to replace email addresses in page text, then checks anchor `href` attributes, input and textarea values and placeholders, and `document.title`. This includes email links whose visible label is not an address.
+
+Each different address found during an action gets a randomly generated replacement. Names come from an English or Spanish list based on the browser language. The script adds any enabled formatting options: a random number, an underscore and random initial, and the `***` marker. It uses your chosen domain or the `example.com` default.
+
+Repeated addresses share a replacement within that action. The mapping is not saved across pages or reloads. Already-maskified addresses are left unchanged on later activations, including those in the tab title.
+
+`example.com` is reserved for documentation and examples by [RFC 2606](https://www.rfc-editor.org/rfc/rfc2606). Choosing a different domain changes the replacement text; it does not create a mailbox or email alias.
 
 ## Testing
 
-Open `testpage.html` in the browser after loading the extension. It covers plain text, mailto links with and without visible email text, consistency across repeated occurrences, email format variations, table data, non-email `@` symbols, and input fields.
+Open `testpage.html` after loading the extension. If you open it as a local file, enable **Allow access to file URLs** in the extension's details first. The page covers text, links, forms, repeated addresses, email formats, non-email `@` symbols, and the browser tab title.
 
-## Store Description
+With the screenshot dependencies installed as described below, run `npm --prefix scripts test` for automated checks. The browser tests exercise the actual extension in English and Spanish, including title-only addresses, shared replacements, format options, repeated activations, and titles that should stay unchanged.
+
+## Store description
 
 Full store assets (listings in English and Spanish, search terms, certification notes) are in [store-assets.md](store-assets.md).
 
-**Maskify: Instantly Hide Email Addresses on Any Web Page**
+**Maskify: Hide email addresses before you share.**
 
-Presenting a live demo? Sharing your screen on a call? Browsing a dashboard full of customer data? Maskify keeps real email addresses out of sight with a single click.
+Maskify replaces email addresses on the current page with made-up ones for screen sharing and recordings.
 
-Maskify scans the current page for email addresses and replaces every one with a realistic-looking masked address. The same real address always maps to the same masked address within a session, so the page stays consistent and readable without exposing anyone's personal information.
+Open Maskify and click **Mask Emails**, or press **Alt+Shift+M**. It replaces addresses in page text, the current tab's title, email links, and form fields. Repeated addresses get the same replacement during that action.
 
-**Key Features**
+**Features**
 
-- 🎭 Realistic replacements: real-looking names that map consistently, so the page stays readable and functional
-- 🌐 Works on any website: dashboards, admin panels, CRMs, inboxes, forms, and more
-- 🌍 Custom domain: use any domain you like for replacements, or stick with the `example.com` default
-- ⚙️ Configurable format: control whether replacements include a number, a last initial, and a `***` marker
-- 🛡️ Completely local: runs entirely in your browser with no data collected, stored, or transmitted
-- 🗣️ Multilingual: interface available in English and Spanish, automatically matched to your browser language
+- 🌐 Choose a domain for the maskified addresses, or keep the `example.com` default.
+- ⚙️ Add a random number, a random initial, or the `***` marker. A preview shows the format as you change the options.
+- 💾 Click **Mask Emails** to apply your chosen format and save your preferences for next time.
+- 🗣️ The interface uses English or Spanish based on your browser language.
+- 🔒 **Privacy:** Maskify processes page content in your browser and does not send it to its developer or to analytics services.
 
-**Perfect for** live demos, screen sharing, video recordings, screenshots for documentation, and any time you need to quickly obscure real email addresses.
+Review the page before sharing. Maskify does not redact names or other personal details, and it cannot mask email addresses inside images. It also changes email-link destinations and form values, so check forms before submitting them.
+
+## Store screenshots
+
+The [screenshot gallery](screenshots/index.html) contains three 1280 x 800 PNGs in
+each of English and Spanish: the before/after result, masking coverage, and format
+controls. Final images are tracked under `screenshots/en/` and `screenshots/es/`.
+The [creative brief](store-assets.md#screenshot-creative-brief) explains the copy and
+compositions.
+
+To regenerate with Node.js 20 or later:
+
+```text
+cd scripts
+npm ci
+npx playwright install chromium
+npm run screenshot
+npm test
+npm run preview
+```
+
+The preview command prints a loopback-only gallery URL. Select an image to open
+the full-size PNG. The gallery also works as a local HTML file.
+
+The generator launches the actual unpacked extension in an isolated Chromium
+profile. It serves fictional demo content and the bundled Manrope font locally,
+captures real masking and the real localized popup at high resolution, and
+composes the final PNGs. It does not depend on the published test page or use your
+normal browser profile. Set `MASKIFY_HEADED=1` to watch the capture browser.
+Generated replacement names vary between runs.
+
+Editable sources are in `scripts/templates.js`, `scripts/demo.css`,
+`scripts/composition.css`, and `scripts/copy.js`.
+[Manrope](https://github.com/google/fonts/tree/main/ofl/manrope) is distributed under the
+[SIL Open Font License](scripts/assets/Manrope-OFL.txt). The font and capture-only
+sources are not included in the extension's release package.
+
+The generator checks masking behavior, localization, preview wrapping, image
+dimensions, clipping, and separation between composition blocks. `npm test` also
+covers release asset selection, including older tags that produce `popup.png`
+and `testpage.png`. Modern releases package the committed, approved localized
+set without recapturing images. English images are also attached for optional
+release-note use. See [the release procedure](RELEASING.md) for version checks,
+CI gates, retry behavior, and the separate manual store-upload step.
+
+## Brand assets
+
+Maskify uses one icon: a blue envelope with a dark circular asterisk seal.
+Its editable source is [`icons/maskify.svg`](icons/maskify.svg).
+The 16-, 32-, 48-, and 128-pixel PNGs at `icons/maskify<size>x<size>.png`
+serve the toolbar, popup, toast, page favicons, and store screenshots.
+A 64-pixel export supports high-DPI previews. Use
+[`icons/maskify300x300.png`](icons/maskify300x300.png) as the logo for both
+language listings in the Edge store.
+
+The [icon preview](icons/index.html) shows the current artwork on light and
+dark toolbars. With the screenshot dependencies installed, run
+`npm --prefix scripts run icons` to regenerate every PNG and the preview
+from the canonical SVG. This updates the production files directly.
+Use `npm --prefix scripts run icons -- --check` to verify saved exports, or
+`npm --prefix scripts run icons:preview` to serve the preview locally.
+Verification checks the SVG and all PNG bytes against `icons/asset-inventory.json`,
+along with dimensions, transparent margins, coverage, and gallery behavior.
+Explicit regeneration updates this inventory with the artwork for review;
+release checks never rerender or rebaseline approved exports.
+The renderer is `scripts/icons.js`; preview styles are in `icons/gallery.css`.
+After changing the artwork, run `npm --prefix scripts run screenshot` to
+refresh both localized store screenshot sets.
+
+Merging artwork updates changes the repository and its GitHub Pages site,
+not an already published extension or its store listing. Publish a new version
+to distribute updated runtime icons. Separately update each store language's
+logo, screenshots, and description using the files and copy in this repository.
+Replace or remove any optional promotional tiles that contain older branding.
+Historical commits and versioned releases retain the assets they shipped with.
+
+## Browser store packs
+
+The [store asset gallery](store-assets/index.html) contains downloadable packs
+for Edge Add-ons, the Chrome Web Store, and Firefox Add-ons. Each ZIP includes
+the store's icon, screenshot files, approved English and Spanish listing copy,
+captions, privacy policy, license, and upload instructions.
+
+Edge and Chrome reuse the approved localized screenshots. Their promotional
+tiles use only the icon and wordmark, so one design works in both languages.
+Chrome's icon has the store's transparent clear space. Firefox has a separate
+shared gallery with localized captions and no added editorial headlines.
+
+Run `npm --prefix scripts run stores` to regenerate the packs,
+`npm --prefix scripts run stores:check` to verify them, or
+`npm --prefix scripts run stores:preview` to serve the gallery locally.
+The generator captures real UI for Firefox's image layouts without overwriting
+the approved screenshots in `screenshots/en` and `screenshots/es`.
+After changing the extension or its branding, regenerate icons and screenshots
+before rebuilding the store packs.
+
+For a version-only manifest change, preserve the approved images and use the
+guarded metadata refresh described in [RELEASING.md](RELEASING.md) instead.
+
+These are listing assets, not signed extension packages. The current
+Chromium-only background service worker needs a Firefox-compatible replacement
+and browser verification before a Firefox submission. Generating these files
+does not publish or update any listing.
 
 ## Privacy
 
-See [privacy.html](privacy.html) for the full privacy policy. Everything runs locally in your browser and nothing leaves your machine.
+Maskify processes page content in your browser. It saves preferences and a masking-action count in browser sync storage. Your browser handles any syncing across devices. See the [privacy policy](privacy.html) for details.
 
 ## License
 

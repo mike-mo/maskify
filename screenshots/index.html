@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maskify store screenshots</title>
+  <link rel="icon" href="../icons/maskify128x128.png">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px; color: #102f42; background: #eef5fa; font: 16px/1.5 system-ui, sans-serif; }
+    header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+    h1 { font-size: 28px; margin: 0; }
+    header p { margin: 4px 0 0; color: #526b7b; }
+    nav { display: flex; gap: 20px; }
+    a { color: #006ab5; }
+    section { margin-top: 36px; }
+    h2 { font-size: 20px; }
+    .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    figure { margin: 0; }
+    img { width: 100%; height: auto; display: block; border: 1px solid #cbdde8; border-radius: 8px; }
+    figcaption { padding: 10px 2px; color: #526b7b; }
+    @media (max-width: 850px) { .gallery { grid-template-columns: 1fr; } body { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>Maskify store screenshots</h1><p>1280 × 800 PNGs. Select an image to view it at full size.</p></div>
+    <nav><a href="#en">English</a><a href="#es">Español</a></nav>
+  </header>
+  <section id="en">
+    <h2>English</h2>
+    <div class="gallery">
+      <figure><a href="en/01-result.png"><img src="en/01-result.png" width="1280" height="800" alt="Before and after masking email addresses"></a><figcaption>1. Mask emails before you share.</figcaption></figure>
+      <figure><a href="en/02-coverage.png"><img src="en/02-coverage.png" width="1280" height="800" alt="Masking in page text, links, and form fields"></a><figcaption>2. Not just the text on the page.</figcaption></figure>
+      <figure><a href="en/03-controls.png"><img src="en/03-controls.png" width="1280" height="800" alt="Maskify popup and format preview"></a><figcaption>3. Choose how replacements look.</figcaption></figure>
+    </div>
+  </section>
+  <section id="es" lang="es">
+    <h2>Español</h2>
+    <div class="gallery">
+      <figure><a href="es/01-result.png"><img src="es/01-result.png" width="1280" height="800" alt="Antes y después de enmascarar las direcciones de correo"></a><figcaption>1. Oculta los correos antes de compartir.</figcaption></figure>
+      <figure><a href="es/02-coverage.png"><img src="es/02-coverage.png" width="1280" height="800" alt="Correos enmascarados en textos, enlaces y formularios"></a><figcaption>2. No solo el texto de la página.</figcaption></figure>
+      <figure><a href="es/03-controls.png"><img src="es/03-controls.png" width="1280" height="800" alt="Popup de Maskify y vista previa del formato"></a><figcaption>3. Elige cómo se ven los reemplazos.</figcaption></figure>
+    </div>
+  </section>
+</body>
+</html>

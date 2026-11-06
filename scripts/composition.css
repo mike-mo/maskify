@@ -1,0 +1,57 @@
+@font-face {
+  font-family: Manrope;
+  src: url("/assets/Manrope.ttf") format("truetype");
+  font-weight: 200 800;
+  font-display: block;
+}
+
+:root {
+  --ink: #102f42;
+  --paper: #f4f9fc;
+  --blue: #0078d4;
+  --cyan: #16c7d4;
+  --muted: #536d7d;
+  --line: #d4e3ec;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--ink); font-family: Manrope, sans-serif; }
+.slide { width: 1280px; height: 800px; position: relative; overflow: hidden; background: var(--paper); padding: 34px 56px; }
+.brand { display: flex; justify-content: space-between; align-items: center; height: 44px; }
+.brand > div { display: flex; align-items: center; gap: 12px; }
+.brand img { width: 42px; height: 42px; }
+.brand span { font-size: 24px; font-weight: 750; letter-spacing: -0.7px; }
+.brand .extension-label { font-size: 15px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+.intro { margin-top: 34px; }
+h1 { margin: 0; font-size: 62px; font-weight: 800; letter-spacing: -2.7px; line-height: 1.08; }
+.intro > p { margin: 20px 0 0; max-width: 1080px; font-size: 22px; font-weight: 450; line-height: 1.45; color: var(--muted); }
+figure { margin: 0; }
+.comparison { position: absolute; left: 56px; right: 56px; top: 330px; display: grid; grid-template-columns: 1fr 1.06fr; gap: 30px; align-items: start; }
+.comparison figure { min-width: 0; }
+.comparison figcaption { font-size: 18px; font-weight: 750; padding: 0 6px 13px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.comparison figcaption .consistency { font-size: 12px; font-weight: 550; color: #0067af; }
+.comparison img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 11px; }
+.comparison .after img { border: 2px solid var(--blue); }
+.change-arrow { position: absolute; left: calc(48.55% - 5px); top: 144px; width: 40px; height: 40px; z-index: 1; border: 5px solid var(--paper); background: var(--blue); border-radius: 50%; display: grid; place-items: center; }
+.change-arrow svg { width: 21px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.action { position: absolute; top: 684px; left: 56px; right: 56px; margin: 0; display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 17px; }
+.action-name { color: var(--blue); font-weight: 750; border-bottom: 2px solid var(--cyan); padding-bottom: 3px; }
+.coverage .intro > p { margin-top: 16px; }
+.coverage-grid { position: absolute; top: 310px; left: 56px; right: 56px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.coverage-grid figcaption { font-size: 21px; font-weight: 750; letter-spacing: -0.5px; margin-bottom: 14px; }
+.capture { border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.capture img { width: 100%; display: block; }
+.capture-caption { margin: 10px 0 0; color: var(--muted); font-size: 16px; line-height: 1.5; }
+.controls .intro { width: 615px; margin-top: 78px; }
+.controls h1 { font-size: 58px; line-height: 1.12; letter-spacing: -2.5px; }
+.controls .intro > p { max-width: 530px; font-size: 24px; margin-top: 28px; }
+.marker-note { position: absolute; top: 481px; left: 56px; width: 560px; display: flex; align-items: center; gap: 22px; }
+.marker { display: flex; justify-content: center; padding-top: 12px; background: #d7f4f6; color: #076378; font-size: 57px; font-weight: 750; letter-spacing: -2px; width: 96px; height: 82px; border-radius: 12px; flex-shrink: 0; }
+.marker-note p { margin: 0; color: var(--muted); max-width: 360px; font-size: 21px; line-height: 1.55; }
+.popup { position: absolute; top: 117px; right: 75px; width: 398px; }
+.popup-capture { border-radius: 12px; overflow: hidden; border: 1px solid #b9d2e3; box-shadow: 0 14px 32px #16496b18; }
+.popup img { width: 100%; height: auto; display: block; }
+.popup figcaption { margin: 20px 0 0; color: var(--muted); text-align: center; font-size: 16px; line-height: 1.5; }
+footer { position: absolute; left: 56px; right: 56px; bottom: 29px; border-top: 1px solid var(--line); padding-top: 18px; display: flex; align-items: center; gap: 28px; color: var(--muted); font-size: 13px; }
+footer > span:nth-child(2) { margin-left: auto; }
+.page-number { color: var(--ink); font-size: 14px; font-weight: 750; min-width: 35px; }
