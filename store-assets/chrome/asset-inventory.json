@@ -6,7 +6,7 @@
     "icons/maskify128x128.png": "6615647ea7efcc7851dec80c00bfaadd273d2e87715830ed069418b074384187",
     "icons/maskify300x300.png": "df154463d225812daba54366362804e4b7eb11073eb538dd02cef8e577e02578",
     "store-assets.md": "f4469614e7135bd7da2ec8c50c6ac74b99f5dea64b333b26d2597065e0cd1731",
-    "privacy.html": "5cd355338780802d5c4f083ff88d46c57d71e96c8ddedc78588fe56231952a00",
+    "privacy.html": "42d8738d295d7347912e8d3e36d605f974cb2008881a987319eac3d870868418",
     "LICENSE": "719ec3c7eb839c8e65219b504e13bc2f37e3d09a793865fe1eb3c9927da2329c",
     "manifest.json": "8f81cb2cc730ca47e679a6eccb7c5f93a0140129e41cd6167d899547be73c9d8",
     "popup/popup.html": "a8ff63a75b3af263d71185735cc7977b356ed267ecaa41347f2d3d4f3d697ff3",
@@ -41,8 +41,8 @@
     },
     {
       "file": "privacy-policy.txt",
-      "bytes": 1314,
-      "sha256": "17fd1fb8978b48fa9916933d8f08531b8d677d55aebc5c254c188e1d4f195bdf"
+      "bytes": 1560,
+      "sha256": "98e417c53afb43ec7c05495827db78daaf86fd765341451ba887597a7b1f2b2b"
     },
     {
       "file": "reviewer-notes.txt",

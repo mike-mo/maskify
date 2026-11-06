@@ -1,6 +1,6 @@
 Maskify privacy policy
 
-Last updated: September 2026
+Last updated: November 2026
 
 What the extension does
 
@@ -13,6 +13,10 @@ Maskify finds and replaces email addresses in your browser. It does not save pag
 Saved settings and usage count
 
 Maskify saves your chosen domain, formatting options, and a count of masking actions in your browser's sync storage. Maskify does not send this data to its developer or to analytics services. Your browser handles any syncing across devices. Check your browser's sync settings to review your options.
+
+Optional donation links
+
+The optional donation link opens Buy Me a Coffee, a third-party website that processes data under its own privacy policy. Maskify does not send page content, detected email addresses, or saved settings through this link.
 
 Permissions
 
