@@ -1,4 +1,5 @@
 maskify.zip
+maskify-chrome.zip
 scripts/node_modules/
 screenshots/**/*.png
 !screenshots/**/01-result.png

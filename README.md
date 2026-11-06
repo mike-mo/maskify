@@ -178,6 +178,13 @@ Chromium-only background service worker needs a Firefox-compatible replacement
 and browser verification before a Firefox submission. Generating these files
 does not publish or update any listing.
 
+For a Chrome Web Store **extension ZIP**, follow the
+[Chrome packaging and submission guide](CHROME.md). Run
+`npm --prefix scripts run chrome:build -- maskify-chrome.zip`, then
+`npm --prefix scripts run chrome:check -- maskify-chrome.zip`.
+This uses the approved Chrome-specific padded icon without changing Edge's
+package. The separate `maskify-chrome-assets.zip` is listing material only.
+
 ## Privacy
 
 Maskify processes page content in your browser. It saves preferences and a masking-action count in browser sync storage. Your browser handles any syncing across devices. See the [privacy policy](privacy.html) for details.
