@@ -91,6 +91,10 @@ test('all runtime inputs, added files and modified approved image bytes fail clo
 
 test('shared privacy text is derived from canonical HTML and unsupported markup fails explicitly', t => {
   const root = sourceFixture(t);
+  const canonical = policyText(root);
+  assert(canonical.includes('Optional donation links'));
+  assert(canonical.includes('Buy Me a Coffee, a third-party website that processes data under its own privacy policy.'));
+  assert(canonical.includes('Maskify does not send page content, detected email addresses, or saved settings through this link.'));
   const policy = path.join(root, 'privacy.html');
   fs.writeFileSync(policy, fs.readFileSync(policy, 'utf8').replace('</body>', '<p>Policy update.</p></body>'));
   for (const store of STORES) {
