@@ -61,7 +61,8 @@ Do not run an authenticated operation until the owner completes this setup.
    use PlasmoHQ/bpp, reuse old OAuth secrets, or rotate/delete anything.
 5. Keep existing required checks and all `amo-production` rules/secrets intact.
    The new workflow reuses `ci.yml`; it does not rename its required check jobs.
-   No Chrome-specific packaging branch is required or incorporated.
+   Chrome-specific packaging remains separate: Edge uses the shared Chromium
+   ZIP, not the Chrome-specific package.
 
 GitHub token permissions are `contents: read`; only the protected operation job
 additionally needs `actions: read` to inspect complete upload-run history.

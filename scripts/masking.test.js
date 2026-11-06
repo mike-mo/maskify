@@ -9,6 +9,7 @@ const { chromium } = require('playwright');
 const { startServer } = require('./server');
 
 const ROOT = path.resolve(__dirname, '..');
+const EXTENSION = process.env.MASKIFY_EXTENSION_PATH || ROOT;
 const ADDRESS = 'carla@team.example';
 
 for (const locale of ['en', 'es']) {
@@ -39,10 +40,11 @@ for (const locale of ['en', 'es']) {
     profile = fs.mkdtempSync(path.join(os.tmpdir(), 'maskify-title-test-'));
     context = await chromium.launchPersistentContext(profile, {
       channel: 'chromium',
+      executablePath: process.env.MASKIFY_CHROME_EXECUTABLE || undefined,
       headless: true,
       args: [
-        `--disable-extensions-except=${ROOT}`,
-        `--load-extension=${ROOT}`,
+        `--disable-extensions-except=${EXTENSION}`,
+        `--load-extension=${EXTENSION}`,
         `--lang=${locale}`,
       ],
       locale,
@@ -79,7 +81,8 @@ for (const locale of ['en', 'es']) {
       await page.bringToFront();
       const [toast] = await Promise.all([
         page.waitForSelector('#maskify-toast', { state: 'attached' }),
-        popup.locator('#sendmessageid').click(),
+        // The handler closes its own page; do not wait for a Playwright click to finish afterward.
+        popup.locator('#sendmessageid').evaluate(button => button.click()),
       ]);
       const message = await toast.textContent();
       if (!popup.isClosed()) await popup.close();
@@ -147,6 +150,26 @@ for (const locale of ['en', 'es']) {
         assert.equal(await page.locator('#address').textContent(), replacement);
       });
     }
+
+    await t.test('persists format preferences and restores them in a reloaded popup', async subtest => {
+      const page = await fixture(subtest, `Contact ${ADDRESS}`);
+      await mask(page, { domain: 'demo.test', addNumber: false, addLastInitial: true, showAsterisk: false });
+      const saved = await worker.evaluate(() => chrome.storage.sync.get(null));
+      assert.equal(saved.domain, 'demo.test');
+      assert.equal(saved.addNumber, false);
+      assert.equal(saved.addLastInitial, true);
+      assert.equal(saved.showAsterisk, false);
+      assert(saved.maskCount > 0);
+      const popup = await context.newPage();
+      subtest.after(() => popup.close());
+      await popup.goto(`chrome-extension://${extensionId}/popup/popup.html`);
+      await popup.reload();
+      await popup.waitForFunction(() => document.querySelector('#domainInput').value === 'demo.test');
+      assert.equal(await popup.locator('#addNumber').isChecked(), false);
+      assert.equal(await popup.locator('#addLastInitial').isChecked(), true);
+      assert.equal(await popup.locator('#showAsterisk').isChecked(), false);
+      assert.match(await popup.locator('#previewAddress').textContent(), /^[a-z]+_r@demo\.test$/);
+    });
 
     await t.test('does not rewrite non-email, empty, or missing titles', async subtest => {
       for (const title of ['Team & @support - Status', '', null]) {
