@@ -7,9 +7,12 @@ GitHub release assets only. It does not create or move tags, create releases,
 invoke PlasmoHQ/bpp, use `BPP_KEYS`, or submit anything to a browser store.
 Publishing a GitHub release cannot trigger an automated Edge submission.
 
-Store upload is a separate, human-authorized operation in Partner Center.
+Store upload is a separate, human-authorized operation.
 Uploading a draft package does not authorize certification, submission, or
-publication. Firefox has a separate, manually dispatched **Firefox store: Plan or publish**
+publication. Edge has a manually dispatched **Edge store: Plan, status or draft upload**
+workflow with an offline plan and protected draft-only upload. Certification
+and publication stay manual in Partner Center; see [Edge setup and operation](edge/README.md).
+Firefox has a separate, manually dispatched **Firefox store: Plan or publish**
 workflow with an offline plan and protected approval gate. It can synchronize
 AMO metadata or submit a new version, but is never triggered by a push or GitHub
 release. Its listing pack is not an extension; use the separate Firefox package.
@@ -21,6 +24,7 @@ release. Its listing pack is not an extension; use the separate Firefox package.
 | **Check: Test and build packages** (`ci.yml`) | Push, pull request, or reused by the other workflows for an exact ref | Shared regression/browser/lint checks, `release-assets`, and generated `store-listings` gallery/packs | None |
 | **GitHub release: Attach packages** (`publish.yml`) | Published GitHub release, or manual existing stable tag | Resolve the immutable tag commit, reuse checks, verify and attach the resulting assets | GitHub release assets only; never store submission |
 | **Firefox store: Plan or publish** (`firefox-publish.yml`) | Manual, workflow on main, exact approved SHA/version | Default offline `amo-plan`; protected read-only credential check, sync or new-version submission | `auth-check` reads AMO only; authorized sync/publish can write, with `amo-receipt` |
+| **Edge store: Plan, status or draft upload** (`edge-publish.yml`) | Manual, workflow on main, exact approved SHA/version | Default offline `edge-plan`; protected real-operation status/credential check or explicitly confirmed draft upload | `status` uses GET only; `upload` replaces the draft package, with intent/receipt; never certification or publication |
 
 The old `screenshots.yml` was only a second entry point to `publish.yml`; it has
 been removed. Prior run history can still show the old workflow names. Release
@@ -46,6 +50,7 @@ missing Firefox npm scripts.
 | `icons/`, `screenshots/en/`, `screenshots/es/` | Reused production icons and localized Edge/Chrome screenshots |
 | Unique approved `store-artwork/` PNGs and `approved.json` | Padded Chrome icon, shared promos, Firefox gallery, per-store inventories |
 | `amo/listing.json`, `amo/versions/VERSION/` and `manifest.firefox.json` | AMO-specific choices, version payloads and Firefox package metadata |
+| `edge/product.json` | Owner-confirmed Edge Partner Center identity in offline plans and protected draft uploads |
 
 `npm --prefix scripts run stores` deterministically builds **`dist/store-assets/`**:
 three store folders/ZIPs, a gallery and its local font/CSS. These are ignored
@@ -135,8 +140,10 @@ The workflow attaches:
 Watch that workflow to completion before downloading or uploading the extension
 package. The release itself can exist while asset checks are still running.
 Inspect `release-provenance.json` and confirm its commit equals the tagged merged
-commit. Use the downloaded `maskify.zip` for the Partner Center package upload,
+commit. Use the downloaded `maskify.zip` for a manual Partner Center package upload,
 not a store listing pack.
+The separate Edge workflow rebuilds and compares that same package from its
+own exact-ref CI run; it never relies on an unverified local or release ZIP.
 
 To retry a failed run or attach assets to an existing draft/stable release:
 

@@ -3,9 +3,8 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { execFileSync } = require('node:child_process');
 const { createHash, createHmac, randomUUID } = require('node:crypto');
-const { readCanonical } = require('./extension-package');
+const { isSha, isVersion, readRepositoryFile: read, resolveCommit, verifyCheckout } = require('./store-publish');
 
 const ROOT = path.resolve(__dirname, '..');
 const API = 'https://addons.mozilla.org/api/v5/';
@@ -14,8 +13,6 @@ const LOCALES = ['en-US', 'es-ES'];
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const json = value => Buffer.from(JSON.stringify(value, null, 2) + '\n');
 const digest = value => sha256(JSON.stringify(value));
-const isSha = value => typeof value === 'string' && /^[a-f0-9]{40}$/.test(value);
-const isVersion = value => typeof value === 'string' && /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(value);
 
 function packageFirefox(root) {
   // Resolve only publisher-owned modules. Candidate scripts are source bytes, never executable tooling here.
@@ -26,15 +23,6 @@ function packageFirefox(root) {
 function keys(value, expected, label) {
   assert(value && typeof value === 'object' && !Array.isArray(value), `${label}: expected an object`);
   assert.deepEqual(Object.keys(value).sort(), [...expected].sort(), `${label}: unsupported or missing fields`);
-}
-
-function read(root, file) {
-  assert(typeof file === 'string' && /^[\w./-]+$/.test(file) && !file.split('/').includes('..') &&
-    !path.isAbsolute(file), `Unsafe repository path: ${file}`);
-  const resolvedRoot = fs.realpathSync(root);
-  const target = fs.realpathSync(path.join(root, ...file.split('/')));
-  assert(target.startsWith(resolvedRoot + path.sep), `Path leaves repository: ${file}`);
-  return readCanonical(target);
 }
 
 function text(root, file) {
@@ -476,25 +464,6 @@ async function applyPlan({ plan, files }, mode, confirmation, request, {
   }
   record({ stage: 'complete', version_id: versionId, file_status: finalVersion.file?.status });
   return versionId;
-}
-
-function resolveCommit(root, commit, version, run = args =>
-  execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim()) {
-  assert(isSha(commit), 'Use a full immutable commit SHA, not a branch or tag');
-  assert(isVersion(version), 'Use the exact stable version');
-  assert.equal(run(['rev-parse', `${commit}^{commit}`]), commit);
-  run(['merge-base', '--is-ancestor', commit, 'origin/main']);
-  const manifest = JSON.parse(run(['show', `${commit}:manifest.json`]));
-  assert.equal(manifest.version, version, 'Requested version differs from the selected commit');
-  return { commit, version };
-}
-
-function verifyCheckout(root, commit) {
-  assert(isSha(commit), 'Use a full immutable commit SHA');
-  const run = args => execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim();
-  assert.equal(run(['rev-parse', 'HEAD']), commit, 'Checkout HEAD differs from requested source');
-  assert.equal(run(['status', '--porcelain', '--untracked-files=normal']), '',
-    'Source checkout must be clean, including canonical listing inputs');
 }
 
 async function main() {

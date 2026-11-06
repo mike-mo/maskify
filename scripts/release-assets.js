@@ -7,7 +7,7 @@ const { createHash } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const { RUNTIME_ENTRIES, runtimeFiles, readCanonical, makeArchive } = require('./extension-package');
+const { RUNTIME_ENTRIES, runtimeFiles, readCanonical, makeArchive, buildChromium } = require('./extension-package');
 const PROVENANCE = 'release-provenance.json';
 const CHECKSUMS = 'SHA256SUMS';
 const sha256 = data => createHash('sha256').update(data).digest('hex');
@@ -35,7 +35,7 @@ function buildAssets(root, output, tag, commit) {
   const screenshots = selectAssets(root);
   assert.equal(screenshots.generation, 'composed', 'Modern releases require approved composed screenshots');
   const files = new Map([
-    ['maskify.zip', makeArchive(new Map(runtimeFiles(root).map(file => [file, readCanonical(diskPath(root, file))])))],
+    ['maskify.zip', buildChromium(root)],
     ...buildFirefox(root),
     ['maskify300x300.png', fs.readFileSync(path.join(root, 'icons', 'maskify300x300.png'))],
     ...['edge', 'chrome', 'firefox'].map(store => [
