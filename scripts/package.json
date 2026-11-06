@@ -12,10 +12,17 @@
     "stores:check": "node store-assets.js --check",
     "stores:version": "node refresh-store-version.js",
     "release:build": "node release-assets.js build",
-    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js refresh-store-version.test.js"
+    "firefox:build": "node firefox-package.js",
+    "firefox:lint": "node firefox-package.js --lint",
+    "test:firefox": "node --test firefox.test.js",
+    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js refresh-store-version.test.js firefox-package.test.js"
   },
   "dependencies": {
     "fflate": "^0.8.3",
     "playwright": "^1.59.1"
+  },
+  "devDependencies": {
+    "selenium-webdriver": "4.38.0",
+    "web-ext": "10.8.0"
   }
 }

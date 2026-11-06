@@ -2,7 +2,7 @@
 
 [![Edge Add-ons](https://img.shields.io/badge/Edge_Add--ons-available-0078D4?logo=microsoftedge&logoColor=white)](https://microsoftedge.microsoft.com/addons/detail/ahlpkipagblmbjceamojfdomdmcmcpgc) [![GitHub release](https://img.shields.io/github/v/release/mike-mo/maskify?logo=github)](https://github.com/mike-mo/maskify/releases) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?logo=googlechrome) [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mikemo)
 
-A Chrome and Edge extension that replaces email addresses on the current page with made-up ones for screen sharing and recordings.
+A Chrome, Edge, and Firefox extension that replaces email addresses on the current page with made-up ones for screen sharing and recordings.
 
 If Maskify has been useful to you, consider [buying me a coffee ☕](https://buymeacoffee.com/mikemo) or [donating via Stripe](https://donate.stripe.com/3cIeVd8iSbCo2VGeKxenS01) to help keep the project going.
 
@@ -20,6 +20,21 @@ Maskify replaces email addresses in page text, the current tab's title, email li
 2. Open Chrome or Edge and navigate to the extensions page (`chrome://extensions` or `edge://extensions`).
 3. Enable **Developer mode**.
 4. Click **Load unpacked** and select the root folder of this repository.
+
+For desktop Firefox 140 or later, build the separate unsigned Firefox package:
+
+```text
+npm --prefix scripts ci --ignore-scripts
+npm --prefix scripts run firefox:build -- dist/firefox
+```
+
+In `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**
+and select `dist/firefox/maskify-firefox.zip`. Allow Maskify to run on the site
+using Firefox's extension/site-access controls, then refresh existing tabs.
+Temporary installations disappear when Firefox exits. Permanent installation
+requires Mozilla signing. There is no published AMO listing linked here yet.
+See [Firefox submission](RELEASING.md#firefox-add-ons-amo) for validation,
+reviewer sources, and the manual store-submission procedure.
 
 ## Usage
 
@@ -55,6 +70,14 @@ Repeated addresses share a replacement within that action. The mapping is not sa
 Open `testpage.html` after loading the extension. If you open it as a local file, enable **Allow access to file URLs** in the extension's details first. The page covers text, links, forms, repeated addresses, email formats, non-email `@` symbols, and the browser tab title.
 
 With the screenshot dependencies installed as described below, run `npm --prefix scripts test` for automated checks. The browser tests exercise the actual extension in English and Spanish, including title-only addresses, shared replacements, format options, repeated activations, and titles that should stay unchanged.
+
+Run `npm --prefix scripts run firefox:lint` for Mozilla package validation and
+`npm --prefix scripts run test:firefox` for actual unsigned-package installation,
+localized popup, masking, saved settings, and registered shortcut-command checks
+in desktop Firefox. These use an isolated profile, not your personal profile.
+Firefox must be installed, or `FIREFOX_BINARY` must name its executable.
+Selenium Manager obtains geckodriver if needed; the Spanish check downloads the
+matching official Mozilla language pack. See RELEASING.md for lint warnings.
 
 ## Store description
 
@@ -173,10 +196,11 @@ before rebuilding the store packs.
 For a version-only manifest change, preserve the approved images and use the
 guarded metadata refresh described in [RELEASING.md](RELEASING.md) instead.
 
-These are listing assets, not signed extension packages. The current
-Chromium-only background service worker needs a Firefox-compatible replacement
-and browser verification before a Firefox submission. Generating these files
-does not publish or update any listing.
+These are listing assets, not extension packages. Build `maskify-firefox.zip`
+separately for AMO. The approved packs retain their original Chromium-capture
+provenance and historical Firefox compatibility warning; the current package
+status and submission instructions are in [RELEASING.md](RELEASING.md).
+Generating these files does not publish or update any listing.
 
 ## Privacy
 

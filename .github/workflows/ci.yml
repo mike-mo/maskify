@@ -18,7 +18,34 @@ permissions:
   contents: read
 
 jobs:
+  firefox:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: ['140.0', 'latest']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+      - name: Install locked dependencies
+        run: npm --prefix scripts ci --ignore-scripts
+      - uses: browser-actions/setup-firefox@v1
+        id: firefox
+        with:
+          firefox-version: ${{ matrix.version }}
+      - name: Test unsigned package in Firefox
+        env:
+          FIREFOX_BINARY: ${{ steps.firefox.outputs.firefox-path }}
+        run: npm --prefix scripts run test:firefox
+
   check:
+    needs: firefox
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +64,8 @@ jobs:
         run: npx playwright install chromium --with-deps
       - name: Test runtime, approved artwork, store packs, and release safety
         run: npm --prefix scripts test
+      - name: Validate Firefox package with Mozilla tooling
+        run: npm --prefix scripts run firefox:lint
       - name: Build verified release assets
         env:
           RELEASE_TAG: ${{ inputs.tag }}

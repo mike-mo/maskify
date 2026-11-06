@@ -7,22 +7,12 @@ const { createHash } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const RUNTIME_ENTRIES = [
-  'manifest.json', 'background.js', '_locales/', 'popup/', 'content-scripts/', 'data/',
-  'icons/maskify16x16.png', 'icons/maskify32x32.png',
-  'icons/maskify48x48.png', 'icons/maskify128x128.png',
-];
+const { RUNTIME_ENTRIES, runtimeFiles, readCanonical, makeArchive } = require('./extension-package');
 const PROVENANCE = 'release-provenance.json';
 const CHECKSUMS = 'SHA256SUMS';
 const sha256 = data => createHash('sha256').update(data).digest('hex');
 const diskPath = (root, file) => path.join(root, ...file.split('/'));
 const json = value => Buffer.from(JSON.stringify(value, null, 2) + '\n');
-
-function readCanonical(file) {
-  const bytes = fs.readFileSync(file);
-  return /\.(md|txt|json|js|css|html|svg)$/i.test(file) || path.basename(file) === 'LICENSE'
-    ? Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n')) : bytes;
-}
 
 function validateTag(tag, version) {
   assert(/^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(tag),
@@ -33,24 +23,8 @@ function validateTag(tag, version) {
   if (version !== undefined) assert.equal(tag, `v${version}`, 'Manifest version does not match release tag');
 }
 
-function runtimeFiles(root = ROOT) {
-  const files = [];
-  function visit(file) {
-    const stat = fs.lstatSync(diskPath(root, file));
-    assert(!stat.isSymbolicLink(), `Runtime symlinks are not allowed: ${file}`);
-    if (stat.isDirectory()) {
-      for (const child of fs.readdirSync(diskPath(root, file)).sort()) visit(`${file.replace(/\/$/, '')}/${child}`);
-    } else {
-      assert(stat.isFile(), `Not a runtime file: ${file}`);
-      files.push(file);
-    }
-  }
-  RUNTIME_ENTRIES.forEach(visit);
-  return files.sort();
-}
-
 function buildAssets(root, output, tag, commit) {
-  const { makeArchive } = require('./store-assets');
+  const { buildFirefox } = require('./firefox-package');
   const { selectAssets } = require('./release-screenshots');
   const version = JSON.parse(readCanonical(path.join(root, 'manifest.json'))).version;
   tag ||= `v${version}`;
@@ -61,6 +35,7 @@ function buildAssets(root, output, tag, commit) {
   assert.equal(screenshots.generation, 'composed', 'Modern releases require approved composed screenshots');
   const files = new Map([
     ['maskify.zip', makeArchive(new Map(runtimeFiles(root).map(file => [file, readCanonical(diskPath(root, file))])))],
+    ...buildFirefox(root),
     ['maskify300x300.png', fs.readFileSync(path.join(root, 'icons', 'maskify300x300.png'))],
     ...['edge', 'chrome', 'firefox'].map(store => [
       `maskify-${store}-assets.zip`, fs.readFileSync(path.join(root, 'store-assets', `maskify-${store}-assets.zip`)),
@@ -106,7 +81,8 @@ function verifyBundle(directory, tag, commit) {
   assert.equal(provenance.tag, tag, 'Artifact tag differs from selected release');
   assert.equal(provenance.commit, commit, 'Artifact commit differs from selected release');
   const expected = [
-    'maskify.zip', 'maskify300x300.png', 'maskify-edge-assets.zip', 'maskify-chrome-assets.zip',
+    'maskify.zip', 'maskify-firefox.zip', 'maskify-firefox-source.zip',
+    'maskify300x300.png', 'maskify-edge-assets.zip', 'maskify-chrome-assets.zip',
     'maskify-firefox-assets.zip', 'screenshots.zip', 'en-01-result.png', 'en-02-coverage.png', 'en-03-controls.png',
   ];
   assert.deepEqual(provenance.files.map(file => file.name).sort(), expected.sort(), 'Incomplete release inventory');

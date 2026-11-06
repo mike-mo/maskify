@@ -146,7 +146,7 @@ test('all release bytes are deterministic and cannot be mixed with stale output'
 
 test('bundle verification rejects tampered bytes or a different source commit', t => {
   const directory = bundle(t);
-  assert.equal(verifyBundle(directory, TAG, COMMIT).size, 11);
+  assert.equal(verifyBundle(directory, TAG, COMMIT).size, 13);
   assert.throws(() => verifyBundle(directory, TAG, 'c'.repeat(40)), /commit differs/);
   fs.appendFileSync(path.join(directory, 'maskify.zip'), 'tampered');
   assert.throws(() => verifyBundle(directory, TAG, COMMIT), /size mismatch/);
@@ -157,7 +157,7 @@ test('upload fills partial releases, verifies the saved bytes, and retries witho
   const server = github();
   server.assets.set('maskify.zip', fs.readFileSync(path.join(directory, 'maskify.zip')));
   uploadAssets(REPO, TAG, COMMIT, directory, server.run);
-  assert.equal(server.assets.size, 11);
+  assert.equal(server.assets.size, 13);
   assert.equal(server.calls.filter(args => args[1] === 'upload').length, 1);
   uploadAssets(REPO, TAG, COMMIT, directory, server.run);
   assert.equal(server.calls.filter(args => args[1] === 'upload').length, 1);
