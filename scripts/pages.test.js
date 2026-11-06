@@ -9,17 +9,17 @@ const { assemble } = require('./pages');
 
 const ROOT = path.resolve(__dirname, '..');
 
-test('assembled Pages and legacy root pages share content and valid favicon paths', t => {
+test('assembled Pages preserve public URLs and valid favicon paths', t => {
   const output = fs.mkdtempSync(path.join(os.tmpdir(), 'maskify-pages-'));
   t.after(() => fs.rmSync(output, { recursive: true, force: true }));
   assemble(ROOT, output);
   for (const file of ['privacy.html', 'testpage.html']) {
     const published = fs.readFileSync(path.join(output, file), 'utf8');
-    assert.equal(published, fs.readFileSync(path.join(ROOT, file), 'utf8'), `${file}: legacy page differs`);
+    const local = fs.readFileSync(path.join(ROOT, 'web', file), 'utf8');
+    assert.equal(published, local.replaceAll('href="../icons/', 'href="icons/'));
     const icons = [...published.matchAll(/<link rel="icon"[^>]*href="([^"]+)"/g)].map(match => match[1]);
     assert.deepEqual(icons, ['icons/maskify.svg', 'icons/maskify32x32.png', 'icons/maskify16x16.png']);
     for (const icon of icons) assert(fs.existsSync(path.join(output, icon)), `${file}: ${icon} missing`);
-    const local = fs.readFileSync(path.join(ROOT, 'web', file), 'utf8');
     for (const match of local.matchAll(/<link rel="icon"[^>]*href="([^"]+)"/g)) {
       assert(fs.existsSync(path.resolve(ROOT, 'web', match[1])), `${file}: ${match[1]} missing locally`);
     }
