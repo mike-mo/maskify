@@ -39,4 +39,9 @@ function makeArchive(files) {
   return Buffer.from(zipSync(Object.fromEntries(files), { level: 6, mtime: new Date(2000, 0, 1) }));
 }
 
-module.exports = { RUNTIME_ENTRIES, readCanonical, runtimeFiles, makeArchive };
+function buildChromium(root = ROOT) {
+  return makeArchive(new Map(runtimeFiles(root).map(file =>
+    [file, readCanonical(path.join(root, ...file.split('/')))])));
+}
+
+module.exports = { RUNTIME_ENTRIES, readCanonical, runtimeFiles, makeArchive, buildChromium };

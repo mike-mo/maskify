@@ -1,0 +1,191 @@
+name: 'Edge store: Plan, status or draft upload'
+run-name: Edge ${{ inputs.operation }} ${{ inputs.version }} ${{ inputs.source_sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: 'Full immutable commit SHA already merged into main'
+        required: true
+        type: string
+      version:
+        description: 'Exact stable manifest version'
+        required: true
+        type: string
+      operation:
+        description: 'plan: offline; status: GET real operation/auth check; upload: replace draft package only'
+        type: choice
+        options: [plan, status, upload]
+        default: plan
+      current_version:
+        description: 'Upload only: live version verified by owner in Partner Center'
+        type: string
+      confirmation:
+        description: 'Upload only: maskify:edge:upload:VERSION:SHA:PRODUCT_GUID:CURRENT_VERSION'
+        type: string
+      operation_kind:
+        description: 'Read-only status: kind of the existing operation'
+        type: choice
+        options: [upload, submission]
+        default: upload
+      operation_id:
+        description: 'Read-only status: existing real operation GUID, never a dummy ID'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maskify-edge
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    if: github.repository == 'mike-mo/maskify' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      commit: ${{ steps.target.outputs.commit }}
+      version: ${{ steps.target.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Resolve approved immutable source on main
+        id: target
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          EXPECTED_VERSION: ${{ inputs.version }}
+        run: node scripts/edge-publish.js resolve .
+
+  verify:
+    needs: resolve
+    uses: ./.github/workflows/ci.yml
+    with:
+      ref: ${{ needs.resolve.outputs.commit }}
+      tag: v${{ needs.resolve.outputs.version }}
+
+  plan:
+    needs: [resolve, verify]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.commit }}
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install trusted publisher dependencies without lifecycle scripts
+        run: npm --prefix tooling/scripts ci --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-assets
+          path: ${{ runner.temp }}/verified-release
+      - name: Build offline Edge plan and compare complete verified release bundle
+        env:
+          SOURCE_SHA: ${{ needs.resolve.outputs.commit }}
+          EXPECTED_VERSION: ${{ needs.resolve.outputs.version }}
+          VERIFIED_RELEASE_DIRECTORY: ${{ runner.temp }}/verified-release
+        run: node tooling/scripts/edge-publish.js plan source "$RUNNER_TEMP/edge-plan" "$SOURCE_SHA" "$EXPECTED_VERSION"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: edge-plan
+          path: ${{ runner.temp }}/edge-plan/*
+          if-no-files-found: error
+          retention-days: 30
+      - name: Explain approval boundary
+        run: |
+          echo 'Review edge-plan: exact SHA/version, package hashes, listing pack and manual exceptions before approving edge-production.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Plan is offline. status GETs a real existing operation only. Upload replaces the draft package, never submits or publishes.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Owner must check live version, draft contents and competing submissions/writers in Partner Center. See edge/README.md.' >> "$GITHUB_STEP_SUMMARY"
+
+  apply:
+    name: Protected Edge operation
+    needs: [resolve, plan]
+    if: inputs.operation == 'status' || inputs.operation == 'upload'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: edge-production
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          path: tooling
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve.outputs.commit }}
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install trusted publisher dependencies without lifecycle scripts
+        run: npm --prefix tooling/scripts ci --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: edge-plan
+          path: ${{ runner.temp }}/edge-plan
+      - name: Verify explicit upload intent and complete workflow history without store credentials
+        if: inputs.operation == 'upload'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.commit }}
+          EXPECTED_VERSION: ${{ needs.resolve.outputs.version }}
+          CURRENT_VERSION: ${{ inputs.current_version }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+          EDGE_INTENT: ${{ runner.temp }}/edge-intent.json
+        run: node tooling/scripts/edge-publish.js guard source "$RUNNER_TEMP/edge-plan" "$SOURCE_SHA" "$EXPECTED_VERSION"
+      - name: Persist reservation before any store mutation
+        if: inputs.operation == 'upload'
+        uses: actions/upload-artifact@v4
+        with:
+          name: edge-upload-intent
+          path: ${{ runner.temp }}/edge-intent.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Authenticate using GET of an existing operation only
+        if: inputs.operation == 'status'
+        env:
+          SOURCE_SHA: ${{ needs.resolve.outputs.commit }}
+          EXPECTED_VERSION: ${{ needs.resolve.outputs.version }}
+          OPERATION_KIND: ${{ inputs.operation_kind }}
+          OPERATION_ID: ${{ inputs.operation_id }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+        run: node tooling/scripts/edge-publish.js status source "$RUNNER_TEMP/edge-plan" "$SOURCE_SHA" "$EXPECTED_VERSION"
+      - name: Upload reviewed package to draft only, without submission
+        if: inputs.operation == 'upload'
+        env:
+          SOURCE_SHA: ${{ needs.resolve.outputs.commit }}
+          EXPECTED_VERSION: ${{ needs.resolve.outputs.version }}
+          CURRENT_VERSION: ${{ inputs.current_version }}
+          CONFIRMATION: ${{ inputs.confirmation }}
+          EDGE_INTENT: ${{ runner.temp }}/edge-intent.json
+          EDGE_RECEIPT: ${{ runner.temp }}/edge-receipt.jsonl
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+        run: node tooling/scripts/edge-publish.js upload source "$RUNNER_TEMP/edge-plan" "$SOURCE_SHA" "$EXPECTED_VERSION"
+      - uses: actions/upload-artifact@v4
+        if: always() && inputs.operation == 'upload'
+        with:
+          name: edge-receipt
+          path: ${{ runner.temp }}/edge-receipt.jsonl
+          if-no-files-found: warn
+          retention-days: 90

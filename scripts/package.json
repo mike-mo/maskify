@@ -18,7 +18,8 @@
     "firefox:lint": "node firefox-package.js --lint",
     "test:firefox": "node --test firefox.test.js",
     "amo:plan": "node amo-publish.js plan",
-    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js firefox-package.test.js amo-publish.test.js chrome-package.test.js"
+    "edge:plan": "node edge-publish.js plan",
+    "test": "node --test screenshot.test.js masking.test.js icons.test.js store-assets.test.js release-assets.test.js firefox-package.test.js amo-publish.test.js edge-publish.test.js chrome-package.test.js"
   },
   "dependencies": {
     "fflate": "^0.8.3",

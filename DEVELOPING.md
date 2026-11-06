@@ -3,6 +3,8 @@
 For installation and user-facing behavior, see [README.md](README.md).
 [RELEASING.md](RELEASING.md) is the reference for package builds, workflow
 responsibilities, canonical source/output mapping and publishing approvals.
+The [Edge draft-publishing guide](edge/README.md) covers offline plans, protected
+draft uploads, read-only status checks and owner-only production setup.
 The [approved store copy](store-assets.md) contains the bilingual listings,
 search terms, certification notes and screenshot creative brief.
 
