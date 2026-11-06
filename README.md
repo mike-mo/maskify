@@ -1,8 +1,12 @@
+<img src="icons/maskify128x128.png" alt="Maskify logo: a blue envelope with an asterisk seal" width="64" height="64" align="right">
+
 # Maskify
 
 [![Edge Add-ons](https://img.shields.io/badge/Edge_Add--ons-available-0078D4?logo=microsoftedge&logoColor=white)](https://microsoftedge.microsoft.com/addons/detail/ahlpkipagblmbjceamojfdomdmcmcpgc) [![Firefox: AMO pending](https://img.shields.io/badge/Firefox-AMO_pending-FF7139?logo=firefoxbrowser&logoColor=white)](https://github.com/mike-mo/maskify/issues/38) [![GitHub release](https://img.shields.io/github/v/release/mike-mo/maskify?logo=github)](https://github.com/mike-mo/maskify/releases) ![Manifest V3](https://img.shields.io/badge/Manifest-V3-blue?logo=googlechrome) [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/mikemo)
 
 A Chrome, Edge, and Firefox extension that replaces email addresses on the current page with made-up ones for screen sharing and recordings.
+
+[![Before and after Maskify: fictional team email addresses are replaced with made-up addresses at example.com, while names and roles stay unchanged. Repeated addresses share a replacement.](screenshots/en/01-result.png)](screenshots/en/01-result.png)
 
 If Maskify has been useful to you, consider [buying me a coffee ☕](https://buymeacoffee.com/mikemo) or [donating via Stripe](https://donate.stripe.com/3cIeVd8iSbCo2VGeKxenS01) to help keep the project going.
 
