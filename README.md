@@ -20,16 +20,24 @@ Maskify replaces email addresses in page text, the current tab's title, email li
 
 ## Installation
 
+### Install from a browser store
+
 Install the published version from [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/ahlpkipagblmbjceamojfdomdmcmcpgc) or [Firefox Add-ons](https://addons.mozilla.org/addon/maskify/).
 
-### Chrome and Edge (unpacked)
+You do not need to download this repository for a browser store installation. Maskify is not available in the Chrome Web Store yet.
+
+### Install from source (testing or development)
+
+The following steps are optional and only needed for testing or development.
+
+#### Chrome and Edge (unpacked)
 
 1. Clone or download this repository.
 2. Open Chrome or Edge and navigate to the extensions page (`chrome://extensions` or `edge://extensions`).
 3. Enable **Developer mode**.
 4. Click **Load unpacked** and select the root folder of this repository.
 
-### Firefox
+#### Firefox (temporary)
 
 For testing on desktop Firefox 140 or later:
 
